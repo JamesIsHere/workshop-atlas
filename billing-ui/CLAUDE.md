@@ -19,13 +19,13 @@ contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P3 BUILT 2026-08-04; gates 1-3 CLOSED (zero        |
-|              | kills); walk verifier FULLY GREEN 17/17 x2         |
-| Last session | 2026-08-04 -- all three build phases + gates in    |
-|              | one day; interface rulings (product + one          |
-|              | question; one address); git initialized            |
-| Next action  | P4 walk day only: schedule it, James drives the    |
-|              | protocol; see state.md                             |
+| Status       | P4 attempt 1 FAIL (F-1: invoice page); redesign    |
+|              | BUILT + gate PASS same day; fresh walk pending     |
+| Last session | 2026-08-04 s4 -- walk stopped at step 12 on F-1;   |
+|              | state-shaped page rebuilt, gate closed ("Designs   |
+|              | better"); sheet atomic (32 steps) + label oracle;  |
+|              | all suites green, sha 485b2463 supersedes          |
+| Next action  | Fresh P4 walk, one sitting, ~15 min; see state.md  |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

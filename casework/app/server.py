@@ -147,9 +147,16 @@ class Handler(BaseHTTPRequestHandler):
         pay = ""
         if balance > 0:
             pay = (f'<form method="post" action="/invoice/{segs[1]}/pay">'
-                   '<input name="sim_token" placeholder="SYNTHETIC-...">'
-                   '<select name="kind"><option value="card">card</option>'
+                   '<label>Synthetic payment token '
+                   '<input name="sim_token" '
+                   'placeholder="SYNTHETIC-VISA-DEMO" '
+                   'autocomplete="off"></label>'
+                   '<p>Use the demo token shown above. This is not a real '
+                   'card number.</p>'
+                   '<label>Payment method <select name="kind">'
+                   '<option value="card">card</option>'
                    '<option value="echeck">echeck</option></select>'
+                   '</label>'
                    '<button type="submit">Pay</button></form>')
         body = (f"<h1>{strings[inv['invoice_type']]} #{inv['number']}</h1>"
                 f"<ul>{rows}</ul>"
@@ -163,12 +170,16 @@ class Handler(BaseHTTPRequestHandler):
         if share is None:
             return self._deny(404, "This link is no longer available.")
         form = self._form_body()
-        sim_token = form.get("sim_token", [""])[0]
+        sim_token = form.get("sim_token", [""])[0].strip()
         kind = form.get("kind", ["card"])[0]
         conn.actor.set("contact", share["recipient_contact_id"])
         try:
             from app import processor as proc
             try:
+                if not sim_token:
+                    raise proc.ProcessorError(
+                        "enter a synthetic payment token beginning with"
+                        " SYNTHETIC-")
                 billing.pay_online(conn, share["invoice_id"], sim_token,
                                    kind, _now()[:10])
             except (proc.ProcessorError, billing.BillingError) as ex:

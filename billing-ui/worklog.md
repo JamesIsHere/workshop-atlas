@@ -559,3 +559,224 @@ under-surfaces kills relative to hands-on (the intake finding
 came from hands, not decks). Walk day discriminates: if P4
 surfaces shape problems the decks passed, weight future gate
 reviews back toward hands-on.
+
+## 2026-08-04 -- s4: P4 walk day STARTED, PARKED at step 2;
+## sheet label drift found and closed
+
+Walk day launched per protocol: walk verifier quoted GREEN first
+("17 pass, 0 pending, 0 fail ... verdict GREEN" exit 0), fresh
+data/demo-walk-2026-08-04.db served on 8500, sheet handed over.
+James completed steps 1-2 (setup, client + matter) and STOPPED at
+step 3: the sheet said "set up the firm's two bank accounts" with
+no location. He then paused the walk entirely -- "I am so sick of
+doing this walkthrough" -- after repeated instruction-quality
+friction. WALK PARKED, not failed: db intact through step 2,
+verdict sheet blank, no sub-verdict touched.
+
+Root cause found on his "something's wrong with the system" push:
+demo-walk-protocol.md was the program's ONLY human-facing artifact
+with no oracle. Verifiers check behavior (routes, POSTs, db
+state), never the sheet's wording, so drafting drift surfaced
+exclusively in James's browser, every time. NOT a folder-structure
+problem (his hypothesis, checked and cleared with him).
+
+Fixes, all landed this session:
+- Sheet amended twice (recorded in its header, ordered by James
+  mid-walk as ratifier): (1) every step now names menu path +
+  control; (2) full label audit -- five defects fixed, including
+  an invented "choose Bill/Trust Request" control, "Issued date"
+  vs the rendered "Issue date", step 6's card title ("Processor
+  settlement"), step 10's control ("Save correction", not "Edit")
+  plus the unmentioned "Paid" tab. Steps 7-12 brought to uniform
+  sub-step grain. Data values and step semantics unchanged; walk
+  validity preserved.
+- NEW VERIFIER verify/check_sheet_labels.py: every quoted label
+  in the sheet's walk steps must exist in the rendering source
+  (app_ui/*.py + casework/app/server.py, adjacent f-string
+  literals joined). Quoted green: "sheet-label audit: 58 labels
+  checked, 0 not found" exit 0. Deliberately a SEPARATE file:
+  run_billing_ui_walk.py untouched, so the sealed x2 sha
+  a506f085 stands unbroken.
+- Feedback memory saved (full-paths-always): file paths absolute,
+  instruction steps name menu path + control label, verified
+  never guessed. His words: "for like the 10th time."
+
+METHOD: the oracle-first discipline was applied to everything
+EXCEPT the artifact facing the ratifier -- and that is exactly
+where all the friction accumulated. Human-facing prose needs
+oracles too; check_sheet_labels.py is the pattern (extract
+claims from prose, assert against source). Candidate for
+casework-ui's cold-run sheet when that child resumes.
+
+Resume note (recorder): timing marks were disrupted by the sheet
+defects; at resume, treat M0-M6 as N/A-with-cause or restart
+fresh -- driver's call at resume, not now. Friction log so far:
+(1) step 3 location missing [sheet defect, fixed]; sheet-defect
+class now closed by the new verifier.
+
+METHOD (s4, James, mid-park): "its exactly this why AI adoption
+is lagging." Generalized finding from the walk-day friction: an
+optimizing agent optimizes against the oracles it has; error
+mass migrates to unverified seams; the human at the seam becomes
+residual QA and experiences only exceptions, so the tool reads
+as a net slowdown even with output objectively up. One wrong
+label taxes trust in every future claim (multiplicative), so the
+human re-verifies everything and the automation dividend erodes.
+Implication for the method: every artifact/surface facing the
+ratifier gets an oracle, same as code (label audit is the first
+instance; demo-login fix queued as the second). Binding
+constraint on adoption is verification architecture at the human
+seam, not model capability. This program is now deliberately a
+testbed for that claim.
+
+## 2026-08-04 -- s4 cont: PAPERCUT LEDGER (James: "death by a
+## fucking million papercuts tonight" -- log each one)
+
+Running tally of every friction hit tonight, each with status:
+
+ # | Papercut                          | Status
+---+-----------------------------------+---------------------------
+ 1 | Sheet step 3 named no location    | FIXED -- every step now
+   | ("where?"); driver left hunting   | carries menu path +
+   | menus mid-walk                    | control label
+ 2 | File referenced by partial path;  | FIXED -- full-paths rule
+   | had to ask for the full one       | (state.md + auto-memory)
+ 3 | Sheet labels wrong 5 ways         | FIXED -- sheet re-drafted;
+   | (invented "choose Bill" control,  | check_sheet_labels.py now
+   | "Issued date", wrong card title,  | standing verifier, 58/58
+   | "Edit" vs "Save correction",      | green
+   | unmentioned "Paid" tab)           |
+ 4 | Resume died at login wall --      | SPECCED, QUEUED -- demo-
+   | forgot a password the sheet       | login prefill + no-expiry
+   | invented; MFA ceremony on a       | sessions on synthetic dbs;
+   | synthetic db                      | gate decision, awaiting
+   |                                   | James
+ 5 | Half-walked db on resume ("too    | FIXED for tonight -- fresh
+   | confusing"); parked state made    | db swapped behind 8500.
+   | re-entry cognitively expensive    | FINDING: demo walks should
+   |                                   | default to fresh-restart,
+   |                                   | not mid-db resume; resume
+   |                                   | is agent economy, not
+   |                                   | driver economy
+ 6 | Agent quipped "frictionless"      | NOTED -- interface: no
+   | mid-frustration                   | levity while the driver is
+   |                                   | eating friction
+
+Papercut 7 (fresh-restart attempt, step 2): sheet gave Vera's
+data as a bare slash-tuple "(Vera / Synthetic / email / phone)"
+-- no field mapping; "Synthetic" reads as a company name against
+a form split into Given name / Family name. FIXED: steps 1-2
+rewritten as "Field" = value lines (all labels source-verified,
+audit now 70 checked / 0 missing), plus explicit "Synthetic is
+her last name, not a company." AUDIT GAP EXPLAINED: the label
+audit checks that quoted labels EXIST on screens; data values
+were exempt, so a missing value->field mapping was invisible --
+absence of a claim can't fail an existence check. New fence
+added to check_sheet_labels.py: any slash-separated value tuple
+in the walk steps is now a FAIL; values must be pinned to field
+labels. Fence is pattern-scoped (catches the tuple form, not
+every conceivable unmapped value); full closure would mean
+generating the sheet from the same source as the forms --
+logged as an option, not built.
+
+Papercut 8 (step 2, restructured sheet): steps were not atomic
+-- step 2 spanned two screens (create client AND create matter),
+so finishing a screen left the driver expecting the next number
+while the sheet still owed work on the old one. James's rule,
+now the STEP RULE on the sheet: one step = one screen; "Go:" for
+navigation, "Field" = value lines, exactly one "End:" click (or
+"Observe:") per step. 12 narrative steps re-based into 32 atomic
+steps in parts A-J; timing marks re-pointed. Basis of the old
+numbering, honestly: story beats inherited from the machine
+verifier's checkpoints, never re-derived when screen-grain
+detail arrived -- unit-of-narration vs unit-of-execution
+mismatch. Audit extended with an atomicity fence (a step with
+two "End:" clicks FAILS); fence immediately caught the STEP
+RULE preamble's own notation quotes (exempted as NOTATION) --
+the audit now audits the sheet's structure, not just its
+labels. Post-restructure: 78 labels checked, 0 not found,
+0 fence failures, exit 0.
+
+WALK FINDING F-1 (step 12, James's hands, 2026-08-04): the
+invoice detail page fails the demo bar. His words: "this page
+has too much ... you feel like you finish an invoice and expect
+to add a bill but it just sits right below the invoice like its
+not attached or not in that billing family ... This page is a
+mess." Diagnosis: the page is MODEL-shaped, not TASK-shaped --
+six equal-weight cards (header / Charges + always-open add form
+/ Import (empty-state) / Payments (empty-state) / Record a
+payment with trust-only fields visible on direct payments /
+Client link), everything rendered in every state. This is
+interaction parity with Docketwise's defect creeping back in
+through "render every table as a card" -- in the exact module
+claiming CPA-grade superiority. Also a noun mismatch: screen
+says "Invoice #1", pill and sheet say bill.
+
+METHOD: the s3 discriminator FIRED. Gates 1-3 passed this page
+in three zero-kill decks; James's hands called it a mess at
+first contact. Deck review under-surfaces interaction findings;
+weight future gate reviews toward hands-on, as s3 predicted.
+
+## 2026-08-04 -- s4 cont: F-1 REDESIGN BUILT; mini-gate deck
+## banked; awaiting James's red-pen
+
+James's ruling on F-1: "Stop the walk and redesign now. When
+something's broken you have to fix it." Built same session:
+
+The invoice detail page is now STATE-shaped -- three lives:
+building (header + Charges card with the add form, nothing
+else); awaiting money (charges table with "Add another charge" /
+"Import saved charges and time" folds, then ONE "Collect $X"
+card whose paths each show only their own fields: "Record a
+direct payment (check, cash, wire)" / "Pay from client trust
+(earn-out)" / "Send the client a payment link"; trust requests:
+"Send the request to the client" [auto-open until first share] /
+"Record the deposit (received directly by the firm)"); paid
+(charges + payments history + client link -- no forms). All
+disclosure is native <details>/<summary>: zero-JS discipline
+holds. Rendering only: same POST routes, frozen casework
+modules untouched. Noun unified: pages title Bill #N / Trust
+request #N (sheet finding: screen said Invoice, sheet said
+bill).
+
+Defects found and fixed DURING the rebuild:
+- Shadowing bug (mine): payments-table loop reused `status` for
+  its refund pill and clobbered the invoice status after I
+  hoisted the computation; pill rendered empty. Renamed to
+  refund_pill; caught by the walk verifier's paid assertion.
+- Empty-bill "Paid" pill (pre-existing, surfaced by frame 1 of
+  the deck): zero balance derives "paid" in the core, so an
+  EMPTY bill wore a Paid pill. Rendering fix: no status pill
+  until charges exist.
+
+VERIFIER EDITS DISCLOSED (run_billing_ui_walk.py, own coverage;
+routes/behavior checks untouched): 3 content assertions track
+the redesign -- state A asserts "Charges build the bill" and NO
+"<h1>Collect" (was: pay-card empty-state text); post-charge
+asserts "<h1>Collect $500.00</h1>" (was: "Record a payment");
+trust request state A asserts "Charges build the trust request".
+
+All suites green after rebuild, quoted this session:
+billing-ui walk 17/17 x2, timing-stripped sha 485b2463 IDENTICAL
+both runs -- SUPERSEDES a506f085 (F-1 redesign is the delta);
+ui-walk 13; spine 107; billing 25; fiduciary --seeded 8.
+Sheet steps 10-15/21-23 rewritten for the new page; label audit
+79 checked / 0 not found, exit 0.
+
+Mini-gate deck (5 frames) banked to
+verify/gate-receipts/gate-f1-deck/: bill empty / bill awaiting
+(folds closed) / direct fold open / bill paid / trust request.
+Gate db data/gate-f1-2026-08-04.db SERVING ON 8500 for James's
+own hands (billing.walk@synthetic.test / billing-walk-pass).
+GATE OPEN: James red-pens the deck + clicks; PASS -> fresh walk
+on the atomic sheet; kills -> iterate (anti-stall: 2 per screen).
+
+GATE F-1 CLOSED (2026-08-04, James): "Designs better" -- PASS,
+zero kills on the redesigned page. The F-1 fail axis is cleared
+pending the re-walk. Remaining to contract: ONE item -- the
+fresh P4 walk on the atomic 32-step sheet, James driving, then
+fiduciary on the walked db, eyeball, three-part verdict.
+
+Wind-down at James's request ("park it"): fresh walk queued for
+a new session. Gate server left on 8500 (gate-f1 db). state.md
+rewritten clean; commit + push ordered by James.

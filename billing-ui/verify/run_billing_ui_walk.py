@@ -206,9 +206,22 @@ def step_consult_bill_direct(w):
     m = re.search(r"/billing/invoices/(\d+)$", url)
     assert m is not None, f"invoice create landed on {url}"
     w.consult_id = int(m.group(1))
-    w.browser.post(f"/billing/invoices/{w.consult_id}/charges", {
+    # F-1 redesign (2026-08-04): state A is build-only -- the add
+    # form leads, and NO collect surface exists yet.
+    assert "Charges build the bill" in page, \
+        "new bill does not explain the charge-before-payment sequence"
+    assert "<h1>Collect" not in page, \
+        "Collect card appeared before the bill had a balance"
+    assert ">Record payment</button>" not in page, \
+        "payment submission appeared before the bill had a balance"
+    _s, _u, page = w.browser.post(
+        f"/billing/invoices/{w.consult_id}/charges", {
         "charge_type": "service", "description": "SYNTH consultation",
-        "amount": "500.00"})
+        "amount": "500.00", "charge_date": "2026-08-01"})
+    assert "SYNTH consultation" in page and "2026-08-01" in page
+    assert "<h1>Collect $500.00</h1>" in page \
+        and ">Record payment</button>" in page, \
+        "Collect card did not appear after the charge"
     _s, _u, page = w.browser.post(
         f"/billing/invoices/{w.consult_id}/pay", {
             "method": "direct", "amount": "500.00",
@@ -228,9 +241,18 @@ def step_trust_request_online(w):
     m = re.search(r"/billing/invoices/(\d+)$", url)
     assert m is not None, url
     w.trust_request_id = int(m.group(1))
-    w.browser.post(f"/billing/invoices/{w.trust_request_id}/charges", {
+    assert "Trust Request" in page and "Deposits to" in page
+    assert "Charges build the trust request" in page
+    _s, _u, page = w.browser.post(
+        f"/billing/invoices/{w.trust_request_id}/charges", {
         "charge_type": "service",
-        "description": "SYNTH retainer request", "amount": "5000.00"})
+        "description": "SYNTH retainer request", "amount": "5000.00",
+        "charge_date": "2026-08-01"})
+    assert "SYNTH retainer request" in page and "2026-08-01" in page
+    assert "Record deposit" in page, \
+        "firm-side direct-deposit control missing after charge"
+    assert "Create client link" in page, \
+        "client-link action does not match the walk sheet"
     _s, _u, page = w.browser.post(
         f"/billing/invoices/{w.trust_request_id}/share", {})
     # Share tokens are casework's SYNTH-INV-<id>-<n> format (frozen
@@ -242,10 +264,28 @@ def step_trust_request_online(w):
     assert m is not None, "client pay link not shown after share"
     link = m.group(1)
     client = Browser("")
+    status, _u, page = client._open(urllib.request.Request(link))
+    assert status == 200, f"client invoice GET returned {status}"
+    assert "Synthetic payment token" in page, \
+        "client payment field lacks its walk-sheet label"
+    assert "SYNTHETIC-VISA-DEMO" in page, \
+        "client payment field lacks the exact demo token hint"
+    assert "This is not a real card number" in page, \
+        "client payment form does not explain the simulator boundary"
+    assert ">Pay</button>" in page, "client payment action missing"
     status, _u, page = client._open(urllib.request.Request(
         link + "/pay",
         data=urllib.parse.urlencode(
-            {"sim_token": "SYNTHETIC-VISA-WALK",
+            {"sim_token": "", "kind": "card"}).encode(),
+        method="POST", headers={"Content-Type":
+                                "application/x-www-form-urlencoded"}))
+    assert status == 200
+    assert "enter a synthetic payment token beginning with SYNTHETIC-" \
+        in page, "blank token does not return an actionable correction"
+    status, _u, page = client._open(urllib.request.Request(
+        link + "/pay",
+        data=urllib.parse.urlencode(
+            {"sim_token": "SYNTHETIC-VISA-DEMO",
              "kind": "card"}).encode(),
         method="POST", headers={"Content-Type":
                                 "application/x-www-form-urlencoded"}))

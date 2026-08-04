@@ -61,6 +61,13 @@ span.money { display: block; text-align: right;
             padding: 0.8rem 1.1rem; margin: 0.6rem 0; }
 h2.formhead { font-size: 1rem; margin: 1.2rem 0 0; color: #4a5261;
               border-top: 1px solid #e7eaee; padding-top: 1rem; }
+details.fold { border-top: 1px solid #e7eaee; padding: 0.55rem 0 0.3rem; }
+details.fold summary { cursor: pointer; color: #2456a6;
+                       font-weight: 600; font-size: 0.95rem; }
+details.fold summary:hover { text-decoration: underline; }
+details.fold .foldbody { padding: 0.6rem 0 0.4rem; }
+p.due { font-size: 1.15rem; margin: 0.7rem 0 0;
+        font-variant-numeric: tabular-nums; }
 label.pick { display: block; margin: 0.35rem 0; font-size: 0.95rem;
              font-variant-numeric: tabular-nums; }
 form.inline { display: inline-block; margin-right: 0.6rem; }
@@ -145,6 +152,21 @@ def _type_pill(row):
     return (_pill("trust", "Trust Request")
             if row["invoice_type"] == "trust_request"
             else _pill("bill", "Bill"))
+
+
+def _noun(inv):
+    """One noun per invoice type, everywhere a human reads it (walk
+    finding F-1: sheet said bill, screen said Invoice)."""
+    return ("Trust request" if inv["invoice_type"] == "trust_request"
+            else "Bill")
+
+
+def _fold(summary, inner, open_=False):
+    """Native no-JS disclosure: the page's secondary actions live
+    behind <details> so each state shows one primary thing."""
+    return (f"<details class='fold'{' open' if open_ else ''}>"
+            f"<summary>{summary}</summary>"
+            f"<div class='foldbody'>{inner}</div></details>")
 
 
 # --- screens ----------------------------------------------------------
@@ -232,6 +254,10 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
     charges = billing.invoice_charges(conn, invoice_id)
     payments = reads.invoice_payments_of(conn, invoice_id)
     balance = billing.invoice_balance(conn, invoice_id)
+    status = billing.invoice_status(conn, invoice_id)
+    noun = _noun(inv)
+    title = f"{noun} #{inv['number']}"
+    is_trust = inv["invoice_type"] == "trust_request"
 
     kv = [("Client", html.link(f"/contacts/{contact['id']}",
                                contact["display_name"]))]
@@ -258,9 +284,7 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
         ctable = html.table(["Description", "Type", "Date", "Amount"],
                             crows)
     else:
-        ctable = html.empty_state(
-            "No charges yet. Add a charge, import saved charges, or"
-            " pull in time entries to build this invoice.")
+        ctable = ""  # state A renders the add form, not filler
 
     if payments:
         prows = []
@@ -270,27 +294,24 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
                       "direct": "direct"}.get(p["method"], p["method"])
             note = (" (online, simulated processor)"
                     if p["method"] in ("sim_card", "sim_echeck") else "")
-            status = (_pill("refunded") if p["refunded"]
-                      else "")
+            refund_pill = (_pill("refunded") if p["refunded"]
+                           else "")
             prows.append([html.link(f"/billing/payments/{p['id']}",
                                     p["payment_date"]),
                           html.esc(method + note),
-                          status,
+                          refund_pill,
                           f"<span class='money'>"
                           f"{fmt_cents(p['amount_cents'])}</span>"])
         ptable = html.table(["Date", "Method", "", "Amount"], prows)
     else:
-        ptable = html.empty_state(
-            "No payments recorded. Payments appear here with their"
-            " full history -- edits become reversals, never"
-            " rewrites.")
-
-    status = billing.invoice_status(conn, invoice_id)
+        ptable = ""  # the Payments card only exists once one does
 
     charge_form = (
         f"<form method='post'"
         f" action='/billing/invoices/{invoice_id}/charges'>"
         f"<h2 class='formhead'>Add a charge</h2>"
+        f"<p class='hint'>Charges build the {noun.lower()}. Collect"
+        f" controls appear once there is a balance due.</p>"
         + html.field("Description", "description")
         + html.field("Amount", "amount",
                      hint="Dollars and cents, e.g. 500.00")
@@ -301,7 +322,7 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
                      required=False)
         + "<button class='primary'>Add charge</button></form>")
 
-    import_card = ""
+    import_inner = ""
     if inv["invoice_type"] == "bill":
         saved = billing.list_saved_charges(conn)
         open_time = reads.unbilled_time_entries(conn)
@@ -327,26 +348,59 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
                 f" ({fmt_duration(t['duration_seconds'])}) -- {tail}"
                 f"</label>")
         if boxes:
-            inner = (
+            import_inner = (
                 f"<form method='post'"
                 f" action='/billing/invoices/{invoice_id}/import'>"
                 + "".join(boxes)
                 + "<button class='primary'>Import selected</button>"
                   "</form>")
-        else:
-            inner = html.empty_state(
-                "Nothing waiting to import. Saved charges and open"
-                " time entries appear here for one-step import.")
-        import_card = (f"<div class='card'><h1>Import charges</h1>"
-                       f"{inner}</div>")
+
+    shares = reads.invoice_shares_of(conn, invoice_id)
+    share_rows = "".join(
+        f"<code class='copy'>{h.server.client_base}"
+        f"/invoice/{html.esc(s['token'])}</code>"
+        for s in shares)
+    online = [p for p in payments
+              if p["method"] in ("sim_card", "sim_echeck")]
+    online_line = ""
+    if online:
+        settled = all(p["journal_entry_id"] for p in online)
+        online_line = (
+            "<p class='hint'>Online payment received via the"
+            " simulated processor"
+            + (" -- settled to the bank."
+               if settled else " -- awaiting settlement.") + "</p>")
+    share_block = (
+        online_line
+        + f"<p class='hint'>A private link lets the client view,"
+          f" download, and pay this {noun.lower()} online.</p>"
+        + share_rows
+        + f"<form class='inline' method='post'"
+          f" action='/billing/invoices/{invoice_id}/share'>"
+          f"<button class='primary'>Create client link</button>"
+          f"</form>"
+          f"<form class='inline' method='post'"
+          f" action='/billing/invoices/{invoice_id}/email'>"
+          f"<button class='primary'>Email to client</button>"
+          f"</form>"
+          f"<p class='hint'>Email sends the link to the client's"
+          f" address on file (synthetic outbox).</p>")
 
     banks = ledger.list_bank_accounts(conn)
-    pay_card = ""
+    ops = [b for b in banks if b["kind"] == "operating_bank"]
+    trusts = [b for b in banks if b["kind"] == "trust_bank"]
+    collect_card = ""
     if balance > 0:
-        if inv["invoice_type"] == "trust_request":
+        if not banks:
+            paths = ("<p class='hint'>Recording a payment needs the"
+                     " firm's bank accounts.</p>"
+                     "<div class='actions'>"
+                     "<a href='/billing/accounts/new'>Create the"
+                     " bank accounts first</a></div>")
+        elif is_trust:
             dest = reads.ledger_account_row(conn,
                                             inv["trust_account_id"])
-            pay_form = (
+            deposit_form = (
                 f"<form method='post'"
                 f" action='/billing/invoices/{invoice_id}/pay'>"
                 f"<input type='hidden' name='method' value='direct'>"
@@ -359,16 +413,16 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
                              ftype="date", value=_today())
                 + "<button class='primary'>Record deposit</button>"
                   "</form>")
+            paths = (
+                _fold("Send the request to the client", share_block,
+                      open_=not shares)
+                + _fold("Record the deposit (received directly by"
+                        " the firm)", deposit_form))
         else:
-            ops = [b for b in banks if b["kind"] == "operating_bank"]
-            trusts = [b for b in banks if b["kind"] == "trust_bank"]
-            pay_form = (
+            direct_form = (
                 f"<form method='post'"
                 f" action='/billing/invoices/{invoice_id}/pay'>"
-                + _select("Method", "method",
-                          [("direct", "Direct (check, cash, wire)"),
-                           ("trust_transfer",
-                            "From client trust (earn-out)")])
+                f"<input type='hidden' name='method' value='direct'>"
                 + html.field("Amount", "amount",
                              value=fmt_cents(balance))
                 + html.field("Date", "payment_date", ftype="date",
@@ -376,76 +430,88 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
                 + _select("Deposit to", "destination_account_id",
                           [(b["id"], b["name"]) for b in banks],
                           selected=(ops[0]["id"] if ops else None))
-                + _select("From trust account",
-                          "source_account_id",
-                          [(b["id"], b["name"]) for b in trusts],
-                          blank="-- earn-out only --",
-                          hint="Only used when paying from client"
-                               " trust: earned fees move trust ->"
-                               " operating.")
-                + _select("Trust funds held for",
-                          "source_trust_level",
-                          [("client", "The client"),
-                           ("matter", "The matter")])
                 + "<button class='primary'>Record payment</button>"
                   "</form>")
-        pay_card = (f"<div class='card'><h1>Record a payment</h1>"
-                    f"{pay_form}</div>")
+            trust_fold = ""
+            if trusts:
+                trust_fold = _fold(
+                    "Pay from client trust (earn-out)",
+                    f"<form method='post'"
+                    f" action='/billing/invoices/{invoice_id}/pay'>"
+                    f"<input type='hidden' name='method'"
+                    f" value='trust_transfer'>"
+                    f"<p class='hint'>Earned fees move trust ->"
+                    f" operating; the client's sub-ledger releases"
+                    f" the funds.</p>"
+                    + html.field("Amount", "amount",
+                                 value=fmt_cents(balance))
+                    + html.field("Date", "payment_date",
+                                 ftype="date", value=_today())
+                    + _select("From trust account",
+                              "source_account_id",
+                              [(b["id"], b["name"])
+                               for b in trusts])
+                    + _select("Trust funds held for",
+                              "source_trust_level",
+                              [("client", "The client"),
+                               ("matter", "The matter")])
+                    + _select("Deposit to",
+                              "destination_account_id",
+                              [(b["id"], b["name"]) for b in banks],
+                              selected=(ops[0]["id"] if ops
+                                        else None))
+                    + "<button class='primary'>Record payment"
+                      "</button></form>")
+            paths = (
+                _fold("Record a direct payment (check, cash, wire)",
+                      direct_form)
+                + trust_fold
+                + _fold("Send the client a payment link",
+                        share_block))
+        collect_card = (f"<div class='card'><h1>Collect"
+                        f" {dollars(balance)}</h1>{paths}</div>")
 
-    shares = reads.invoice_shares_of(conn, invoice_id)
-    share_rows = "".join(
-        f"<code class='copy'>{h.server.client_base}"
-        f"/invoice/{html.esc(s['token'])}</code>"
-        for s in shares)
-    if not shares:
-        share_rows = html.empty_state(
-            "Not shared yet. Sharing creates a private client link"
-            " to view, download, and pay this "
-            + ("trust request" if inv["invoice_type"]
-               == "trust_request" else "invoice") + " online.")
-    online = [p for p in payments
-              if p["method"] in ("sim_card", "sim_echeck")]
-    online_line = ""
-    if online:
-        settled = all(p["journal_entry_id"] for p in online)
-        online_line = (
-            "<p class='hint'>Online payment received via the"
-            " simulated processor"
-            + (" -- settled to the bank."
-               if settled else " -- awaiting settlement.") + "</p>")
-    share_card = (
-        f"<div class='card'><h1>Client link</h1>{online_line}"
-        f"{share_rows}"
-        f"<form class='inline' method='post'"
-        f" action='/billing/invoices/{invoice_id}/share'>"
-        f"<button class='primary'>Create client link</button>"
-        f"</form>"
-        f"<form class='inline' method='post'"
-        f" action='/billing/invoices/{invoice_id}/email'>"
-        f"<button class='primary'>Email to client</button>"
-        f"</form>"
-        f"<p class='hint'>Email sends the link to the client's"
-        f" address on file (synthetic outbox).</p></div>")
+    due_line = (f"<p class='due'><strong>Balance due:"
+                f" {dollars(balance)}</strong></p>"
+                if balance > 0 else "")
+    pdf_link = (f"<div class='actions'>"
+                f"<a class='quiet' href='/billing/invoices/"
+                f"{invoice_id}/pdf'>Download PDF</a></div>"
+                if charges else "")
+    # an invoice with no charges derives "paid" (zero balance) in
+    # the core -- presenting that pill on an empty bill is a lie of
+    # rendering, so no status pill until charges exist
+    status_pill = (_pill(status, status.capitalize()) if charges
+                   else "")
+    header = (f"<div class='card'><h1>{html.esc(title)} "
+              + ("".join((_type_pill(inv), " ", status_pill)))
+              + f"</h1>{kvs}{due_line}{pdf_link}</div>")
 
-    body = (
-        _crumbs(("Billing", "/billing"),
-                (f"Invoice #{inv['number']}", None))
-        + html.error_box(error)
-        + f"<div class='card'><h1>Invoice #{inv['number']} "
-        + ("".join((_type_pill(inv), " ",
-                    _pill(status, status.capitalize())))) + "</h1>"
-        + kvs
-        + f"<div class='actions'>"
-          f"<a class='quiet' href='/billing/invoices/{invoice_id}"
-          f"/pdf'>Download PDF</a></div></div>"
-        + f"<div class='card'><h1>Charges</h1>{ctable}{charge_form}"
-          f"</div>"
-        + import_card
-        + f"<div class='card'><h1>Payments</h1>{ptable}"
-        + f"<p><strong>Balance due:"
-          f" {dollars(max(balance, 0))}</strong></p></div>"
-        + pay_card + share_card)
-    _page(h, f"Invoice #{inv['number']}", body, user)
+    # One page, three lives (walk finding F-1): building shows the
+    # add form and nothing else; awaiting money leads with Collect;
+    # paid keeps only the record.
+    if not charges:
+        charges_card = (f"<div class='card'><h1>Charges</h1>"
+                        f"{charge_form}{import_inner}</div>")
+        rest = ""
+    else:
+        folds = _fold("Add another charge", charge_form)
+        if import_inner:
+            folds += _fold("Import saved charges and time",
+                           import_inner)
+        charges_card = (f"<div class='card'><h1>Charges</h1>"
+                        f"{ctable}{folds}</div>")
+        payments_card = (f"<div class='card'><h1>Payments</h1>"
+                         f"{ptable}</div>") if payments else ""
+        if balance > 0:
+            rest = collect_card + payments_card
+        else:
+            rest = payments_card + (
+                f"<div class='card'><h1>Client link</h1>"
+                f"{share_block}</div>")
+    body = (_crumbs(("Billing", "/billing"), (title, None))
+            + html.error_box(error) + header + charges_card + rest)
+    _page(h, title, body, user)
 
 
 def trust_overview(h, conn, user, error=None):
@@ -759,8 +825,8 @@ def payment_detail(h, conn, user, payment_id, error=None):
     assoc = next((c for c in charges
                   if c["id"] == p["associated_charge_id"]), None)
 
-    kv = [("Invoice", html.link(f"/billing/invoices/{inv['id']}",
-                                f"Invoice #{inv['number']}")),
+    kv = [(_noun(inv), html.link(f"/billing/invoices/{inv['id']}",
+                                 f"{_noun(inv)} #{inv['number']}")),
           ("Method", html.esc(method)),
           ("Amount", f"<span class='money'>"
                      f"{fmt_cents(p['amount_cents'])}</span>"),
@@ -864,7 +930,7 @@ def payment_detail(h, conn, user, payment_id, error=None):
 
     status_pill = _pill("refunded") if p["refunded"] else ""
     body = (_crumbs(("Billing", "/billing"),
-                    (f"Invoice #{inv['number']}",
+                    (f"{_noun(inv)} #{inv['number']}",
                      f"/billing/invoices/{inv['id']}"),
                     (f"Payment {payment_id}", None))
             + html.error_box(error)

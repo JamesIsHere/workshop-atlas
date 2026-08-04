@@ -99,3 +99,30 @@ session. Delete = archive applies: nothing in spikes/ is destroyed.
 - The spec corpus records facts about Docketwise with citations -- it is
   a spec, not a brainstorm. Design ideas for our own product go to a
   child's log-don't-build machinery, not into corpus entries.
+
+## Interface with James (ratified 2026-08-04)
+
+James is the ratifier, not a developer. The state files maintain AGENT
+continuity, not his -- a multi-child program scales past the human
+ratifier's context long before it scales past the agent's. His early
+overload symptom is a forming rubber stamp ("if you're saying you're
+capable, that's fine"); gate verdicts signed on trust are worthless.
+Rules, all incident-born (2026-08-03/04 sessions):
+
+- Refer to children by on-disk folder name (docketwise-spec, casework,
+  casework-ui, casework-billing, billing-ui) in ALL user-facing prose.
+  "Child N" is roster-internal jargon; he navigates by folder names in
+  Explorer and ordinals map to nothing on screen. The Children table
+  above may keep its column; conversation may not.
+- His surface is the PRODUCT plus ONE plain-language question per
+  touchpoint. Translate all jargon inline -- phase numbers, suite
+  tallies, verifier names. At a gate, the question is the LAST sentence
+  of the message, nothing after it; the decision queue stays in
+  state.md, never in chat.
+- Re-issue a plain-terms map of the whole program at every gate and on
+  demand.
+- One stable URL forever: port 8500 always; swap databases behind the
+  port, never hand him a new port.
+- Dev-practice tips land when translated into audit/finance analogies
+  (engagement partner, month-end close, controls) -- offer them when
+  process feels bad to him.
