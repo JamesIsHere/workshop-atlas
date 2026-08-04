@@ -544,6 +544,13 @@ result.md.
 Wind-down at James's request (context reset). Git initialized at
 the atlas program root per his commit-and-push instruction (the
 workshop's git-when-earned ruling: this is the earning event).
+Remote: github.com/JamesIsHere/workshop-atlas (PRIVATE; the name
+'atlas' was taken on his account by an unrelated July project,
+inspected and left untouched). Root commit 65b1dfb, 571 files;
+*.db, data/, storage/, .env ignored -- cold-run dbs carry
+real-ish PII and never leave the machine. Interface-lesson
+memory saved to auto-memory
+(james-interface-product-plus-one-question).
 
 METHOD: hybrid mode s3 tally -- three phases built unattended,
 three gates closed on decks, zero kills total. Either the
