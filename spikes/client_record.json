@@ -1,0 +1,25 @@
+{
+  "attorney": {
+    "firstName": "Maria",
+    "lastName": "Rodriguez",
+    "middleName": "Elena",
+    "uscisOnlineAcct": "987654321098",
+    "phone": "202-555-0199",
+    "streetAddress": "100 Pennsylvania Ave NW",
+    "aptSteFlr": "Suite 400",
+    "city": "Washington",
+    "state": "DC",
+    "zipCode": "20006"
+  },
+  "client": {
+    "firstName": "Jonathan",
+    "lastName": "Smith",
+    "middleName": "Alexander",
+    "phone": "202-555-0144",
+    "streetAddress": "500 7th Street",
+    "aptSteFlr": "Apt 2B",
+    "city": "Washington",
+    "state": "DC",
+    "zipCode": "20001"
+  }
+}

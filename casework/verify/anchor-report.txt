@@ -1,0 +1,17 @@
+# anchor-report -- verifier 2 (live walk on a fresh db)
+
+run started: 2026-08-03T05:19:58Z
+
+PASS fresh-db install                    0.514s  schema cold-applied; 30 fact defs; 5 forms in library
+PASS first admin + MFA login             0.075s  admin id 1; MFA enrolled (app); session live
+PASS create contact                      0.000s  contact id 1 (no family name yet); audit: user 1
+PASS create matter                       0.000s  matter id 1 on contact 1; audit: user
+PASS smart form + invitation             0.001s  smart form 1 (g-28); invitation emailed to nova.client@synthetic.test; token from email body
+PASS client intake over HTTP             0.551s  5 answers over HTTP; bio.family_name in fact store, actor contact 1; invitation Returned for Review
+PASS G-28 render + read-back             0.170s  G-28 rendered (577128 bytes); 4 fields read back correct across client/firm/preparer origins
+PASS deadline + reminder tick            0.002s  event 1 at T+7d; 2-day reminder fired by tick into outbox, once, to the assignee
+PASS audit chain continuity              0.000s  7 legs present, story-ordered (audit ids 1..78)
+PASS supporting checks on walked db      0.008s  all 5 checks pass on the anchor db
+
+total: 1.322s  budget: 900s (within)
+verdict: PASS

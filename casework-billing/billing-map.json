@@ -1,0 +1,189 @@
+{
+  "meta": {
+    "generated": "2026-08-03",
+    "unit": "P0",
+    "status": "RATIFIED by James 2026-08-03 (P0 gate: map + ledger DDL draft + F-check list together; worklog s1). Class changes after this point are Approval-required (goal.md). ALL 25 GREEN at close 2026-08-03 (billing-report.txt exit 0 x2 byte-identical).",
+    "module_total": 25,
+    "class_counts": {
+      "direct": 21,
+      "adapted": 4,
+      "parked": 0
+    },
+    "corpus": "../docketwise-spec/corpus/invoicing-and-trust-accounting.md (sealed; cite by id, never edit)",
+    "test_id_convention": "test_ + entry id with [.-] replaced by _",
+    "status_values": [
+      "pending",
+      "green",
+      "red"
+    ],
+    "fiduciary_note": "The F1-F8 fiduciary suite is contract scope (goal.md verifier 2), sourced to the 2026-08-01 strategic flag, NOT to corpus entries; it is deliberately absent from this parity map and runs as its own verifier.",
+    "design_notes": [
+      "time-entry-invoice-import is DIRECT (criterion testable as written) but rides our rate design (goal.md decision default 4: per-user default hourly rate + per-entry override, half-up cent rounding) because the corpus attests no rate mechanism.",
+      "trust-requests carries the recorded payment-method source conflict (fx-0071 vs fx-0061/fx-0065); v1 accepts both direct and simulated-online payment (decision default 3). The corpus conflict record is untouched.",
+      "bulk-invoice-sharing: fx-0056's swapped headings ambiguity is noted in the corpus; both modes are attested and both are built, so the ambiguity does not affect the test."
+    ],
+    "review_flags": [
+      "SMS share paths adapted to email-only across all sharing entries (program precedent: SMS deferred with prejudice, A2P 10DLC plumbing).",
+      "Client-portal share/pay paths adapted to shared-link pages (portal is a deferred module).",
+      "LawPay-dependent behaviors adapted to the deterministic SimProcessor behind the FeeSplitProcessor interface (goal.md decision default 3)."
+    ]
+  },
+  "entries": [
+    {
+      "id": "invoicing-and-trust-accounting.module-exists",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_module_exists",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.invoice-creation",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_invoice_creation",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.trust-requests",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_trust_requests",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.trust-bank-accounts",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_trust_bank_accounts",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.trust-ledger",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_trust_ledger",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.trust-transfer-payment",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_trust_transfer_payment",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.trust-disbursements",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_trust_disbursements",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.direct-payment-recording",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_direct_payment_recording",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.payment-editing",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_payment_editing",
+      "status": "green",
+      "design_note": "Outcome-level criterion met by reversal+repost (goal.md constraint, red-pen r2): the payment ROW updates; the journal corrects by reversal pair. The test asserts the visible outcome AND that no journal row mutated."
+    },
+    {
+      "id": "invoicing-and-trust-accounting.payment-refunds",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_payment_refunds",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.payment-charge-association",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_payment_charge_association",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.online-card-payment",
+      "class": "adapted",
+      "test": "test_invoicing_and_trust_accounting_online_card_payment",
+      "status": "green",
+      "adapted_criterion": "Client opens a shared-invoice link and completes the payment form -> the payment is processed by the simulated fee-split processor (card or eCheck, synthetic tokens only) and recorded against the invoice with the correct gross/fee posting split. LawPay is replaced by the deterministic SimProcessor behind the FeeSplitProcessor interface; the portal Pay button is replaced by the shared-link pay page (portal is a deferred module); real processing is post-v1 and Approval-required."
+    },
+    {
+      "id": "invoicing-and-trust-accounting.invoice-sharing",
+      "class": "adapted",
+      "test": "test_invoicing_and_trust_accounting_invoice_sharing",
+      "status": "green",
+      "adapted_criterion": "User clicks Share on an invoice and selects a recipient contact (need not be the matter's primary contact) -> the contact receives an email with a link to view and download the invoice PDF. Email is the only channel in v1 (SMS deferred with prejudice, program precedent); print is satisfied by the PDF download; the portal path belongs to the deferred client-portal module."
+    },
+    {
+      "id": "invoicing-and-trust-accounting.payment-reminders",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_payment_reminders",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.bulk-invoice-sharing",
+      "class": "adapted",
+      "test": "test_invoicing_and_trust_accounting_bulk_invoice_sharing",
+      "status": "green",
+      "adapted_criterion": "User selects multiple invoices and shares them by email in a chosen mode -> either all invoices go to one contact as a zip, or each invoice goes to its own contact as an individual link, per the chosen mode. Email-only (SMS adapted out, program precedent); both attested modes are built."
+    },
+    {
+      "id": "invoicing-and-trust-accounting.bulk-invoice-download",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_bulk_invoice_download",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.automatic-late-fees",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_automatic_late_fees",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.saved-charges",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_saved_charges",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.payment-plans",
+      "class": "adapted",
+      "test": "test_invoicing_and_trust_accounting_payment_plans",
+      "status": "green",
+      "adapted_criterion": "User activates a Payment Plan on an invoice with frequency, installment amount, and start date -> installment reminders follow the attested cadence (7 days before, due day, 7 after), and with auto-charge enabled the simulated processor debits the synthetic payment method each time an installment falls due, posting per the fee-split recipe. Auto-charge rides SimProcessor (LawPay adapted out); config surface bounded to attested fields (red-pen r4)."
+    },
+    {
+      "id": "invoicing-and-trust-accounting.time-tracking",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_time_tracking",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.time-entry-invoice-import",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_time_entry_invoice_import",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.invoice-translation",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_invoice_translation",
+      "status": "green",
+      "design_note": "Template chrome only (red-pen r5): Spanish string table + language setting + render hook; the test also asserts fx-0052's exclusion list STAYS untranslated."
+    },
+    {
+      "id": "invoicing-and-trust-accounting.invoice-access-permissions",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_invoice_access_permissions",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.default-invoice-settings",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_default_invoice_settings",
+      "status": "green"
+    },
+    {
+      "id": "invoicing-and-trust-accounting.global-invoice-numbering",
+      "class": "direct",
+      "test": "test_invoicing_and_trust_accounting_global_invoice_numbering",
+      "status": "green"
+    }
+  ]
+}

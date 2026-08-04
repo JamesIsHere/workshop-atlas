@@ -1,0 +1,135 @@
+{
+  "code": "i-130",
+  "title": "Petition for Alien Relative",
+  "agency": "USCIS",
+  "edition": "04/01/24",
+  "efilable": 1,
+  "pdf": "i-130.pdf",
+  "roles": [
+    "petitioner",
+    "beneficiary"
+  ],
+  "primary_role": "petitioner",
+  "tabs": [
+    "Relationship",
+    "Petitioner",
+    "Beneficiary"
+  ],
+  "questions": [
+    {
+      "key": "q.i130.rel_spouse",
+      "label": "I am filing for my spouse",
+      "qtype": "boolean",
+      "tab": "Relationship",
+      "pdf_fields": [
+        "form1[0].#subform[0].Pt1Line1_Spouse[0]"
+      ]
+    },
+    {
+      "key": "q.i130.petitioner_family_name",
+      "label": "Petitioner family name",
+      "qtype": "text",
+      "tab": "Petitioner",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "petitioner",
+          "key": "bio.family_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Pt2Line4a_FamilyName[0]"
+      ]
+    },
+    {
+      "key": "q.i130.petitioner_given_name",
+      "label": "Petitioner given name",
+      "qtype": "text",
+      "tab": "Petitioner",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "petitioner",
+          "key": "bio.given_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Pt2Line4b_GivenName[0]"
+      ]
+    },
+    {
+      "key": "q.i130.beneficiary_a_number",
+      "label": "Beneficiary A-Number",
+      "qtype": "text",
+      "tab": "Beneficiary",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "beneficiary",
+          "key": "imm.a_number"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[4].#area[6].Pt4Line1_AlienNumber[0]"
+      ]
+    },
+    {
+      "key": "q.i130.beneficiary_family_name",
+      "label": "Beneficiary family name",
+      "qtype": "text",
+      "tab": "Beneficiary",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "beneficiary",
+          "key": "bio.family_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[4].Pt4Line4a_FamilyName[0]"
+      ]
+    },
+    {
+      "key": "q.i130.beneficiary_given_name",
+      "label": "Beneficiary given name",
+      "qtype": "text",
+      "tab": "Beneficiary",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "beneficiary",
+          "key": "bio.given_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[4].Pt4Line4b_GivenName[0]"
+      ]
+    },
+    {
+      "key": "q.i130.beneficiary_city_of_birth",
+      "label": "Beneficiary city or town of birth",
+      "qtype": "text",
+      "tab": "Beneficiary",
+      "pdf_fields": [
+        "form1[0].#subform[4].Pt4Line7_CityTownOfBirth[0]"
+      ]
+    },
+    {
+      "key": "q.i130.beneficiary_country_of_birth",
+      "label": "Beneficiary country of birth",
+      "qtype": "text",
+      "tab": "Beneficiary",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "beneficiary",
+          "key": "bio.country_of_birth"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[4].Pt4Line8_CountryOfBirth[0]"
+      ]
+    }
+  ],
+  "attachments": []
+}

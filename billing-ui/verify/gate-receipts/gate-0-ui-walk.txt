@@ -1,0 +1,2 @@
+ui-walk: 13 pass, 0 pending, 0 fail; sweeps pass; verdict GREEN
+report: C:\Users\james\Desktop\workshop\atlas\casework-ui\verify\ui-walk-report.txt

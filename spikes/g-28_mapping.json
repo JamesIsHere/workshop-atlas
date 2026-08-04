@@ -1,0 +1,102 @@
+{
+  "form_id": "G-28",
+  "form_name": "Notice of Entry of Appearance as Attorney or Accredited Representative",
+  "version": "2026",
+  "mappings": {
+    "form1[0].#subform[0].Pt1Line2a_FamilyName[0]": {
+      "db_path": "attorney.lastName",
+      "label": "Attorney Family Name (Last Name)",
+      "data_type": "string"
+    },
+    "form1[0].#subform[0].Pt1Line2b_GivenName[0]": {
+      "db_path": "attorney.firstName",
+      "label": "Attorney Given Name (First Name)",
+      "data_type": "string"
+    },
+    "form1[0].#subform[0].Pt1Line2c_MiddleName[0]": {
+      "db_path": "attorney.middleName",
+      "label": "Attorney Middle Name",
+      "data_type": "string"
+    },
+    "form1[0].#subform[0].#area[0].Pt1Line1_USCISOnlineAcctNumber[0]": {
+      "db_path": "attorney.uscisOnlineAcct",
+      "label": "Attorney USCIS Online Account Number",
+      "data_type": "numeric_string"
+    },
+    "form1[0].#subform[0].Line4_DaytimeTelephoneNumber[0]": {
+      "db_path": "attorney.phone",
+      "label": "Attorney Daytime Telephone Number",
+      "data_type": "phone"
+    },
+    "form1[0].#subform[0].Line3a_StreetNumber[0]": {
+      "db_path": "attorney.streetAddress",
+      "label": "Attorney Street Number and Name",
+      "data_type": "string"
+    },
+    "form1[0].#subform[0].Line3b_AptSteFlrNumber[0]": {
+      "db_path": "attorney.aptSteFlr",
+      "label": "Attorney Apt/Ste/Flr Number",
+      "data_type": "string"
+    },
+    "form1[0].#subform[0].Line3c_CityOrTown[0]": {
+      "db_path": "attorney.city",
+      "label": "Attorney City or Town",
+      "data_type": "string"
+    },
+    "form1[0].#subform[0].Line3d_State[0]": {
+      "db_path": "attorney.state",
+      "label": "Attorney State",
+      "data_type": "string"
+    },
+    "form1[0].#subform[0].Line3e_ZipCode[0]": {
+      "db_path": "attorney.zipCode",
+      "label": "Attorney Zip Code",
+      "data_type": "zip"
+    },
+    "form1[0].#subform[1].Pt3Line5a_FamilyName[0]": {
+      "db_path": "client.lastName",
+      "label": "Client Family Name (Last Name)",
+      "data_type": "string"
+    },
+    "form1[0].#subform[1].Pt3Line5b_GivenName[0]": {
+      "db_path": "client.firstName",
+      "label": "Client Given Name (First Name)",
+      "data_type": "string"
+    },
+    "form1[0].#subform[1].Pt3Line5c_MiddleName[0]": {
+      "db_path": "client.middleName",
+      "label": "Client Middle Name",
+      "data_type": "string"
+    },
+    "form1[0].#subform[1].Line10_MobileTelephoneNumber[0]": {
+      "db_path": "client.phone",
+      "label": "Client Mobile Telephone Number",
+      "data_type": "phone"
+    },
+    "form1[0].#subform[1].Line12a_StreetNumberName[0]": {
+      "db_path": "client.streetAddress",
+      "label": "Client Street Number and Name",
+      "data_type": "string"
+    },
+    "form1[0].#subform[1].Line12b_AptSteFlrNumber[0]": {
+      "db_path": "client.aptSteFlr",
+      "label": "Client Apt/Ste/Flr Number",
+      "data_type": "string"
+    },
+    "form1[0].#subform[1].Line12c_CityOrTown[0]": {
+      "db_path": "client.city",
+      "label": "Client City or Town",
+      "data_type": "string"
+    },
+    "form1[0].#subform[1].Line12d_State[0]": {
+      "db_path": "client.state",
+      "label": "Client State",
+      "data_type": "string"
+    },
+    "form1[0].#subform[1].Line12e_ZipCode[0]": {
+      "db_path": "client.zipCode",
+      "label": "Client Zip Code",
+      "data_type": "zip"
+    }
+  }
+}

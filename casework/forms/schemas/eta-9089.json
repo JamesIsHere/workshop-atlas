@@ -1,0 +1,154 @@
+{
+  "code": "eta-9089",
+  "title": "Application for Permanent Employment Certification",
+  "agency": "DOL",
+  "edition": "2023-FLAG",
+  "efilable": 0,
+  "pdf": "eta-9089.pdf",
+  "roles": [
+    "employer",
+    "worker"
+  ],
+  "primary_role": "worker",
+  "addendum_question": "q.eta9089.additional_info",
+  "tabs": [
+    "Employer",
+    "Wage",
+    "Worker"
+  ],
+  "questions": [
+    {
+      "key": "q.eta9089.employer_legal_name",
+      "label": "Employer legal business name",
+      "qtype": "text",
+      "tab": "Employer",
+      "source": {
+        "registry": {
+          "role": "employer",
+          "field": "display_name"
+        }
+      },
+      "pdf_fields": [
+        "1 Legal Business Name"
+      ]
+    },
+    {
+      "key": "q.eta9089.employer_fein",
+      "label": "Federal Employer Identification Number (FEIN)",
+      "qtype": "text",
+      "tab": "Employer",
+      "pdf_fields": [
+        "12 Federal Employer Identification Number FEIN from IRS"
+      ]
+    },
+    {
+      "key": "q.eta9089.employer_naics",
+      "label": "NAICS code",
+      "qtype": "text",
+      "tab": "Employer",
+      "pdf_fields": [
+        "13 NAICS Code"
+      ]
+    },
+    {
+      "key": "q.eta9089.employer_employee_count",
+      "label": "Number of current employees in area of intended employment",
+      "qtype": "number",
+      "tab": "Employer",
+      "pdf_fields": [
+        "14 Number of current employees on payroll in the area of intended employment"
+      ]
+    },
+    {
+      "key": "q.eta9089.pwd_case_number",
+      "label": "Prevailing Wage Determination case number",
+      "qtype": "text",
+      "tab": "Wage",
+      "pdf_fields": [
+        "1 Enter the valid Prevailing Wage Determination PWD case number issued by the Department of Labor to identify the job opportunity and prevailing wages covered by this application"
+      ]
+    },
+    {
+      "key": "q.eta9089.wage_conditions",
+      "label": "Additional conditions about the offered wage",
+      "qtype": "textarea",
+      "tab": "Wage",
+      "pdf_fields": [
+        "5 Additional conditions about the offered wage Enter up to 500 characters If no additional information enter NONE below"
+      ]
+    },
+    {
+      "key": "q.eta9089.worker_has_additional_experience",
+      "label": "Does the foreign worker have additional education or experience to report?",
+      "qtype": "boolean",
+      "tab": "Worker",
+      "pdf_fields": []
+    },
+    {
+      "key": "q.eta9089.multiple_worksites",
+      "label": "Will work be performed at additional worksites?",
+      "qtype": "boolean",
+      "tab": "Worker",
+      "pdf_fields": []
+    },
+    {
+      "key": "q.eta9089.college_teacher",
+      "label": "Is this application for a college or university teacher?",
+      "qtype": "boolean",
+      "tab": "Worker",
+      "pdf_fields": []
+    },
+    {
+      "key": "q.eta9089.request_final_determination",
+      "label": "Include final determination form with prepared packet?",
+      "qtype": "boolean",
+      "tab": "Worker",
+      "pdf_fields": []
+    },
+    {
+      "key": "q.eta9089.additional_info",
+      "label": "Additional information (in place of Appendix C)",
+      "qtype": "textarea",
+      "tab": "Worker",
+      "pdf_fields": []
+    }
+  ],
+  "attachments": [
+    {
+      "code": "eta-9089-appendix-a",
+      "title": "Appendix A: Foreign Worker Information",
+      "pdf": "eta-9089-appendix-a.pdf",
+      "when": {
+        "question": "q.eta9089.worker_has_additional_experience",
+        "equals": "true"
+      }
+    },
+    {
+      "code": "eta-9089-appendix-b",
+      "title": "Appendix B: Additional Worksite and Wage Information",
+      "pdf": "eta-9089-appendix-b.pdf",
+      "when": {
+        "question": "q.eta9089.multiple_worksites",
+        "equals": "true"
+      }
+    },
+    {
+      "code": "eta-9089-appendix-d",
+      "title": "Appendix D: Special Handling for College and University Teachers",
+      "pdf": "eta-9089-appendix-d.pdf",
+      "when": {
+        "question": "q.eta9089.college_teacher",
+        "equals": "true"
+      }
+    },
+    {
+      "code": "eta-9089-final-determination",
+      "title": "Final Determination",
+      "pdf": "eta-9089-final-determination.pdf",
+      "when": {
+        "question": "q.eta9089.request_final_determination",
+        "equals": "true"
+      }
+    }
+  ]
+}

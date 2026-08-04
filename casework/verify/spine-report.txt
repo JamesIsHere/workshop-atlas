@@ -1,0 +1,124 @@
+# spine-report -- verifier 1
+
+entries: 111  green: 107  red: 0  pending: 0  parked: 4
+
+GREEN   [direct ] contacts-and-matters.contact-creation
+GREEN   [direct ] contacts-and-matters.matter-creation
+GREEN   [direct ] contacts-and-matters.matter-types-statuses
+GREEN   [adapted] contacts-and-matters.matter-status-automations
+GREEN   [direct ] contacts-and-matters.expiry-date-reminders
+GREEN   [adapted] contacts-and-matters.custom-attributes
+GREEN   [direct ] contacts-and-matters.related-contacts
+GREEN   [direct ] contacts-and-matters.matter-linked-contacts
+GREEN   [direct ] contacts-and-matters.contact-archiving
+GREEN   [direct ] contacts-and-matters.matter-archiving
+GREEN   [direct ] contacts-and-matters.contact-search
+GREEN   [direct ] contacts-and-matters.csv-export
+GREEN   [direct ] contacts-and-matters.contact-merging
+GREEN   [adapted] contacts-and-matters.activity-feeds
+GREEN   [content] smart-forms.forms-library
+GREEN   [direct ] smart-forms.single-intake-autofill
+GREEN   [adapted] smart-forms.multilingual-intake
+GREEN   [adapted] smart-forms.uscis-efiling-sync
+GREEN   [adapted] smart-forms.efiling-validation
+PARKED  [parked ] smart-forms.ceac-ds160-efiling
+PARKED  [parked ] smart-forms.ceac-ds260-efiling
+PARKED  [parked ] smart-forms.dol-flag-efiling
+GREEN   [adapted] smart-forms.h1b-electronic-registration
+GREEN   [adapted] smart-forms.efiling-paper-toggle
+GREEN   [adapted] smart-forms.form-updates-versioning
+GREEN   [adapted] smart-forms.form-version-toggle
+GREEN   [direct ] smart-forms.packet-assembly
+GREEN   [direct ] smart-forms.packet-toc
+GREEN   [direct ] smart-forms.smart-form-collections
+GREEN   [direct ] smart-forms.templated-intakes
+GREEN   [adapted] smart-forms.intake-invitations
+GREEN   [direct ] smart-forms.invitation-permissions
+GREEN   [direct ] smart-forms.invitation-tracking
+GREEN   [adapted] smart-forms.invitation-settings
+GREEN   [direct ] smart-forms.question-flagging
+GREEN   [direct ] smart-forms.question-comments
+GREEN   [direct ] smart-forms.question-hiding
+GREEN   [direct ] smart-forms.intake-search
+GREEN   [direct ] smart-forms.custom-intakes
+GREEN   [direct ] smart-forms.custom-questions
+GREEN   [direct ] smart-forms.document-requests
+GREEN   [direct ] smart-forms.client-file-upload
+GREEN   [direct ] smart-forms.document-sharing
+GREEN   [direct ] smart-forms.pdf-values-view
+GREEN   [direct ] smart-forms.form-download-print
+GREEN   [direct ] smart-forms.editable-pdf-toggle
+GREEN   [direct ] smart-forms.na-autofill
+GREEN   [direct ] smart-forms.data-import-into-forms
+GREEN   [direct ] smart-forms.interpreter-import
+GREEN   [direct ] smart-forms.i129-answer-import
+GREEN   [direct ] smart-forms.preparer-population
+GREEN   [direct ] smart-forms.smart-forms-lite
+GREEN   [direct ] smart-forms.eta9089-conditional-assembly
+GREEN   [direct ] smart-forms.packet-addenda
+GREEN   [direct ] smart-forms.mobile-intake
+GREEN   [direct ] case-tracking.module-exists
+GREEN   [adapted] case-tracking.priority-date-tracking
+GREEN   [adapted] case-tracking.priority-date-notifications
+GREEN   [adapted] case-tracking.uscis-receipt-tracking
+GREEN   [adapted] case-tracking.receipt-status-manual-check
+GREEN   [adapted] case-tracking.receipt-status-auto-checks
+GREEN   [adapted] case-tracking.receipt-status-notifications
+GREEN   [direct ] case-tracking.tasks
+GREEN   [direct ] case-tracking.task-lists
+GREEN   [direct ] case-tracking.task-reference-date-due-dates
+GREEN   [direct ] reports.vmax-tracking
+GREEN   [direct ] files-and-documents.module-exists
+GREEN   [direct ] files-and-documents.file-upload
+GREEN   [direct ] files-and-documents.folders
+GREEN   [direct ] files-and-documents.subfolders
+GREEN   [direct ] files-and-documents.file-assignment
+GREEN   [direct ] files-and-documents.file-renaming
+GREEN   [direct ] files-and-documents.file-download
+GREEN   [direct ] files-and-documents.bulk-file-download
+GREEN   [adapted] files-and-documents.file-preview
+GREEN   [direct ] files-and-documents.file-printing
+GREEN   [direct ] files-and-documents.esignature
+GREEN   [direct ] files-and-documents.esignature-preparation
+GREEN   [adapted] files-and-documents.esignature-requests
+GREEN   [direct ] files-and-documents.esignature-signing
+GREEN   [direct ] files-and-documents.esignature-completion
+GREEN   [direct ] files-and-documents.esignature-status
+GREEN   [direct ] files-and-documents.esignature-signed-notifications
+GREEN   [direct ] files-and-documents.esignature-auto-filing
+GREEN   [direct ] template-automation.module-exists
+GREEN   [direct ] template-automation.template-upload
+GREEN   [direct ] template-automation.template-export
+GREEN   [direct ] template-automation.merge-tags
+GREEN   [direct ] events.module-exists
+GREEN   [direct ] events.event-attendees
+GREEN   [adapted] events.event-reminders
+GREEN   [direct ] events.default-reminder-settings
+GREEN   [direct ] notes.module-exists
+GREEN   [direct ] notes.note-creation
+GREEN   [direct ] notes.note-assignment
+GREEN   [direct ] notes.note-client-association
+GREEN   [direct ] notes.note-categories
+GREEN   [direct ] notes.pinned-notes
+GREEN   [direct ] notes.notes-export
+GREEN   [direct ] login.email-password-login
+PARKED  [parked ] login.firm-custom-subdomain
+GREEN   [direct ] login.password-reset
+GREEN   [direct ] personal-settings.user-roles
+GREEN   [adapted] firm-settings.two-factor-authentication
+GREEN   [direct ] firm-settings.trash-can
+GREEN   [direct ] firm-settings.universal-search
+GREEN   [direct ] firm-settings.time-zone-setting
+GREEN   [direct ] firm-settings.notification-settings
+GREEN   [adapted] firm-settings.managing-users
+GREEN   [direct ] firm-settings.user-permissions
+GREEN   [direct ] firm-settings.user-permission-groups
+
+# supporting checks
+PASS audit-coverage: all audited tables carry insert/update/delete triggers
+PASS fact-store-lint: no form answers duplicate fact keys
+PASS fact-integrity-sweep: no orphan subjects, no definition mismatches
+PASS soft-delete-sweep: DELETE targets only sanctioned non-tombstoned tables
+PASS synthetic-guard: SYNTHETIC marker present
+
+verdict: GREEN

@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legal Case Management Prototype</title>
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-bg: #dcfce7;
+      --success-text: #15803d;
+      --warning-bg: #fef3c7;
+      --warning-text: #b45309;
+      --danger-bg: #fee2e2;
+      --danger-text: #b91c1c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 30px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--border-color);
+      margin-bottom: 25px;
+    }
+
+    h1 { font-size: 1.8rem; color: #1e293b; }
+    .subtitle { color: var(--text-muted); font-size: 0.95rem; }
+
+    .flow-guide {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    .flow-step {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-left: 5px solid var(--primary-color);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .flow-step h4 { color: var(--primary-color); margin-bottom: 4px; font-size: 0.95rem; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      margin-bottom: 15px;
+      color: #0f172a;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group { margin-bottom: 15px; }
+
+    label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 9px 12px;
+      background-color: #ffffff;
+      border: 1px solid #94a3b8;
+      border-radius: 6px;
+      color: #0f172a;
+      font-size: 0.95rem;
+    }
+
+    input[type="text"]:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+    .btn {
+      padding: 9px 16px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: background 0.2s;
+    }
+
+    .btn:hover { background-color: var(--primary-hover); }
+
+    .btn-secondary { background-color: #64748b; color: white; }
+    .btn-secondary:hover { background-color: #475569; }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+
+    .status-MATCH { background-color: var(--success-bg); color: var(--success-text); border: 1px solid #86efac; }
+    .status-FORMATTING_MATCH { background-color: var(--warning-bg); color: var(--warning-text); border: 1px solid #fde047; }
+    .status-MISMATCH, .status-MISSING_IN_PDF { background-color: var(--danger-bg); color: var(--danger-text); border: 1px solid #fca5a5; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    th { color: #475569; font-weight: 700; background-color: #f1f5f9; }
+
+    .alert {
+      padding: 14px 18px;
+      background-color: #eff6ff;
+      border-left: 4px solid var(--primary-color);
+      border-radius: 6px;
+      margin-bottom: 25px;
+      font-size: 0.95rem;
+      color: #1e40af;
+    }
+
+    pre {
+      background-color: #f8fafc;
+      padding: 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      color: #0f172a;
+      border: 1px solid var(--border-color);
+      font-family: monospace;
+    }
+
+    footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 2px solid var(--border-color);
+      text-align: center;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      margin: 0 15px;
+      color: var(--primary-color);
+      font-weight: 600;
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    footer a:hover {
+      background-color: #eff6ff;
+      border-color: #bfdbfe;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Legal Case Management Prototype</h1>
+        <p class="subtitle">Full-Stack Integration: SQLite Database + Diff Engine + PDF Export Engine</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin: 0;">Active Case:</label>
+        <select id="case-selector" onchange="switchActiveCase(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #94a3b8; font-weight: 600; font-size: 0.9rem; background: white;">
+          <option value="CASE-2026-001">CASE-2026-001 (Loading...)</option>
+        </select>
+        <button class="btn" onclick="toggleCreateCaseModal(true)" style="background-color: #16a34a; padding: 6px 12px;">+ Create New Case</button>
+        <span id="case-status-badge" class="status-badge status-MATCH">DRAFT</span>
+        <span id="case-version" style="font-size: 0.95rem; font-weight: 600; color: #475569;">Version 1</span>
+        <button class="btn btn-secondary" onclick="resetCase()" style="padding: 4px 10px; font-size: 0.8rem;">Reset to Draft</button>
+        <span id="current-user-badge" style="font-size: 0.85rem; font-weight: 700; color: #1e40af; background: #eff6ff; border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 6px; display: none;"></span>
+        <button id="logout-btn" class="btn btn-secondary" onclick="logout()" style="padding: 4px 10px; font-size: 0.8rem; display: none;">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Sign-In Overlay: identity is established server-side; the role shown here is
+         resolved from the sessions table on every request, never trusted from the browser. -->
+    <div id="login-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.75); z-index: 2000; align-items: center; justify-content: center;">
+      <div style="background: white; border-radius: 12px; padding: 30px; width: 420px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+        <h3 style="margin-bottom: 6px; color: #0f172a;">Sign In to Atlas</h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 18px;">
+          Select a staff account. The server issues a session token and resolves your role on every request.
+        </p>
+        <div id="login-user-list" style="display: flex; flex-direction: column; gap: 10px;">
+          Loading staff accounts...
+        </div>
+        <p id="login-error" style="color: #b91c1c; font-size: 0.85rem; margin-top: 12px; display: none;"></p>
+      </div>
+    </div>
+
+    <!-- Create Case Modal -->
+    <div id="create-case-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center;">
+      <div style="background: white; border-radius: 12px; padding: 25px; width: 480px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;">
+        <h3 style="margin-bottom: 15px; color: #0f172a; display: flex; justify-content: space-between; align-items: center;">
+          <span>➕ Create New Client & Case</span>
+          <button onclick="toggleCreateCaseModal(false)" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;">✕</button>
+        </h3>
+        <form onsubmit="submitCreateCase(event)">
+          <div class="form-group">
+            <label>First Name *</label>
+            <input type="text" id="new-client-fn" required placeholder="e.g. Marcus">
+          </div>
+          <div class="form-group">
+            <label>Last Name *</label>
+            <input type="text" id="new-client-ln" required placeholder="e.g. Vance">
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" id="new-client-phone" placeholder="e.g. (202) 555-0188">
+          </div>
+          <div class="form-group">
+            <label>Street Address</label>
+            <input type="text" id="new-client-street" placeholder="e.g. 1200 K Street NW">
+          </div>
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;" class="form-group">
+            <div>
+              <label>City</label>
+              <input type="text" id="new-client-city" placeholder="Washington">
+            </div>
+            <div>
+              <label>State</label>
+              <input type="text" id="new-client-state" placeholder="DC">
+            </div>
+            <div>
+              <label>Zip Code</label>
+              <input type="text" id="new-client-zip" placeholder="20005">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Form Package Blueprint</label>
+            <select id="new-client-formtype" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #94a3b8;">
+              <option value="G-28">Form G-28 (Notice of Entry of Appearance)</option>
+              <option value="I-130">Form I-130 (Petition for Alien Relative)</option>
+            </select>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+            <button type="button" class="btn btn-secondary" onclick="toggleCreateCaseModal(false)">Cancel</button>
+            <button type="submit" class="btn" style="background-color: #16a34a;">Save & Initialize Case</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Visual System Flow Map -->
+    <div class="flow-guide">
+      <div class="flow-step">
+        <h4>1. Master Database (Write)</h4>
+        <p>Edit client details in Master SQLite database.</p>
+      </div>
+      <div class="flow-step">
+        <h4>2. Intake Audit (Diff)</h4>
+        <p>Reconcile incoming PDF scans against Master DB.</p>
+      </div>
+      <div class="flow-step">
+        <h4>3. Workflow State</h4>
+        <p>Lock state from <code>DRAFT</code> to <code>APPROVED</code>.</p>
+      </div>
+      <div class="flow-step" style="border-left-color: #16a34a;">
+        <h4 style="color: #16a34a;">4. PDF Export (Output)</h4>
+        <p>Populate official PDF package directly from SQLite.</p>
+      </div>
+    </div>
+
+    <div class="alert" id="system-message">
+      System Ready. Connected to SQLite Database <code>legal_crm.db</code>.
+    </div>
+
+    <!-- Compact Schema Architecture Reference (Method B) -->
+    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px 18px; margin-bottom: 25px; color: #f8fafc; font-size: 0.85rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-weight: 700; color: #38bdf8; font-size: 0.95rem;">🏛️ Master Schema (Option B: Unified People + Bridge Table)</span>
+        <span style="background: #22c55e; color: #0f172a; font-size: 0.75rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">Active Engine</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; font-family: monospace;">
+        <div style="background: #0f172a; padding: 8px; border-radius: 6px; border-left: 3px solid #38bdf8;">
+          <strong style="color: #38bdf8;">1. people (Directory)</strong><br>
+          <span style="color: #94a3b8;">PK: id</span> | Name, Phone, Address, A-Number, SSN, DOB, Citizenship
+        </div>
+        <div style="background: #0f172a; padding: 8px; border-radius: 6px; border-left: 3px solid #818cf8;">
+          <strong style="color: #818cf8;">2. cases (Fact Hub)</strong><br>
+          <span style="color: #94a3b8;">PK: case_id</span> | <span style="color: #f43f5e;">FK: assigned_attorney_id &rarr; people.id</span> | status, version
+        </div>
+        <div style="background: #0f172a; padding: 8px; border-radius: 6px; border-left: 3px solid #f59e0b;">
+          <strong style="color: #f59e0b;">3. case_parties (Bridge)</strong><br>
+          <span style="color: #f43f5e;">FK: case_id &rarr; cases.case_id</span> | <span style="color: #f43f5e;">FK: person_id &rarr; people.id</span> | role_type
+        </div>
+        <div style="background: #0f172a; padding: 8px; border-radius: 6px; border-left: 3px solid #22c55e;">
+          <strong style="color: #22c55e;">4. audit_logs (Security)</strong><br>
+          <span style="color: #f43f5e;">FK: case_id &rarr; cases.case_id</span> | version, actor, action, details, timestamp
+        </div>
+      </div>
+    </div>
+
+    <!-- Session Auth Explainer: how identity flows through the system -->
+    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px 18px; margin-bottom: 25px; color: #f8fafc; font-size: 0.85rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-weight: 700; color: #fbbf24; font-size: 0.95rem;">Session Auth Flow (Why the Sign-In Screen Exists)</span>
+        <span style="background: #fbbf24; color: #0f172a; font-size: 0.75rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">Trust Boundary</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; font-family: monospace;">
+        <div style="background: #0f172a; padding: 8px; border-radius: 6px; border-left: 3px solid #fbbf24;">
+          <strong style="color: #fbbf24;">1. Sign In</strong><br>
+          <span style="color: #94a3b8;">POST /api/login {username} &rarr; server inserts row in <code>sessions</code> (token &rarr; person_id) and returns the token.</span>
+        </div>
+        <div style="background: #0f172a; padding: 8px; border-radius: 6px; border-left: 3px solid #fbbf24;">
+          <strong style="color: #fbbf24;">2. Browser Holds Token</strong><br>
+          <span style="color: #94a3b8;">Stored in localStorage <code>atlas_session</code>. Every POST sends <code>Authorization: Bearer &lt;token&gt;</code>.</span>
+        </div>
+        <div style="background: #0f172a; padding: 8px; border-radius: 6px; border-left: 3px solid #fbbf24;">
+          <strong style="color: #fbbf24;">3. Server Resolves Identity</strong><br>
+          <span style="color: #94a3b8;">token &rarr; sessions &rarr; people row &rarr; actor + role. Identity claimed in the request body is IGNORED — the client is never trusted.</span>
+        </div>
+        <div style="background: #0f172a; padding: 8px; border-radius: 6px; border-left: 3px solid #fbbf24;">
+          <strong style="color: #fbbf24;">4. Enforcement</strong><br>
+          <span style="color: #94a3b8;">FSM checks the session role per action. Missing/invalid token &rarr; 401 &rarr; sign-in overlay. Prototype gaps: no passwords, no session expiry.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid Row 1: Editor & Live DB Table Inspector -->
+    <div class="grid">
+      <!-- Card 1: Interactive Database Editor -->
+      <div class="card">
+        <div class="card-title">
+          <span>1. Master Database Record (SQLite)</span>
+          <button class="btn btn-secondary" onclick="loadCaseData()">Reload DB</button>
+        </div>
+        <form id="db-form">
+          <div class="form-group">
+            <label>Client First Name (Saved in SQLite `clients` Table)</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="text" id="db-client-firstname">
+              <button type="button" class="btn" onclick="saveClientField('first_name', document.getElementById('db-client-firstname').value)">Save Name</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Client Phone Number (Saved in SQLite `clients` Table)</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="text" id="db-client-phone">
+              <button type="button" class="btn" onclick="saveClientField('phone', document.getElementById('db-client-phone').value)">Save Phone</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Client Street Address (Saved in SQLite `clients` Table)</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="text" id="db-client-street">
+              <button type="button" class="btn" onclick="saveClientField('street_address', document.getElementById('db-client-street').value)">Save Address</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Card 2: Live Raw SQLite Database Table Viewer -->
+      <div class="card">
+        <div class="card-title">
+          <span>Live SQLite Table View (Raw DB Rows)</span>
+          <button class="btn btn-secondary" onclick="loadDbInspector()">Refresh View</button>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+          This shows the exact row stored inside <code>legal_crm.db</code>:
+        </p>
+        <pre id="raw-db-json">Fetching SQLite rows...</pre>
+      </div>
+    </div>
+
+    <!-- Grid Row 2: Workflow Controls & Audit Trail -->
+    <div class="grid">
+      <!-- Card 3: Workflow State Machine Controls -->
+      <div class="card">
+        <div class="card-title">2. Workflow State Machine Controls</div>
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 15px;">
+          Execute versioned state transitions in <code>legal_crm.db</code> in order:
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button class="btn" onclick="executeTransition('SUBMIT_FOR_REVIEW')">Step A: Submit for Review (needs Legal Assistant+)</button>
+          <button class="btn" onclick="executeTransition('ESCALATE_TO_ATTNY')">Step B: Escalate to Attorney (needs Paralegal+)</button>
+          <button class="btn" onclick="executeTransition('APPROVE_AND_LOCK')">Step C: Approve & Lock Case (needs Attorney)</button>
+        </div>
+      </div>
+
+      <!-- Card 4: Persistent Audit Log -->
+      <div class="card">
+        <div class="card-title">SQL `audit_logs` History Table</div>
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 10px;">
+          Recent entries in <code>audit_logs</code> table:
+        </p>
+        <div id="audit-log-list" style="max-height: 140px; overflow-y: auto; font-size: 0.85rem;">
+          Loading audit logs...
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 5: Live PDF Intake Diff Results -->
+    <div class="card" style="margin-bottom: 25px;">
+      <div class="card-title">
+        <span>3. Intake Reconciliation Audit (Incoming PDF vs. SQLite DB)</span>
+        <button class="btn" onclick="runPdfDiff()">Run Live PDF Diff Audit</button>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+        Compares an incoming static client PDF (<code>g-28_filled.pdf</code>) against your Master SQLite Database record to catch discrepancies.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Field Label</th>
+            <th>SQLite Database Value (Current)</th>
+            <th>PDF Form Value (g-28_filled.pdf)</th>
+            <th>Reconciliation Status</th>
+          </tr>
+        </thead>
+        <tbody id="diff-table-body">
+          <tr>
+            <td colspan="4" style="text-align: center; color: var(--text-muted);">Click "Run Live PDF Diff Audit" to test database values against PDF.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Card 6: PDF Package Export (Phase 2: Database -> Official PDF Output) -->
+    <div class="card" style="border-left: 5px solid #16a34a; margin-bottom: 25px;">
+      <div class="card-title">
+        <span>4. Output PDF Generation (SQLite Database &rarr; Official PDF Forms)</span>
+        <button class="btn" style="background-color: #16a34a;" onclick="generatePdfPackage()">Generate Filled PDF Package from Database</button>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 15px;">
+        Clicking this button takes your master SQLite database record (including any live edits to name, phone, or address) and populates official government PDF forms (G-28 &amp; I-130) for submission!
+      </p>
+      <div id="pdf-generation-output" style="display: none; background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 6px;">
+        <h4 style="color: #15803d; margin-bottom: 8px;">✅ PDF Package Generated Successfully!</h4>
+        <p style="font-size: 0.88rem; color: #166534; margin-bottom: 12px;" id="pdf-generation-msg"></p>
+        <div id="generated-pdf-links" style="display: flex; gap: 15px; flex-wrap: wrap;"></div>
+      </div>
+    </div>
+
+    <!-- Card 7: Live Side-by-Side PDF Document Workbench -->
+    <div class="card" style="border-left: 5px solid #2563eb;">
+      <div class="card-title">
+        <span>5. Live Side-by-Side PDF Document Workbench</span>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <select id="pdf-view-selector" onchange="updatePdfViewerSource(this.value)" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #94a3b8; font-weight: 600; font-size: 0.85rem; background: #ffffff;">
+            <option value="/storage/3_exports/g-28_package_generated.pdf" selected>📄 Output Export: Form G-28 PDF</option>
+            <option value="/storage/3_exports/i-130_package_generated.pdf">📄 Output Export: Form I-130 PDF</option>
+            <option value="/storage/2_intake_scans/g-28_filled.pdf">📥 Incoming Scan: g-28_filled.pdf</option>
+          </select>
+          <button class="btn btn-secondary" onclick="reloadPdfViewer()" style="padding: 6px 12px; font-size: 0.82rem;">🔄 Refresh PDF</button>
+        </div>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 15px;">
+        Compare active SQLite database fields side-by-side against the rendered fillable PDF document in real time!
+      </p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 520px;">
+        <!-- Left Pane: SQLite Database Record Live Inspector -->
+        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; display: flex; flex-direction: column;">
+          <h4 style="font-size: 0.92rem; color: #1e293b; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <span>🗄️ Active Case DB Record: <code id="workbench-case-id" style="color: var(--primary-color);">CASE-2026-001</code></span>
+            <span id="workbench-status-badge" class="status-badge status-MATCH">DRAFT</span>
+          </h4>
+          <div id="workbench-db-fields" style="flex: 1; overflow-y: auto; max-height: 460px;">
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Loading DB record details...</p>
+          </div>
+        </div>
+
+        <!-- Right Pane: Interactive PDF Embedded Viewer -->
+        <div style="background: #0f172a; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; position: relative;">
+          <div style="background: #1e293b; color: #94a3b8; padding: 8px 12px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+            <span id="pdf-viewer-title">📄 Viewing: Output Export G-28 PDF</span>
+            <a id="pdf-viewer-external" href="/storage/3_exports/g-28_package_generated.pdf" target="_blank" style="color: #60a5fa; text-decoration: none; font-weight: 600;">↗ Open Full Window</a>
+          </div>
+          <iframe id="pdf-frame" src="/storage/3_exports/g-28_package_generated.pdf" style="width: 100%; height: 480px; border: none; background: white;" title="Live PDF Viewer"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <a href="index.html" style="background-color: #eff6ff; border-color: #bfdbfe;">📊 Dashboard</a> |
+      <a href="directory.html">📁 Workspace Directory</a>
+    </footer>
+
+  </div>
+
+  <script>
+    let activeCaseId = 'CASE-2026-001';
+    let currentVersion = 1;
+    let sessionToken = localStorage.getItem('atlas_session') || null;
+    let currentUser = null;
+
+    function authHeaders() {
+      const h = { 'Content-Type': 'application/json' };
+      if (sessionToken) h['Authorization'] = `Bearer ${sessionToken}`;
+      return h;
+    }
+
+    // Any POST helper: sends auth header, bounces to sign-in screen on 401.
+    async function apiPost(path, payload) {
+      const res = await fetch(path, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(payload)
+      });
+      if (res.status === 401) {
+        showLoginOverlay();
+        return { status: 'ERROR', message: 'Session expired or not signed in. Please sign in.' };
+      }
+      return await res.json();
+    }
+
+    function updateUserBadge() {
+      const badge = document.getElementById('current-user-badge');
+      const logoutBtn = document.getElementById('logout-btn');
+      if (currentUser) {
+        badge.innerText = `${currentUser.name} - ${currentUser.role}`;
+        badge.style.display = 'inline-block';
+        logoutBtn.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+        logoutBtn.style.display = 'none';
+      }
+    }
+
+    async function showLoginOverlay() {
+      currentUser = null;
+      updateUserBadge();
+      document.getElementById('login-overlay').style.display = 'flex';
+      const list = document.getElementById('login-user-list');
+      try {
+        const res = await fetch('/api/staff');
+        const data = await res.json();
+        list.innerHTML = '';
+        data.staff.forEach(u => {
+          const btn = document.createElement('button');
+          btn.className = 'btn';
+          btn.style.textAlign = 'left';
+          btn.innerText = `${u.first_name} ${u.last_name} - ${u.role}`;
+          btn.onclick = () => login(u.username);
+          list.appendChild(btn);
+        });
+      } catch (err) {
+        list.innerHTML = 'Unable to load staff accounts. Is the server running?';
+      }
+    }
+
+    async function login(username) {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username })
+      });
+      const data = await res.json();
+      const errEl = document.getElementById('login-error');
+      if (data.status === 'SUCCESS') {
+        sessionToken = data.session.token;
+        localStorage.setItem('atlas_session', sessionToken);
+        currentUser = data.session;
+        errEl.style.display = 'none';
+        document.getElementById('login-overlay').style.display = 'none';
+        updateUserBadge();
+        document.getElementById('system-message').innerHTML = `<b>Signed In:</b> ${currentUser.name} (${currentUser.role}). Role is resolved server-side from the session token.`;
+      } else {
+        errEl.innerText = data.message || 'Sign-in failed.';
+        errEl.style.display = 'block';
+      }
+    }
+
+    async function logout() {
+      if (sessionToken) {
+        await apiPost('/api/logout', {});
+      }
+      sessionToken = null;
+      localStorage.removeItem('atlas_session');
+      currentUser = null;
+      updateUserBadge();
+      showLoginOverlay();
+    }
+
+    async function restoreSession() {
+      if (!sessionToken) {
+        await showLoginOverlay();
+        return;
+      }
+      try {
+        const res = await fetch('/api/whoami', { headers: authHeaders() });
+        if (!res.ok) throw new Error('invalid session');
+        const data = await res.json();
+        currentUser = data.user;
+        updateUserBadge();
+      } catch (err) {
+        sessionToken = null;
+        localStorage.removeItem('atlas_session');
+        await showLoginOverlay();
+      }
+    }
+
+    async function loadCasesList() {
+      try {
+        const res = await fetch('/api/cases');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        const selector = document.getElementById('case-selector');
+        if (selector && data.cases) {
+          selector.innerHTML = '';
+          data.cases.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.case_id;
+            opt.innerText = `${c.case_id} - ${c.client_name || 'No client'} (${c.status})`;
+            if (c.case_id === activeCaseId) opt.selected = true;
+            selector.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load cases list:', err);
+      }
+    }
+
+    async function switchActiveCase(newCaseId) {
+      activeCaseId = newCaseId;
+      document.getElementById('system-message').innerHTML = `🔄 <b>Switched Active Case:</b> Now viewing <code>${activeCaseId}</code> in SQLite database.`;
+      await loadCaseData();
+    }
+
+    function toggleCreateCaseModal(show) {
+      const modal = document.getElementById('create-case-modal');
+      if (modal) modal.style.display = show ? 'flex' : 'none';
+    }
+
+    async function submitCreateCase(event) {
+      event.preventDefault();
+      const payload = {
+        first_name: document.getElementById('new-client-fn').value,
+        last_name: document.getElementById('new-client-ln').value,
+        phone: document.getElementById('new-client-phone').value,
+        street_address: document.getElementById('new-client-street').value,
+        city: document.getElementById('new-client-city').value,
+        state: document.getElementById('new-client-state').value,
+        zip_code: document.getElementById('new-client-zip').value,
+        form_type: document.getElementById('new-client-formtype').value
+      };
+
+      try {
+        const data = await apiPost('/api/create-case', payload);
+        if (data.status === 'SUCCESS') {
+          toggleCreateCaseModal(false);
+          document.getElementById('system-message').innerHTML = `🎉 <b>New Case Created:</b> ${data.message}`;
+          activeCaseId = data.case_id;
+          await loadCasesList();
+          await loadCaseData();
+        } else {
+          alert(`Error creating case: ${data.message}`);
+        }
+      } catch (err) {
+        console.error('Create case failed:', err);
+        alert('Failed to connect to server when creating case.');
+      }
+    }
+
+    function updatePdfViewerSource(url) {
+      const cacheBustUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+      const iframe = document.getElementById('pdf-frame');
+      const extLink = document.getElementById('pdf-viewer-external');
+      const titleSpan = document.getElementById('pdf-viewer-title');
+      
+      if (iframe) iframe.src = cacheBustUrl;
+      if (extLink) extLink.href = url;
+      if (titleSpan) {
+        let label = 'PDF Document';
+        if (url.includes('g-28_package_generated')) label = 'Output Export: Form G-28 PDF';
+        else if (url.includes('i-130_package_generated')) label = 'Output Export: Form I-130 PDF';
+        else if (url.includes('g-28_filled')) label = 'Incoming Scan: g-28_filled.pdf';
+        titleSpan.innerText = `📄 Viewing: ${label}`;
+      }
+    }
+
+    function reloadPdfViewer() {
+      const selector = document.getElementById('pdf-view-selector');
+      if (selector) updatePdfViewerSource(selector.value);
+    }
+
+    function updateWorkbenchFields(data) {
+      const container = document.getElementById('workbench-db-fields');
+      const caseIdEl = document.getElementById('workbench-case-id');
+      const statusBadge = document.getElementById('workbench-status-badge');
+      
+      if (caseIdEl) caseIdEl.innerText = activeCaseId;
+      if (statusBadge && data.case_info) {
+        statusBadge.innerText = data.case_info.status;
+        statusBadge.className = `status-badge status-${data.case_info.status === 'APPROVED' ? 'MATCH' : 'DRAFT'}`;
+      }
+      
+      if (!container) return;
+      
+      if (!data || (!data.client && !data.attorney)) {
+        container.innerHTML = '<p style="color: var(--danger-text);">No database fields found.</p>';
+        return;
+      }
+      
+      const client = data.client || {};
+      const attorney = data.attorney || {};
+      
+      let html = `
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 4px;">
+          <thead>
+            <tr style="background: #e2e8f0;">
+              <th style="padding: 6px 8px; color: #334155;">Database Field Key</th>
+              <th style="padding: 6px 8px; color: #334155;">Live SQLite Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background: #f1f5f9;"><td colspan="2" style="font-weight: 700; color: var(--primary-color); padding: 6px 8px;">👤 Client Information</td></tr>
+            <tr><td style="padding: 5px 8px; color: #475569;">First Name</td><td style="padding: 5px 8px;"><code>${client.firstName || '[BLANK]'}</code></td></tr>
+            <tr><td style="padding: 5px 8px; color: #475569;">Middle Name</td><td style="padding: 5px 8px;"><code>${client.middleName || '[BLANK]'}</code></td></tr>
+            <tr><td style="padding: 5px 8px; color: #475569;">Last Name</td><td style="padding: 5px 8px;"><code>${client.lastName || '[BLANK]'}</code></td></tr>
+            <tr><td style="padding: 5px 8px; color: #475569;">Phone Number</td><td style="padding: 5px 8px;"><code>${client.phone || '[BLANK]'}</code></td></tr>
+            <tr><td style="padding: 5px 8px; color: #475569;">Street Address</td><td style="padding: 5px 8px;"><code>${client.streetAddress || '[BLANK]'}</code></td></tr>
+            <tr><td style="padding: 5px 8px; color: #475569;">City, State Zip</td><td style="padding: 5px 8px;"><code>${(client.city || '') + ' ' + (client.state || '') + ' ' + (client.zipCode || '')}</code></td></tr>
+            
+            <tr style="background: #f1f5f9;"><td colspan="2" style="font-weight: 700; color: #15803d; padding: 6px 8px;">⚖️ Attorney of Record</td></tr>
+            <tr><td style="padding: 5px 8px; color: #475569;">Attorney Name</td><td style="padding: 5px 8px;"><code>${(attorney.firstName || '') + ' ' + (attorney.lastName || '')}</code></td></tr>
+            <tr><td style="padding: 5px 8px; color: #475569;">USCIS Online Acct</td><td style="padding: 5px 8px;"><code>${attorney.uscisOnlineAcct || '[BLANK]'}</code></td></tr>
+            <tr><td style="padding: 5px 8px; color: #475569;">Attorney Address</td><td style="padding: 5px 8px;"><code>${(attorney.streetAddress || '') + ', ' + (attorney.city || '')}</code></td></tr>
+          </tbody>
+        </table>
+      `;
+      container.innerHTML = html;
+    }
+
+    async function loadCaseData() {
+      try {
+        const res = await fetch(`/api/case?case_id=${encodeURIComponent(activeCaseId)}`);
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+        const data = await res.json();
+        
+        const fn = document.getElementById('db-client-firstname');
+        if (fn && data.client) fn.value = data.client.firstName || '';
+
+        const ln = document.getElementById('db-client-lastname');
+        if (ln && data.client) ln.value = data.client.lastName || '';
+
+        const ph = document.getElementById('db-client-phone');
+        if (ph && data.client) ph.value = data.client.phone || '';
+
+        const st = document.getElementById('db-client-street');
+        if (st && data.client) st.value = data.client.streetAddress || '';
+
+        if (data.case_info) {
+          document.getElementById('case-status-badge').innerText = data.case_info.status;
+          document.getElementById('case-version').innerText = `Version ${data.case_info.version}`;
+          currentVersion = data.case_info.version;
+        }
+
+        updateWorkbenchFields(data);
+      } catch (err) {
+        console.error('Failed to load case data:', err);
+      }
+      await loadDbInspector();
+      reloadPdfViewer();
+    }
+
+    async function loadDbInspector() {
+      try {
+        const res = await fetch(`/api/db-view?case_id=${encodeURIComponent(activeCaseId)}`);
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+        const data = await res.json();
+        
+        document.getElementById('raw-db-json').innerText = JSON.stringify(data.client_table, null, 2);
+        
+        const auditList = document.getElementById('audit-log-list');
+        auditList.innerHTML = '';
+        if (data.audit_table && data.audit_table.length > 0) {
+          data.audit_table.forEach(log => {
+            const div = document.createElement('div');
+            div.style.marginBottom = '6px';
+            div.innerHTML = `<code>v${log.version}</code> | <b>${log.actor}</b> (${log.role}) -> <i>${log.action}</i> (${log.timestamp})`;
+            auditList.appendChild(div);
+          });
+        } else {
+          auditList.innerHTML = '<span style="color: var(--text-muted)">No audit logs recorded yet for this case.</span>';
+        }
+        return data;
+      } catch (err) {
+        console.error('Failed to load DB inspector:', err);
+        document.getElementById('raw-db-json').innerText = '⚠️ Unable to fetch SQLite rows. Please access via http://localhost:8000/index.html';
+        document.getElementById('audit-log-list').innerHTML = '<span style="color: var(--danger-text)">⚠️ Unable to fetch audit logs.</span>';
+      }
+    }
+
+    async function saveClientField(field, value) {
+      try {
+        const data = await apiPost('/api/update-client', { case_id: activeCaseId, field: field, value: value, expected_version: currentVersion });
+        if (data.status === "SUCCESS") {
+          document.getElementById('system-message').innerHTML = `<b>Database Updated:</b> ${data.message}`;
+        } else {
+          document.getElementById('system-message').innerHTML = `<b>Save Rejected:</b> ${data.message}`;
+        }
+        await loadCaseData();
+        await runPdfDiff();
+        return data;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function executeTransition(action) {
+      try {
+        const data = await apiPost('/api/transition', {
+          case_id: activeCaseId,
+          action: action,
+          expected_version: currentVersion
+        });
+        if (data.status === "SUCCESS") {
+          document.getElementById('system-message').innerHTML = `✅ <b>Workflow Transitioned:</b> ${data.message}`;
+          await loadCasesList();
+          await loadCaseData();
+        } else {
+          document.getElementById('system-message').innerHTML = `❌ <b>Workflow Safety Check:</b> ${data.message}`;
+        }
+        return data;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function resetCase() {
+      try {
+        const data = await apiPost('/api/reset-case', { case_id: activeCaseId });
+        document.getElementById('system-message').innerHTML = `<b>Case Reset:</b> ${data.message}`;
+        await loadCasesList();
+        await loadCaseData();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function runPdfDiff() {
+      try {
+        const res = await fetch(`/api/diff?case_id=${encodeURIComponent(activeCaseId)}`);
+        const data = await res.json();
+        
+        const tbody = document.getElementById('diff-table-body');
+        tbody.innerHTML = '';
+        
+        if (data.diffs) {
+          data.diffs.forEach(d => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><b>${d.label}</b></td>
+              <td><code>${d.raw_db_value || '[BLANK]'}</code></td>
+              <td><code>${d.raw_pdf_value || '[BLANK]'}</code></td>
+              <td><span class="status-badge status-${d.status}">${d.status}</span></td>
+            `;
+            tbody.appendChild(tr);
+          });
+          document.getElementById('system-message').innerHTML = `🔍 <b>PDF Diff Audit Completed:</b> Processed ${data.diffs.length} mapped fields against <code>g-28_filled.pdf</code>.`;
+        } else if (data.error) {
+          document.getElementById('system-message').innerHTML = `⚠️ <b>PDF Diff Notice:</b> ${data.error}`;
+        }
+        return data;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function generatePdfPackage() {
+      try {
+        const data = await apiPost('/api/generate-pdf', { case_id: activeCaseId });
+        if (data.status === 'SUCCESS') {
+          document.getElementById('system-message').innerHTML = `📄 <b>PDF Export Successful:</b> Generated PDF package for ${activeCaseId} directly from SQLite Database data!`;
+          document.getElementById('pdf-generation-output').style.display = 'block';
+          document.getElementById('pdf-generation-msg').innerText = data.message;
+          
+          const linksDiv = document.getElementById('generated-pdf-links');
+          linksDiv.innerHTML = '';
+          
+          data.files.forEach(f => {
+            const a = document.createElement('a');
+            a.href = f.url;
+            a.target = '_blank';
+            a.className = 'btn';
+            a.style.backgroundColor = '#15803d';
+            a.innerText = `Open/Download ${f.code} PDF (${f.fields_filled} fields populated)`;
+            linksDiv.appendChild(a);
+          });
+          reloadPdfViewer();
+        } else {
+          document.getElementById('system-message').innerHTML = `❌ <b>PDF Generation Failed:</b> ${data.message}`;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.onload = async () => {
+      await restoreSession();
+      await loadCasesList();
+      await loadCaseData();
+    };
+  </script>
+</body>
+</html>

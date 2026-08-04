@@ -1,0 +1,60 @@
+{
+  "package_name": "Family Green Card Filing Package",
+  "forms": {
+    "G-28": {
+      "pdf_template": "storage/1_templates/g-28.pdf",
+      "mappings": {
+        "form1[0].#subform[0].Pt1Line2a_FamilyName[0]": {
+          "db_path": "attorney.lastName",
+          "label": "Attorney Family Name",
+          "data_type": "string"
+        },
+        "form1[0].#subform[0].Pt1Line2b_GivenName[0]": {
+          "db_path": "attorney.firstName",
+          "label": "Attorney Given Name",
+          "data_type": "string"
+        },
+        "form1[0].#subform[0].Line4_DaytimeTelephoneNumber[0]": {
+          "db_path": "attorney.phone",
+          "label": "Attorney Phone",
+          "data_type": "phone"
+        },
+        "form1[0].#subform[1].Pt3Line5a_FamilyName[0]": {
+          "db_path": "client.lastName",
+          "label": "Client Family Name",
+          "data_type": "string"
+        },
+        "form1[0].#subform[1].Pt3Line5b_GivenName[0]": {
+          "db_path": "client.firstName",
+          "label": "Client Given Name",
+          "data_type": "string"
+        },
+        "form1[0].#subform[1].Line10_MobileTelephoneNumber[0]": {
+          "db_path": "client.phone",
+          "label": "Client Phone",
+          "data_type": "phone"
+        },
+        "form1[0].#subform[1].Line12a_StreetNumberName[0]": {
+          "db_path": "client.streetAddress",
+          "label": "Client Street Address",
+          "data_type": "string"
+        }
+      }
+    },
+    "I-130": {
+      "pdf_template": "storage/1_templates/i-130.pdf",
+      "mappings": {
+        "form1[0].#subform[4].Pt4Line4a_FamilyName[0]": {
+          "db_path": "client.lastName",
+          "label": "Beneficiary Family Name (I-130)",
+          "data_type": "string"
+        },
+        "form1[0].#subform[4].Pt4Line4b_GivenName[0]": {
+          "db_path": "client.firstName",
+          "label": "Beneficiary Given Name (I-130)",
+          "data_type": "string"
+        }
+      }
+    }
+  }
+}

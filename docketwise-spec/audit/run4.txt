@@ -1,0 +1,13 @@
+oracle.py report -- docketwise-spec
+CHECK 1 SCHEMA
+  242 entries (239 live) across 20 modules
+CHECK 2 CITATION CLOSURE
+CHECK 3 COVERAGE CLOSURE
+  5 inventory files, 167 items, 0 unmapped
+CHECK 4 ATTESTATION TIERS
+  confirmed=123 provisional=116
+CHECK 5 CRITERION LINT
+CHECK 6 SOURCE-GAP INTEGRITY
+  1 SOURCE-GAP entries (trial-account decision inventory)
+RESULT: GREEN (exit 0)
+(check 7 determinism is runner-executed: run twice, byte-compare reports)

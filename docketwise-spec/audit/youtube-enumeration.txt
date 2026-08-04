@@ -1,0 +1,112 @@
+# youtube-enumeration.txt -- Phase 4 back-catalog enumeration,
+# 2026-08-01. Source: uploads-playlist page fx-0272
+# (list=UUfGhmt2TsymPPDVpro-JSIA) server-renders the 100 newest
+# upload ids of a stated 185 total; titles fetched per id from
+# the public YouTube oEmbed endpoint. The oldest ~85 uploads are
+# not reachable by ordinary page fetch (continuation requires
+# the youtubei POST API, robots-disallowed) -- documented cap,
+# same class as the RSS ~15 cap. Known back-catalog fixtures
+# (fx-0220, fx-0237, fx-0238, webinars) live in that tail and
+# were reached via help-article embeds instead.
+# Classes: ALREADY-INVENTORIED=17, EDITORIAL=17, EXCLUDED-CAPTURED=3, PODCAST=58, PRODUCT=5
+
+ALREADY-INVENTORIED vf8fBNLIgqg :: Immigration law is about more than paperwork
+ALREADY-INVENTORIED d192jH3oxcQ :: How to reduce client check-ins with real-time case visibility
+ALREADY-INVENTORIED sfsSt27VrWw :: Grow your immigration practice by meeting rising client demand
+ALREADY-INVENTORIED sSZKncuLo9c :: Immigration client intake forms lead to better consultations
+ALREADY-INVENTORIED cJguxcujytY :: How immigration professionals build client trust through communication
+ALREADY-INVENTORIED KXGeo7r4biE :: Immigration client intake forms lead to better consultations
+ALREADY-INVENTORIED hSiLJprJku8 :: How immigration professionals build client trust through communication
+ALREADY-INVENTORIED pNbhHnzE5rE :: How to reduce client check-ins with real-time case visibility
+ALREADY-INVENTORIED hB74hLPb_r0 :: Grow your immigration practice by meeting rising client demand
+ALREADY-INVENTORIED I24AwVwvK3U :: 8am IQ for DocketWise: AI built for immigration law
+ALREADY-INVENTORIED 6ZQVVfBHoZo :: Simplify your client intake process with 8am? DocketWise Smart Forms
+ALREADY-INVENTORIED yvXo8G3ioRw :: Simplify your client intake process with 8am? DocketWise Smart Forms
+ALREADY-INVENTORIED ZkrcON0m1m8 :: IU Episode 056: Unpacking Immigration Enforcement: Data, Trends, and Transparency
+ALREADY-INVENTORIED bHweEsDFftA :: Smart Spend = Worth a Look ?
+ALREADY-INVENTORIED NHaegl5VLAE :: Anxiety about change? You?re not alone.
+EDITORIAL           NZVPXYmsRVI :: New ?Gold Card Visa??Buy a Green Card for $1 million?
+EDITORIAL           -cHIqN_eT5I :: How to protect clients? payment info with virtual cards
+EDITORIAL           7XanLYQ6RIk :: It?s 2025?Why are we still mailing payments?
+EDITORIAL           kUg8w8ADzN8 :: USCIS will no longer accept paper checks, money orders, or other manual forms of payment
+EXCLUDED-CAPTURED   r9sT9rnaBDg :: Meet 8am? DocketWise: The #1 immigration law software to streamline your practice
+EXCLUDED-CAPTURED   4HBVeUVrGs4 :: Meet DocketWise: The #1 immigration law software to streamline your practice
+PODCAST             nfi7EPZ30OQ :: IU Episode 055: The Gold Card, the $100K H?1B Fee, and the End of Paper Checks
+EDITORIAL           4aFHDcR8obg :: Balancing innovation and ethics with AI tools for immigration law
+EDITORIAL           PRtHBji4GLQ :: Balancing innovation and ethics with AI tools for immigration law
+EDITORIAL           hIz8KdbvpCc :: Immigration law is about more than paperwork
+EDITORIAL           LyVx1ijLKmE :: How to start and grow your immigration law firm
+EDITORIAL           ESfJFh5He58 :: Why legal tech is the key to better client communication
+PRODUCT             eU91vT4-R3Y :: Eliminate Manual USCIS Case Tracking with DocketWise
+PODCAST             XCHCcQ9zSC0 :: IU Episode 054: EB-5 Investor Visas vs. Trump Gold Card
+PODCAST             VkE-qQbtqBQ :: IU Episode 053: Pre-AILA Conference Special & 2025 Immigration Report Preview
+PODCAST             cmxFQMojXTc :: IU Episode 052: Status Revoked, Voices Suppressed: Immigration Crackdown on International Students
+EDITORIAL           sN8OO3HFoug :: Why Immigration Lawyers Should Write USCIS Cover Letters
+EDITORIAL           FBhxXe1ybxg :: How Immigration Lawyers Can Avoid Form I-130 Delays
+EDITORIAL           e0FGCbNsLjY :: How Immigration Lawyers Can Stay Organized During the H-1B Visa Process
+PODCAST             JeyVkVem7e0 :: IU Episode 051: Understanding Immigration Related Worksite Visits
+PODCAST             c6l9SWfmdcQ :: IU Episode 050: New Executive Order Targets Immigration Lawyers and Rights Defenders
+PODCAST             tJ_ies22az8 :: IU Episode 049: Transforming Online Translation - A Conversation with Motaword Co-founder Oytun Tez
+PODCAST             FopzXLbmWeY :: IU Episode 048: Business Immigration Under Trump 2.0: O & P Visas, EB-1, and AI in Immigration
+PODCAST             MV1_Bm2MxSQ :: IU Episode 047: Golden Visas - Your Ticket to European Residency with Andre Bothma
+PODCAST             SpGIiWv2z2o :: IU Episode 046: Trump's Inauguration 2025: Immediate Immigration Policy Changes and Their Impact
+PODCAST             Jl2bdVmAra8 :: IU Episode 045: Section 287(g) Exposed: The Real Cost of Collaboration with Rosanna Berardi
+PODCAST             k2f4Hiyw93U :: IU Episode 044: Unlocking Success: Digital Marketing Strategies for Immigration Lawyers
+PODCAST             wR4Zz4wuBs8 :: IU Episode 043: Trump Administration Immigration Policy - Short, Medium and Long-Term Changes
+PODCAST             JrsVF4F3JQM :: IU Episode 042: Revolutionizing Translation with AI ? Insights from Ian Hawes of ImmiTranslate
+PODCAST             dVbSKD1R6S4 :: IU Episode 041: Maximizing Every Minute with Nadine Heitz, Co-Founder and CEO of Case-Flow
+PODCAST             mWxmXTpJo0E :: IU Episode 040: Access 61: Helping Asylum Seekers With Innovative AI-Assisted Solutions
+PODCAST             4tqvLGHfZVI :: IU Episode 039: Achieving Outstanding Outcomes for Your Clients w/AILA President-Elect Jeff Joseph
+PODCAST             H2vwqcqO1Yk :: IU Episode 038: Ineffective Assistance of Counsel in The Immigration Context
+PODCAST             m2-0w5bInag :: IU Episode 037: State of the Global Talent Race - Immigration Insights
+PODCAST             KMKU9ukQk6o :: IU Episode 036: Second Residencies and Citizenship with David Lesperance
+PODCAST             NqcP1nxzfqE :: IU Episode 035: Living Up to Your Client's Trust with Immigration Attorney Tsui Yee
+PODCAST             DfrUeirvxH0 :: IU Episode 034: Immigration Policy & Foreign Relations with Gil Guerra
+PODCAST             i3Tc7dv0z9g :: IU Episode 033: Caseblink: Reinventing legal workflow with AI agents.
+PODCAST             LSAxzklIhYo :: IU Episode 032: Understanding Nationality, Citizenship, and Statelessness
+PODCAST             7xngrgm_PzQ :: IU Episode 031: Update on the Evolving Regulation of AI in Legal Practice
+PODCAST             -bIDCcwkXz8 :: IU Episode 030: Immigration from Turkey to the US: Patterns and Trends
+PODCAST             IgKQW1wkn7Y :: IU Episode 029: Inside the Lawsuit Challenging the USCIS Fee Increase
+PODCAST             18DQ0lQG0es :: IU Episode 028: Controversial Texas Immigration Law - Will SB-4 be allowed?
+PODCAST             td7WuinRn04 :: IU Episode 027: A Hierarchical Decision Model to Evaluate U.S. immigration Policies
+PODCAST             abEmt3gPQ9o :: IU Episode 026: A Novel Strategy to Overcome the H-1B Cap with Danielle Goldman
+PODCAST             QDeFjS98YR0 :: IU Episode 024: Transforming Immigration Law: Insights from Catherine Haight, Founder of Lista
+PODCAST             nF0Fs5oI7G8 :: IU Episode 025: Empowering the LGBTQ+ Community: Andrea Montavon McKillip
+PODCAST             5oQ7K3fYijk :: IU Episode 023: Secrets of Building a Successful Law Practice in the Latino Community
+PODCAST             sXNaSshGSEk :: IU Episode 022: Greg Siskind on Immigration Law Practice and the AI Revolution
+PODCAST             aOfURA1G67A :: IU Episode 021: VAILL Unveiled: Revolutionizing Legal Access with AI
+PODCAST             DrmsYZGeHlM :: IU Episode 020: New Year's Resolutions for Immigration Lawyers, Non-citizens, and the Government
+EDITORIAL           Wlw1Gc9hhdc :: Perspective 2024
+PODCAST             A-EUZg4sq9s :: IU Ep 018: Disrupting the Legal World with Thomas Martin
+PODCAST             S4f3c4nEgL0 :: IU Ep 019: Legal Engineering with Andrew Thrasher
+PODCAST             JO9jwGQrAJA :: IU Ep 017: AI Revolutionizing Immigration Practices with Nadine Navarro and Antuan Vazquez
+PODCAST             XN5oHZzArNE :: IU Ep 016: Becoming a Successful Immigration Lawyer Without Losing Your Mind with Ruby Powers
+PODCAST             7NYAogChBQs :: IU Ep 015: The Implications of Recent Immigration Bills and the AI Executive Order
+PODCAST             So4qp1XuvOo :: IU Episode 014: Palestinian Crisis: US Immigration Challenges with Marty Rosenbluth & Haia Abdel
+PODCAST             hwGRY8ncJA8 :: IU Ep 013: The Journalist's Responsibility in Shaping Immigration Narratives with Andrew Kreighbaum
+PODCAST             0R5SRQA_L0A :: IU Ep 012: Dr. Austin Kocher on Geopolitics, Borders, and Immigration Enforcement
+PODCAST             KkWSAW-kvL4 :: IU Ep 011: Resolving Delays and Reversing Denials: Federal Court Litigation with Joseph Gentile
+PODCAST             zbp1MqxN6NM :: IU Ep 010: Inside Docketwise - Meet Our Team
+PODCAST             23VXr9OMeQE :: IU Ep 009: Leveraging Social Science Expertise to Win Immigration Cases with Sharon Abramowitz
+PODCAST             neg9h285XsI :: IU Ep 008: Meet Am?lie Vavrovsky, Founder of AI-Assisted Immigration Tech Platform 'Formally'
+PODCAST             b4QotaE884g :: IU: SoloTPSEpisodes Trump Video
+PODCAST             Qunjg2MjWRc :: IU: SoloTPSEpisodes Ukraine Video
+PODCAST             TQcZa7Sl5TY :: IU: SoloTPSEpisodes Sudan Video
+PODCAST             eMeepMYOWxg :: IU Ep 007:  Reid Trautz of AILA on Future-Proofing Your Immigration Practice
+PODCAST             LHTyPykILiM :: IU Ep 006: Starting a New Law Firm in 2023 with Carolyn Elefant
+PODCAST             6b_0GExe2Ac :: IU Episode 005: Immigration Finder's Rise: Ian Almasi's Unique Journey to Law
+PODCAST             3lpLJHtJkFU :: IU Episode 004: Tech Strategies For Seasoned Immigration Lawyers
+PODCAST             _CV0rYvlPeU :: IU Episode 003: Effective Marketing Strategies for Immigration Law
+PODCAST             xS6erxTIsf0 :: IU Episode 002: A Discussion With?Ira Kurzban
+PODCAST             OuyeLL6h_dM :: IU Episode 001: Exploring the Practical Application of Chat GPT in Immigration Law Practice
+PRODUCT             xXhHf3rzaII :: Docketwise New Features Roundup (Q4 of 2022)
+PRODUCT             6OoCWPJlGXg :: Introducing SmartForms from Docketwise
+EDITORIAL           -ShurxfYsVk :: The Ultimate Guide to Immigration Law for Startups - Everything You Need to Know!
+PRODUCT             EBNoew2wuqc :: Why I Switched from INSZoom to Docketwise Immigration Software
+ALREADY-INVENTORIED dOKWbfsj440 :: Introducing Custom Reports from Docketwise
+EDITORIAL           0e2sXIrZShQ :: The Metaverse, Web 3.0 and Immigration Law
+EXCLUDED-CAPTURED   l0tV4Tye5Kk :: From Cerenade to Docketwise - The Switch
+ALREADY-INVENTORIED xCpkXjKPqVM :: Introducing e-Signatures from Docketwise
+EDITORIAL           WJ4f3BRyTyI :: Religious Workers as an Immigration Practice Niche
+EDITORIAL           nPi9ko5TGGg :: How to Think About and Maximize Your In-House Use of Legal Tech
+PRODUCT             TQMq22ENXgM :: Docketwise New Features Roundup (Q3 2022)

@@ -1,0 +1,27 @@
+# attestation-tier-report.txt -- Phase 4 exit artifact,
+# 2026-08-01. Live entries per module, per tier, with the
+# source families each module draws on.
+
+| Module                         | Conf | Prov | Total | Families                                      |
+| ------------------------------ | ---- | ---- | ----- | --------------------------------------------- |
+| case-tracking                  |    8 |    2 |    10 | help+marketing+release-notes+youtube          |
+| client-communication           |    5 |    7 |    12 | help+youtube                                  |
+| client-portal                  |    7 |   12 |    19 | help+marketing+reviews+youtube                |
+| contacts-and-matters           |    4 |   10 |    14 | help+marketing+release-notes+youtube          |
+| desktop-app                    |    0 |    1 |     1 | help                                          |
+| docketwise-iq                  |    8 |    4 |    12 | help+marketing+release-notes+reviews+youtube  |
+| docketwise-leads-crm           |    6 |    4 |    10 | help+marketing+youtube                        |
+| events                         |    2 |    2 |     4 | help+marketing+youtube                        |
+| files-and-documents            |    5 |   13 |    18 | help+marketing+youtube                        |
+| firm-settings                  |    8 |    9 |    17 | help+marketing+youtube                        |
+| free-trial                     |    1 |    0 |     1 | help+marketing                                |
+| integrations                   |   18 |    1 |    19 | help+marketing+release-notes                  |
+| internal-chat                  |    1 |    3 |     4 | help+marketing                                |
+| invoicing-and-trust-accounting |   15 |   10 |    25 | help+marketing+release-notes+youtube          |
+| login                          |    0 |    3 |     3 | help                                          |
+| notes                          |    2 |    5 |     7 | help+marketing+youtube                        |
+| personal-settings              |    0 |    1 |     1 | help                                          |
+| reports                        |    8 |    9 |    17 | help+marketing+release-notes+youtube          |
+| smart-forms                    |   23 |   18 |    41 | help+marketing+release-notes+reviews+youtube  |
+| template-automation            |    2 |    2 |     4 | help+marketing+youtube                        |
+| TOTAL                          |  123 |  116 |   239 |                                               |

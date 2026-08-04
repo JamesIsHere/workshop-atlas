@@ -1,0 +1,1388 @@
+"""Billing and trust-accounting screens (billing-ui P1+; program
+ruling 2026-08-04: this child extends app_ui in place).
+
+Rendering ONLY: zero SQL here (reads live in reads.py, the one file
+the no-logic sweep allows SQL in); every computed money figure comes
+from casework's billing/ledger modules; the reconciliation screen
+renders what the F7 engine itself computes (reconcile.py imported
+from casework-billing/verify -- the screen cannot drift from the
+oracle). Writes arrive in P2 and route through casework modules.
+
+Money is integer cents until the moment of formatting. Ledger tables
+show plain accounting numbers (negatives parenthesized, no currency
+sign per cell); headline tiles carry the $ once.
+"""
+
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+from app import billing, ledger, processor, timekeeping
+
+from app_ui import html, reads
+
+# The recon engine is the fiduciary suite's own (billing-ui goal:
+# the screen renders the oracle's numbers, never a reimplementation).
+_CWB_VERIFY = Path(__file__).resolve().parent.parent.parent \
+    / "casework-billing" / "verify"
+if str(_CWB_VERIFY) not in sys.path:
+    sys.path.insert(0, str(_CWB_VERIFY))
+import reconcile  # noqa: E402
+
+BILLING_STYLE = """
+.tiles { display: flex; gap: 1rem; flex-wrap: wrap; margin: 0 0 1.2rem; }
+.tile { background: #ffffff; border: 1px solid #d9dde3; border-radius: 6px;
+        padding: 0.9rem 1.3rem; min-width: 11.5rem; flex: 1; }
+.tile .label { font-size: 0.78rem; text-transform: uppercase;
+               letter-spacing: 0.06em; color: #6a7383; }
+.tile .value { font-size: 1.55rem; font-weight: 600; margin-top: 0.2rem;
+               font-variant-numeric: tabular-nums; color: #1a1d21; }
+.tile .sub { font-size: 0.8rem; color: #6a7383; margin-top: 0.15rem; }
+span.money { display: block; text-align: right;
+             font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill.paid { background: #e6f4e6; color: #256325; }
+.pill.outstanding { background: #fdf3e0; color: #8a5b12; }
+.pill.trust { background: #e8eefb; color: #24519e; }
+.pill.bill { background: #eef1f5; color: #4a5261; }
+.pill.holds { background: #e6f4e6; color: #256325; }
+.pill.broken { background: #fdecec; color: #8a2525; }
+.pill.refunded { background: #f3e9f7; color: #6b3a86; }
+.tabs { margin: 0 0 0.9rem; }
+.tabs a { display: inline-block; padding: 0.3rem 0.9rem; border-radius:
+          4px; text-decoration: none; color: #2456a6; }
+.tabs a.on { background: #2456a6; color: #ffffff; }
+.crumbs { font-size: 0.85rem; margin: 0 0 0.8rem; color: #6a7383; }
+.crumbs a { color: #2456a6; text-decoration: none; }
+.trail { background: #f7f8fa; border-left: 3px solid #2456a6;
+         padding: 0.7rem 1rem; margin: 0.9rem 0; }
+.trail .why { color: #6a7383; font-size: 0.85rem; }
+.identity { font-variant-numeric: tabular-nums; background: #f7f8fa;
+            border: 1px solid #d9dde3; border-radius: 6px;
+            padding: 0.8rem 1.1rem; margin: 0.6rem 0; }
+h2.formhead { font-size: 1rem; margin: 1.2rem 0 0; color: #4a5261;
+              border-top: 1px solid #e7eaee; padding-top: 1rem; }
+label.pick { display: block; margin: 0.35rem 0; font-size: 0.95rem;
+             font-variant-numeric: tabular-nums; }
+form.inline { display: inline-block; margin-right: 0.6rem; }
+form.inline button.primary { margin-top: 0; }
+form button.primary { display: block; }
+"""
+
+
+def cents_of(text):
+    """Form amount -> integer cents. Digits, one optional point, up
+    to two decimals; $ and , tolerated. Integer math only -- a float
+    never touches money (goal.md)."""
+    t = (text or "").strip().replace("$", "").replace(",", "")
+    if not t:
+        raise ValueError("an amount is required")
+    whole, _, frac = t.partition(".")
+    if len(frac) > 2 or not (whole + frac).isdigit() \
+            or not (whole or frac):
+        raise ValueError(f"amounts look like 1,234.56 -- not {text!r}")
+    return int(whole or "0") * 100 + int((frac + "00")[:2])
+
+
+def _today():
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
+def fmt_cents(cents):
+    """Accounting format, no currency sign: 1,234.56 / (1,234.56)."""
+    neg = cents < 0
+    d, c = divmod(abs(cents), 100)
+    s = f"{d:,}.{c:02d}"
+    return f"({s})" if neg else s
+
+
+def dollars(cents):
+    """Headline format: $1,234.56 / ($1,234.56)."""
+    neg = cents < 0
+    return f"(${fmt_cents(abs(cents))})" if neg else f"${fmt_cents(cents)}"
+
+
+def fmt_duration(seconds):
+    h, m = divmod(seconds // 60, 60)
+    return f"{h}h" if m == 0 else f"{h}h {m:02d}m"
+
+
+def _page(h, title, body, user):
+    styled = f"<style>{BILLING_STYLE}</style>" + body
+    h._send_page(200, html.page(title, styled, user_name=user["name"]))
+
+
+def _pill(kind, text=None):
+    return f"<span class='pill {kind}'>{html.esc(text or kind)}</span>"
+
+
+def _crumbs(*pairs):
+    parts = [html.link(href, text) if href else html.esc(text)
+             for text, href in pairs]
+    return "<p class='crumbs'>" + " / ".join(parts) + "</p>"
+
+
+def _status_pill(conn, invoice_id):
+    status = billing.invoice_status(conn, invoice_id)
+    return _pill(status, status.capitalize())
+
+
+def _select(label, name, options, selected=None, hint=None,
+            blank=None):
+    """options: (value, text) pairs; blank adds a '' choice first."""
+    h = f"<p class='hint'>{html.esc(hint)}</p>" if hint else ""
+    opts = ""
+    if blank is not None:
+        opts += f"<option value=''>{html.esc(blank)}</option>"
+    for value, text in options:
+        sel = " selected" if str(value) == str(selected) else ""
+        opts += (f"<option value='{html.esc(str(value))}'{sel}>"
+                 f"{html.esc(text)}</option>")
+    return (f"<label>{html.esc(label)}</label>{h}"
+            f"<select name='{name}'>{opts}</select>")
+
+
+def _type_pill(row):
+    return (_pill("trust", "Trust Request")
+            if row["invoice_type"] == "trust_request"
+            else _pill("bill", "Bill"))
+
+
+# --- screens ----------------------------------------------------------
+
+def billing_landing(h, conn, user, query):
+    trust_total = op_total = 0
+    for acct in ledger.list_bank_accounts(conn):
+        bal = ledger.account_balance(conn, acct["id"])
+        if acct["kind"] == "trust_bank":
+            trust_total += bal
+        else:
+            op_total += bal
+    rows = reads.invoice_rows(conn)
+    outstanding = [r for r in rows
+                   if billing.invoice_status(conn, r["id"])
+                   == "outstanding"]
+    out_sum = sum(billing.invoice_balance(conn, r["id"])
+                  for r in outstanding)
+    tiles = (
+        "<div class='tiles'>"
+        f"<div class='tile'><div class='label'>Client funds in trust"
+        f"</div><div class='value'>{dollars(trust_total)}</div>"
+        f"<div class='sub'>held, never the firm's until earned</div>"
+        f"</div>"
+        f"<div class='tile'><div class='label'>Operating</div>"
+        f"<div class='value'>{dollars(op_total)}</div>"
+        f"<div class='sub'>firm funds</div></div>"
+        f"<div class='tile'><div class='label'>Outstanding</div>"
+        f"<div class='value'>{dollars(out_sum)}</div>"
+        f"<div class='sub'>{len(outstanding)} open"
+        f" invoice{'s' if len(outstanding) != 1 else ''}</div></div>"
+        "</div>")
+
+    tab = (query.get("tab", ["outstanding"]))[0]
+    if tab not in ("outstanding", "paid", "all"):
+        tab = "outstanding"
+    tabs = "<div class='tabs'>" + "".join(
+        f"<a class='{'on' if t == tab else ''}'"
+        f" href='/billing?tab={t}'>{t.capitalize()}</a>"
+        for t in ("outstanding", "paid", "all")) + "</div>"
+    shown = [r for r in rows
+             if tab == "all"
+             or billing.invoice_status(conn, r["id"]) == tab]
+    if shown:
+        trows = []
+        for r in shown:
+            trows.append([
+                html.link(f"/billing/invoices/{r['id']}",
+                          f"#{r['number']}"),
+                _type_pill(r),
+                html.link(f"/contacts/{r['contact_id']}",
+                          r["display_name"]),
+                html.esc(r["issued_date"]),
+                _status_pill(conn, r["id"]),
+                f"<span class='money'>"
+                f"{fmt_cents(billing.invoice_balance(conn, r['id']))}"
+                f"</span>",
+            ])
+        table = html.table(["Invoice", "Type", "Client", "Issued",
+                            "Status", "Balance"], trows)
+    else:
+        table = html.empty_state(
+            "No invoices here yet. Bills and trust requests appear in"
+            " this list the moment they are created.")
+    nav = ("<div class='actions'>"
+           + f"<a href='/billing/invoices/new'>New invoice</a>"
+           + f"<a class='quiet' href='/billing/trust'>Trust"
+             f" accounting</a>"
+           + f"<a class='quiet' href='/billing/time'>Time</a>"
+           + f"<a class='quiet' href='/billing/charges/saved'>Saved"
+             f" charges</a>"
+           + f"<a class='quiet' href='/billing/recon'>Reconciliation"
+             f"</a></div>")
+    body = (f"<h1>Billing</h1>{tiles}"
+            f"<div class='card'>{nav}{tabs}{table}</div>")
+    _page(h, "Billing", body, user)
+
+
+def invoice_detail(h, conn, user, invoice_id, error=None):
+    try:
+        inv = billing.get_invoice(conn, invoice_id)
+    except billing.BillingError:
+        raise _nf()
+    contact = reads.contact_row(conn, inv["contact_id"])
+    charges = billing.invoice_charges(conn, invoice_id)
+    payments = reads.invoice_payments_of(conn, invoice_id)
+    balance = billing.invoice_balance(conn, invoice_id)
+
+    kv = [("Client", html.link(f"/contacts/{contact['id']}",
+                               contact["display_name"]))]
+    if inv["matter_id"]:
+        matter = reads.matter_row(conn, inv["matter_id"])
+        kv.append(("Matter", html.link(f"/matters/{matter['id']}",
+                                       matter["name"])))
+    kv.append(("Issued", html.esc(inv["issued_date"])))
+    if inv["due_date"]:
+        kv.append(("Due", html.esc(inv["due_date"])))
+    if inv["invoice_type"] == "trust_request":
+        kv.append(("Deposits to", html.esc(
+            reads.ledger_account_row(
+                conn, inv["trust_account_id"])["name"])))
+    kvs = "<dl class='kv'>" + "".join(
+        f"<dt>{html.esc(k)}</dt><dd>{v}</dd>" for k, v in kv) + "</dl>"
+
+    if charges:
+        crows = [[html.esc(c["description"]),
+                  html.esc(c["charge_type"]),
+                  html.esc(c["charge_date"] or ""),
+                  f"<span class='money'>{fmt_cents(c['amount_cents'])}"
+                  f"</span>"] for c in charges]
+        ctable = html.table(["Description", "Type", "Date", "Amount"],
+                            crows)
+    else:
+        ctable = html.empty_state(
+            "No charges yet. Add a charge, import saved charges, or"
+            " pull in time entries to build this invoice.")
+
+    if payments:
+        prows = []
+        for p in payments:
+            method = {"sim_card": "card", "sim_echeck": "eCheck",
+                      "trust_transfer": "trust transfer (earn-out)",
+                      "direct": "direct"}.get(p["method"], p["method"])
+            note = (" (online, simulated processor)"
+                    if p["method"] in ("sim_card", "sim_echeck") else "")
+            status = (_pill("refunded") if p["refunded"]
+                      else "")
+            prows.append([html.link(f"/billing/payments/{p['id']}",
+                                    p["payment_date"]),
+                          html.esc(method + note),
+                          status,
+                          f"<span class='money'>"
+                          f"{fmt_cents(p['amount_cents'])}</span>"])
+        ptable = html.table(["Date", "Method", "", "Amount"], prows)
+    else:
+        ptable = html.empty_state(
+            "No payments recorded. Payments appear here with their"
+            " full history -- edits become reversals, never"
+            " rewrites.")
+
+    status = billing.invoice_status(conn, invoice_id)
+
+    charge_form = (
+        f"<form method='post'"
+        f" action='/billing/invoices/{invoice_id}/charges'>"
+        f"<h2 class='formhead'>Add a charge</h2>"
+        + html.field("Description", "description")
+        + html.field("Amount", "amount",
+                     hint="Dollars and cents, e.g. 500.00")
+        + _select("Type", "charge_type",
+                  [("service", "Service"), ("expense", "Expense")])
+        + html.field("Date", "charge_date", ftype="date",
+                     value=inv["issued_date"] or _today(),
+                     required=False)
+        + "<button class='primary'>Add charge</button></form>")
+
+    import_card = ""
+    if inv["invoice_type"] == "bill":
+        saved = billing.list_saved_charges(conn)
+        open_time = reads.unbilled_time_entries(conn)
+        boxes = []
+        for s in saved:
+            boxes.append(
+                f"<label class='pick'><input type='checkbox'"
+                f" name='saved_charge' value='{s['id']}'"
+                f" style='width:auto'> {html.esc(s['description'])}"
+                f" -- {fmt_cents(s['amount_cents'])}"
+                f" ({html.esc(s['charge_type'])})</label>")
+        for t in open_time:
+            rate = t["rate_cents_per_hour"]
+            amount = ((t["duration_seconds"] * rate + 1800) // 3600
+                      if rate else None)
+            tail = (fmt_cents(amount) if amount is not None
+                    else "at the user's default rate")
+            boxes.append(
+                f"<label class='pick'><input type='checkbox'"
+                f" name='time_entry' value='{t['id']}'"
+                f" style='width:auto'> {html.esc(t['entry_date'])}"
+                f" {html.esc(t['description'] or 'time entry')}"
+                f" ({fmt_duration(t['duration_seconds'])}) -- {tail}"
+                f"</label>")
+        if boxes:
+            inner = (
+                f"<form method='post'"
+                f" action='/billing/invoices/{invoice_id}/import'>"
+                + "".join(boxes)
+                + "<button class='primary'>Import selected</button>"
+                  "</form>")
+        else:
+            inner = html.empty_state(
+                "Nothing waiting to import. Saved charges and open"
+                " time entries appear here for one-step import.")
+        import_card = (f"<div class='card'><h1>Import charges</h1>"
+                       f"{inner}</div>")
+
+    banks = ledger.list_bank_accounts(conn)
+    pay_card = ""
+    if balance > 0:
+        if inv["invoice_type"] == "trust_request":
+            dest = reads.ledger_account_row(conn,
+                                            inv["trust_account_id"])
+            pay_form = (
+                f"<form method='post'"
+                f" action='/billing/invoices/{invoice_id}/pay'>"
+                f"<input type='hidden' name='method' value='direct'>"
+                f"<p class='hint'>Deposits to"
+                f" {html.esc(dest['name'])} -- client funds, held in"
+                f" trust until earned.</p>"
+                + html.field("Amount", "amount",
+                             value=fmt_cents(balance))
+                + html.field("Date received", "payment_date",
+                             ftype="date", value=_today())
+                + "<button class='primary'>Record deposit</button>"
+                  "</form>")
+        else:
+            ops = [b for b in banks if b["kind"] == "operating_bank"]
+            trusts = [b for b in banks if b["kind"] == "trust_bank"]
+            pay_form = (
+                f"<form method='post'"
+                f" action='/billing/invoices/{invoice_id}/pay'>"
+                + _select("Method", "method",
+                          [("direct", "Direct (check, cash, wire)"),
+                           ("trust_transfer",
+                            "From client trust (earn-out)")])
+                + html.field("Amount", "amount",
+                             value=fmt_cents(balance))
+                + html.field("Date", "payment_date", ftype="date",
+                             value=_today())
+                + _select("Deposit to", "destination_account_id",
+                          [(b["id"], b["name"]) for b in banks],
+                          selected=(ops[0]["id"] if ops else None))
+                + _select("From trust account",
+                          "source_account_id",
+                          [(b["id"], b["name"]) for b in trusts],
+                          blank="-- earn-out only --",
+                          hint="Only used when paying from client"
+                               " trust: earned fees move trust ->"
+                               " operating.")
+                + _select("Trust funds held for",
+                          "source_trust_level",
+                          [("client", "The client"),
+                           ("matter", "The matter")])
+                + "<button class='primary'>Record payment</button>"
+                  "</form>")
+        pay_card = (f"<div class='card'><h1>Record a payment</h1>"
+                    f"{pay_form}</div>")
+
+    shares = reads.invoice_shares_of(conn, invoice_id)
+    share_rows = "".join(
+        f"<code class='copy'>{h.server.client_base}"
+        f"/invoice/{html.esc(s['token'])}</code>"
+        for s in shares)
+    if not shares:
+        share_rows = html.empty_state(
+            "Not shared yet. Sharing creates a private client link"
+            " to view, download, and pay this "
+            + ("trust request" if inv["invoice_type"]
+               == "trust_request" else "invoice") + " online.")
+    online = [p for p in payments
+              if p["method"] in ("sim_card", "sim_echeck")]
+    online_line = ""
+    if online:
+        settled = all(p["journal_entry_id"] for p in online)
+        online_line = (
+            "<p class='hint'>Online payment received via the"
+            " simulated processor"
+            + (" -- settled to the bank."
+               if settled else " -- awaiting settlement.") + "</p>")
+    share_card = (
+        f"<div class='card'><h1>Client link</h1>{online_line}"
+        f"{share_rows}"
+        f"<form class='inline' method='post'"
+        f" action='/billing/invoices/{invoice_id}/share'>"
+        f"<button class='primary'>Create client link</button>"
+        f"</form>"
+        f"<form class='inline' method='post'"
+        f" action='/billing/invoices/{invoice_id}/email'>"
+        f"<button class='primary'>Email to client</button>"
+        f"</form>"
+        f"<p class='hint'>Email sends the link to the client's"
+        f" address on file (synthetic outbox).</p></div>")
+
+    body = (
+        _crumbs(("Billing", "/billing"),
+                (f"Invoice #{inv['number']}", None))
+        + html.error_box(error)
+        + f"<div class='card'><h1>Invoice #{inv['number']} "
+        + ("".join((_type_pill(inv), " ",
+                    _pill(status, status.capitalize())))) + "</h1>"
+        + kvs
+        + f"<div class='actions'>"
+          f"<a class='quiet' href='/billing/invoices/{invoice_id}"
+          f"/pdf'>Download PDF</a></div></div>"
+        + f"<div class='card'><h1>Charges</h1>{ctable}{charge_form}"
+          f"</div>"
+        + import_card
+        + f"<div class='card'><h1>Payments</h1>{ptable}"
+        + f"<p><strong>Balance due:"
+          f" {dollars(max(balance, 0))}</strong></p></div>"
+        + pay_card + share_card)
+    _page(h, f"Invoice #{inv['number']}", body, user)
+
+
+def trust_overview(h, conn, user, error=None):
+    banks = ledger.list_bank_accounts(conn)
+    if banks:
+        cards = []
+        for b in banks:
+            bal = ledger.account_balance(conn, b["id"])
+            label = ("Trust (IOLTA)" if b["kind"] == "trust_bank"
+                     else "Operating")
+            cards.append(
+                f"<div class='tile'><div class='label'>{label}</div>"
+                f"<div class='value'>{dollars(bal)}</div>"
+                f"<div class='sub'>"
+                + html.link(f"/billing/trust/{b['id']}",
+                            f"{html.esc(b['name'])} ledger")
+                + "</div></div>")
+        tiles = "<div class='tiles'>" + "".join(cards) + "</div>"
+    else:
+        tiles = html.empty_state(
+            "No bank accounts yet. Create the firm's trust and"
+            " operating accounts to start the books.")
+
+    sub_rows = []
+    for b in banks:
+        if b["kind"] != "trust_bank":
+            continue
+        for s in reads.sub_accounts_of(conn, b["id"]):
+            owner = s["contact_name"] or s["matter_name"] or s["name"]
+            level = "client" if s["contact_id"] else "matter"
+            sub_rows.append([html.esc(owner), html.esc(level),
+                             html.esc(b["name"]),
+                             f"<span class='money'>"
+                             f"{fmt_cents(ledger.account_balance(conn, s['id']))}"
+                             f"</span>"])
+    if sub_rows:
+        subs = html.table(["Funds of", "Level", "Trust account",
+                           "Balance"], sub_rows)
+    else:
+        subs = html.empty_state(
+            "No client funds held yet. Paid trust requests create a"
+            " sub-ledger per client or matter, automatically.")
+
+    actions = ("<div class='actions'>"
+               "<a href='/billing/accounts/new'>New bank account</a>"
+               "<a class='quiet' href='/billing/trust/disburse'>"
+               "Disburse funds</a></div>")
+    settle_card = ""
+    if banks:
+        settle_card = (
+            "<div class='card'><h1>Processor settlement</h1>"
+            "<p class='hint'>Online payments authorize instantly;"
+            " money moves at settlement. One batch per bank: trust"
+            " settles gross, processor fees come out of operating --"
+            " never out of client funds.</p>"
+            "<form method='post' action='/billing/settle'>"
+            + html.field("Settlement date", "settle_date",
+                         ftype="date", value=_today(),
+                         required=False)
+            + "<button class='primary'>Run settlement</button>"
+              "</form></div>")
+    body = (_crumbs(("Billing", "/billing"),
+                    ("Trust accounting", None))
+            + html.error_box(error)
+            + f"<h1>Trust accounting</h1>{actions}{tiles}"
+            + f"<div class='card'><h1>Client funds</h1>{subs}</div>"
+            + settle_card)
+    _page(h, "Trust accounting", body, user)
+
+
+def account_ledger(h, conn, user, account_id):
+    acct = reads.ledger_account_row(conn, account_id)
+    if acct is None or acct["kind"] not in ("trust_bank",
+                                            "operating_bank"):
+        raise _nf()
+    bal = ledger.account_balance(conn, account_id)
+    subs = reads.sub_accounts_of(conn, account_id) \
+        if acct["kind"] == "trust_bank" else []
+    if subs:
+        srows = [[html.esc(s["contact_name"] or s["matter_name"]
+                           or s["name"]),
+                  f"<span class='money'>"
+                  f"{fmt_cents(ledger.account_balance(conn, s['id']))}"
+                  f"</span>"] for s in subs]
+        subs_html = ("<div class='card'><h1>Sub-ledgers</h1>"
+                     + html.table(["Funds of", "Balance"], srows)
+                     + "</div>")
+    else:
+        subs_html = ""
+
+    postings = reads.account_entries(conn, account_id)
+    if postings:
+        rows = []
+        for p in postings:
+            inflow = (p["side"] == "debit")  # banks are debit-normal
+            signed = p["amount_cents"] if inflow else -p["amount_cents"]
+            rows.append([html.esc(p["posted_at"]),
+                         html.link(f"/billing/journal/{p['entry_id']}",
+                                   f"e{p['entry_id']}"),
+                         html.esc(p["kind"].replace("_", " ")),
+                         html.esc(p["memo"] or ""),
+                         f"<span class='money'>{fmt_cents(signed)}"
+                         f"</span>"])
+        table = html.table(["Date", "Entry", "Kind", "Memo", "Amount"],
+                           rows)
+    else:
+        table = html.empty_state(
+            "No activity in this account yet. Every deposit, payment,"
+            " and disbursement will appear here, permanently.")
+    body = (_crumbs(("Billing", "/billing"),
+                    ("Trust accounting", "/billing/trust"),
+                    (acct["name"], None))
+            + f"<div class='card'><h1>{html.esc(acct['name'])}</h1>"
+            + f"<p><strong>Balance: {dollars(bal)}</strong></p></div>"
+            + subs_html
+            + f"<div class='card'><h1>Ledger</h1>{table}</div>")
+    _page(h, acct["name"], body, user)
+
+
+def journal_detail(h, conn, user, entry_id):
+    e = reads.journal_entry_row(conn, entry_id)
+    if e is None:
+        raise _nf()
+    postings = reads.journal_postings_of(conn, entry_id)
+    rows = [[html.esc(p["name"]),
+             html.esc(p["kind"].replace("_", " ")),
+             f"<span class='money'>"
+             f"{fmt_cents(p['amount_cents']) if p['side'] == 'debit' else ''}</span>",
+             f"<span class='money'>"
+             f"{fmt_cents(p['amount_cents']) if p['side'] == 'credit' else ''}</span>"]
+            for p in postings]
+    table = html.table(["Account", "Account kind", "Debit", "Credit"],
+                       rows)
+
+    trail = []
+    if e["reverses_entry_id"]:
+        trail.append("This entry REVERSES "
+                     + html.link(
+                         f"/billing/journal/{e['reverses_entry_id']}",
+                         f"entry e{e['reverses_entry_id']}") + ".")
+    if e["replaces_entry_id"]:
+        trail.append("This entry REPLACES "
+                     + html.link(
+                         f"/billing/journal/{e['replaces_entry_id']}",
+                         f"entry e{e['replaces_entry_id']}")
+                     + " (the corrected recording).")
+    for r in reads.entry_reversed_by(conn, entry_id):
+        trail.append("Reversed by "
+                     + html.link(f"/billing/journal/{r['id']}",
+                                 f"entry e{r['id']}") + ".")
+    for r in reads.entry_replaced_by(conn, entry_id):
+        trail.append("Replaced by "
+                     + html.link(f"/billing/journal/{r['id']}",
+                                 f"entry e{r['id']}") + ".")
+    trail_html = ""
+    if trail:
+        trail_html = ("<div class='trail'>" + "<br>".join(trail)
+                      + "<div class='why'>Posted entries are never"
+                      " edited or deleted; corrections are new"
+                      " entries, so the history is always complete."
+                      "</div></div>")
+
+    links = []
+    if e["invoice_id"]:
+        links.append(("Invoice",
+                      html.link(f"/billing/invoices/{e['invoice_id']}",
+                                f"invoice {e['invoice_id']}")))
+    events = reads.events_of_payment(conn, e["payment_id"]) \
+        if e["payment_id"] else []
+    ev_html = ""
+    if events:
+        erows = [[html.esc(ev["occurred_on"]),
+                  html.esc(ev["event_type"].replace("_", " ")),
+                  html.esc(ev["direction"]),
+                  html.esc(ev["memo"] or ""),
+                  f"<span class='money'>{fmt_cents(ev['amount_cents'])}"
+                  f"</span>"] for ev in events]
+        ev_html = ("<div class='card'><h1>Bank record</h1>"
+                   + html.table(["Date", "Event", "Direction", "Memo",
+                                 "Amount"], erows) + "</div>")
+
+    kvs = "<dl class='kv'>" + "".join(
+        f"<dt>{html.esc(k)}</dt><dd>{v}</dd>"
+        for k, v in ([("Posted", html.esc(e["posted_at"])),
+                      ("Kind", html.esc(e["kind"].replace("_", " "))),
+                      ("Memo", html.esc(e["memo"] or ""))] + links)) \
+        + "</dl>"
+    body = (_crumbs(("Billing", "/billing"),
+                    ("Trust accounting", "/billing/trust"),
+                    (f"Entry e{entry_id}", None))
+            + f"<div class='card'><h1>Journal entry e{entry_id}</h1>"
+            + kvs + trail_html + "</div>"
+            + f"<div class='card'><h1>Postings (double-entry)</h1>"
+            + table + "</div>" + ev_html)
+    _page(h, f"Journal entry e{entry_id}", body, user)
+
+
+def recon_screen(h, conn, user, query):
+    banks = ledger.list_bank_accounts(conn)
+    if not banks:
+        body = (_crumbs(("Billing", "/billing"),
+                        ("Reconciliation", None))
+                + "<div class='card'><h1>Three-way reconciliation</h1>"
+                + html.empty_state(
+                    "Nothing to reconcile yet. Once bank accounts"
+                    " carry activity, every account is checked here:"
+                    " bank statement = books = client claims.")
+                + "</div>")
+        return _page(h, "Reconciliation", body, user)
+
+    default_period = reads.max_event_date(conn)
+    period = (query.get("period", [None])[0] or default_period)
+    sections = []
+    if period is None:
+        sections.append(html.empty_state(
+            "Accounts exist but carry no bank activity yet."))
+    else:
+        for b in banks:
+            r = reconcile.three_way(conn, b["id"], period)
+            badge = (_pill("holds", "HOLDS") if r["identity_holds"]
+                     else _pill("broken", "BROKEN"))
+            identity = (
+                f"<div class='identity'>bank {fmt_cents(r['bank_balance_cents'])}"
+                f" + in transit {fmt_cents(r['deposits_in_transit_cents'])}"
+                f" - outstanding {fmt_cents(r['outstanding_disbursements_cents'])}"
+                f" = books {fmt_cents(r['book_balance_cents'])}"
+                + (f" = client claims {fmt_cents(r['sub_ledger_sum_cents'])}"
+                   if r["sub_ledger_sum_cents"] is not None else "")
+                + "</div>")
+            if r["items"]:
+                irows = [[html.esc(i["cause"]), html.esc(i["date"]),
+                          html.link(f"/billing/journal/{i['entry_id']}",
+                                    f"e{i['entry_id']}"),
+                          f"<span class='money'>"
+                          f"{fmt_cents(i['amount_cents'])}</span>"]
+                         for i in r["items"]]
+                items = html.table(["Reconciling item", "Date",
+                                    "Entry", "Amount"], irows)
+            else:
+                items = html.empty_state(
+                    "No reconciling items at this period end --"
+                    " everything cleared.")
+            sections.append(
+                f"<div class='card'><h1>{html.esc(b['name'])}"
+                f" {badge}</h1>{identity}{items}</div>")
+
+    body = (_crumbs(("Billing", "/billing"),
+                    ("Reconciliation", None))
+            + f"<h1>Three-way reconciliation</h1>"
+            + f"<p class='hint'>Period end {html.esc(period or '--')}"
+            f" -- bank statement (independent, event-derived) against"
+            f" the books against client claims. No plug figures:"
+            f" every reconciling item carries its cause.</p>"
+            + "".join(sections))
+    _page(h, "Reconciliation", body, user)
+
+
+def time_index(h, conn, user):
+    rows = reads.time_entry_rows(conn)
+    if rows:
+        trows = []
+        for t in rows:
+            rate = t["rate_cents_per_hour"]
+            if t["billed_cents"] is not None:
+                amount = t["billed_cents"]  # what actually invoiced
+            elif rate:
+                amount = (t["duration_seconds"] * rate + 1800) // 3600
+            else:
+                amount = None
+            trows.append([
+                html.esc(t["entry_date"]),
+                html.esc(t["description"] or ""),
+                html.esc(t["matter_name"] or t["contact_name"] or ""),
+                html.esc(fmt_duration(t["duration_seconds"])),
+                f"<span class='money'>"
+                f"{fmt_cents(rate) if rate else 'default'}</span>",
+                f"<span class='money'>"
+                f"{fmt_cents(amount) if amount is not None else '--'}"
+                f"</span>",
+                _pill("paid", "billed") if t["billed"]
+                else _pill("bill", "open"),
+            ])
+        table = html.table(["Date", "Description", "Matter/Client",
+                            "Time", "Rate/h", "Amount", ""], trows)
+    else:
+        table = html.empty_state(
+            "No time recorded yet. Entries logged here can be pulled"
+            " into an invoice in one step.")
+    body = (_crumbs(("Billing", "/billing"), ("Time", None))
+            + f"<div class='card'><h1>Time</h1>"
+            f"<div class='actions'><a href='/billing/time/new'>"
+            f"Record time</a></div>{table}</div>")
+    _page(h, "Time", body, user)
+
+
+def payment_detail(h, conn, user, payment_id, error=None):
+    """The corrections surface (tier 2): a payment's full story --
+    row, journal trail, bank record -- with edit-as-correction and
+    refund. 'Edit' never mutates a posted entry: the module reverses
+    and reposts, and this screen shows all of it."""
+    try:
+        p = billing.get_payment(conn, payment_id)
+    except billing.BillingError:
+        raise _nf()
+    inv = billing.get_invoice(conn, p["invoice_id"])
+    charges = billing.invoice_charges(conn, p["invoice_id"])
+    method = {"sim_card": "card (online, simulated processor)",
+              "sim_echeck": "eCheck (online, simulated processor)",
+              "trust_transfer": "trust transfer (earn-out)",
+              "direct": "direct"}.get(p["method"], p["method"])
+    assoc = next((c for c in charges
+                  if c["id"] == p["associated_charge_id"]), None)
+
+    kv = [("Invoice", html.link(f"/billing/invoices/{inv['id']}",
+                                f"Invoice #{inv['number']}")),
+          ("Method", html.esc(method)),
+          ("Amount", f"<span class='money'>"
+                     f"{fmt_cents(p['amount_cents'])}</span>"),
+          ("Date", html.esc(p["payment_date"])),
+          ("Applied to", html.esc(assoc["description"]) if assoc
+           else "the invoice balance")]
+    if p["note"]:
+        kv.append(("Note", html.esc(p["note"])))
+    if p["refunded"]:
+        kv.append(("Refund note", html.esc(p["refund_note"] or "-")))
+    kvs = "<dl class='kv'>" + "".join(
+        f"<dt>{html.esc(k)}</dt><dd>{v}</dd>" for k, v in kv) + "</dl>"
+
+    entries = reads.entries_of_payment(conn, payment_id)
+    if entries:
+        erows = []
+        for e in entries:
+            tags = []
+            if e["reverses_entry_id"]:
+                tags.append(f"reverses e{e['reverses_entry_id']}")
+            if e["replaces_entry_id"]:
+                tags.append(f"replaces e{e['replaces_entry_id']}")
+            erows.append([
+                html.link(f"/billing/journal/{e['id']}", f"e{e['id']}"),
+                html.esc(e["posted_at"]),
+                html.esc(e["kind"].replace("_", " ")),
+                html.esc(", ".join(tags)),
+                html.esc(e["memo"] or "")])
+        etable = html.table(["Entry", "Posted", "Kind", "Correction",
+                             "Memo"], erows)
+    else:
+        etable = html.empty_state(
+            "No journal entries yet -- online payments post at"
+            " settlement.")
+    trail_card = (
+        "<div class='card'><h1>Journal trail</h1>" + etable
+        + "<div class='trail'><div class='why'>Posted entries are"
+          " never edited or deleted. A correction is a reversal plus"
+          " a repost -- every version stays on the books, so the"
+          " history is always complete.</div></div></div>")
+
+    events = reads.events_of_payment(conn, payment_id)
+    ev_card = ""
+    if events:
+        evrows = [[html.esc(ev["occurred_on"]),
+                   html.esc(ev["event_type"].replace("_", " ")),
+                   html.esc(ev["direction"]),
+                   html.esc(ev["memo"] or ""),
+                   f"<span class='money'>"
+                   f"{fmt_cents(ev['amount_cents'])}</span>"]
+                  for ev in events]
+        ev_card = ("<div class='card'><h1>Bank record</h1>"
+                   + html.table(["Date", "Event", "Direction", "Memo",
+                                 "Amount"], evrows)
+                   + "<p class='hint'>Corrections appear on the bank"
+                     " side too: compensating events, never rewritten"
+                     " ones.</p></div>")
+
+    if p["refunded"]:
+        action_cards = (
+            "<div class='card'><h1>Corrections</h1>"
+            + html.empty_state(
+                "This payment is refunded and closed. The reversing"
+                " entries above are the permanent record.")
+            + "</div>")
+    else:
+        charge_opts = [(c["id"], f"{c['description']}"
+                        f" ({fmt_cents(c['amount_cents'])})")
+                       for c in charges]
+        edit_form = (
+            f"<form method='post'"
+            f" action='/billing/payments/{payment_id}/edit'>"
+            + html.field("Date", "payment_date", ftype="date",
+                         value=p["payment_date"], required=False)
+            + html.field("Amount", "amount",
+                         value=fmt_cents(p["amount_cents"]),
+                         required=False)
+            + _select("Apply to charge", "associated_charge_id",
+                      charge_opts, selected=p["associated_charge_id"],
+                      blank="-- whole invoice --",
+                      hint="Re-associating is a correction like any"
+                           " other: recorded, never overwritten.")
+            + html.field("Note", "note", required=False)
+            + "<button class='primary'>Save correction</button>"
+              "</form>")
+        refund_form = (
+            f"<form method='post'"
+            f" action='/billing/payments/{payment_id}/refund'>"
+            f"<h2 class='formhead'>Refund</h2>"
+            f"<p class='hint'>Full amount only. The books reverse;"
+            f" the bank records the money going back.</p>"
+            + html.field("Refund note", "note", required=False)
+            + "<button class='primary'>Refund in full</button>"
+              "</form>")
+        action_cards = (
+            "<div class='card'><h1>Correct this payment</h1>"
+            "<p class='hint'>Change the date, amount, or charge and"
+            " save: the original entry is reversed and a corrected"
+            " one posted. Nothing is erased.</p>"
+            + edit_form + refund_form + "</div>")
+
+    status_pill = _pill("refunded") if p["refunded"] else ""
+    body = (_crumbs(("Billing", "/billing"),
+                    (f"Invoice #{inv['number']}",
+                     f"/billing/invoices/{inv['id']}"),
+                    (f"Payment {payment_id}", None))
+            + html.error_box(error)
+            + f"<div class='card'><h1>Payment {payment_id}"
+              f" {status_pill}</h1>" + kvs + "</div>"
+            + trail_card + ev_card + action_cards)
+    _page(h, f"Payment {payment_id}", body, user)
+
+
+# --- P2 write surfaces (forms render here; every mutation routes
+# through casework modules and commits before redirecting) ----------
+
+def _contact_opts(conn):
+    return [(c["id"], c["display_name"])
+            for c in reads.list_contacts(conn)]
+
+
+def _matter_opts(conn):
+    return [(m["id"], f"{m['name']} -- {m['display_name']}")
+            for m in reads.list_matters(conn)]
+
+
+def accounts_new(h, conn, user, error=None):
+    body = (_crumbs(("Billing", "/billing"),
+                    ("Trust accounting", "/billing/trust"),
+                    ("New bank account", None))
+            + f"<div class='card narrow'><h1>New bank account</h1>"
+            + html.error_box(error)
+            + "<p class='hint'>Two accounts run the books: client"
+              " money lives in trust (IOLTA), the firm's own money"
+              " in operating. The ledger keeps them apart --"
+              " permanently.</p>"
+            + "<form method='post' action='/billing/accounts/new'>"
+            + _select("Kind", "kind",
+                      [("trust_bank", "Trust (IOLTA)"),
+                       ("operating_bank", "Operating")])
+            + html.field("Account name", "label", autofocus=True,
+                         hint="As it appears on statements, e.g."
+                              " 'First Synthetic IOLTA'.")
+            + "<button class='primary'>Create account</button>"
+              "</form></div>")
+    _page(h, "New bank account", body, user)
+
+
+def accounts_create(h, conn, uid, user):
+    f = h._form_body()
+    try:
+        ledger.create_bank_account(conn, f.get("kind", ""),
+                                   f.get("label", "").strip(), uid)
+    except ValueError as e:
+        conn.rollback()
+        return accounts_new(h, conn, user, error=str(e))
+    conn.commit()
+    return h._redirect("/billing/trust")
+
+
+def invoice_new(h, conn, user, error=None):
+    contact_opts = _contact_opts(conn)
+    crumbs = _crumbs(("Billing", "/billing"), ("New invoice", None))
+    if not contact_opts:
+        body = (crumbs + "<div class='card narrow'>"
+                "<h1>New invoice</h1>"
+                "<p>An invoice bills a client, and there are no"
+                " clients yet.</p>"
+                "<div class='actions'><a href='/contacts/new'>"
+                "Create the client first</a></div>"
+                "<p class='hint'>You will land back here in one"
+                " click.</p></div>")
+        return _page(h, "New invoice", body, user)
+    matter_opts = _matter_opts(conn)
+    trusts = [b for b in ledger.list_bank_accounts(conn)
+              if b["kind"] == "trust_bank"]
+    bill_card = (
+        f"<div class='card'><h1>New bill</h1>"
+        f"<p class='hint'>Fees and expenses the client pays the"
+        f" firm.</p>"
+        f"<form method='post' action='/billing/invoices/new'>"
+        f"<input type='hidden' name='invoice_type' value='bill'>"
+        + _select("Client", "contact_id", contact_opts)
+        + _select("Matter", "matter_id", matter_opts,
+                  blank="-- no matter --")
+        + html.field("Issue date", "issued_date", ftype="date",
+                     value=_today())
+        + "<button class='primary'>Create bill</button></form>"
+          "</div>")
+    if trusts:
+        trust_card = (
+            f"<div class='card'><h1>New trust request</h1>"
+            f"<p class='hint'>Asks the client to fund their trust"
+            f" account -- a retainer. The money stays theirs until"
+            f" it is earned out.</p>"
+            f"<form method='post' action='/billing/invoices/new'>"
+            f"<input type='hidden' name='invoice_type'"
+            f" value='trust_request'>"
+            + _select("Client", "contact_id", contact_opts)
+            + _select("Deposits to", "trust_account_id",
+                      [(b["id"], b["name"]) for b in trusts])
+            + _select("Hold funds for", "trust_level",
+                      [("client", "The client"),
+                       ("matter", "A specific matter")])
+            + _select("Matter", "matter_id", matter_opts,
+                      blank="-- client-level funds --",
+                      hint="Only needed when holding funds for a"
+                           " specific matter.")
+            + html.field("Issue date", "issued_date", ftype="date",
+                         value=_today())
+            + "<button class='primary'>Create trust request"
+              "</button></form></div>")
+    else:
+        trust_card = (
+            "<div class='card'><h1>New trust request</h1>"
+            + html.empty_state(
+                "A trust request needs a trust bank account to"
+                " deposit into.")
+            + "<div class='actions'>"
+              "<a href='/billing/accounts/new'>Create the trust"
+              " account</a></div></div>")
+    body = crumbs + html.error_box(error) + bill_card + trust_card
+    _page(h, "New invoice", body, user)
+
+
+def invoice_create(h, conn, uid, user):
+    f = h._form_body()
+    try:
+        invoice_id = billing.create_invoice(
+            conn, f.get("invoice_type", ""),
+            int(f["contact_id"]), uid,
+            f.get("issued_date") or _today(),
+            matter_id=int(f["matter_id"]) if f.get("matter_id")
+            else None,
+            trust_level=f.get("trust_level") or None,
+            trust_account_id=int(f["trust_account_id"])
+            if f.get("trust_account_id") else None)
+    except (ValueError, KeyError) as e:
+        conn.rollback()
+        return invoice_new(h, conn, user, error=str(e))
+    conn.commit()
+    return h._redirect(f"/billing/invoices/{invoice_id}")
+
+
+def charge_create(h, conn, uid, user, invoice_id):
+    f = h._form_body()
+    try:
+        billing.add_charge(
+            conn, invoice_id, f.get("charge_type", ""),
+            f.get("description", "").strip(),
+            cents_of(f.get("amount")), uid,
+            charge_date=f.get("charge_date") or None)
+    except ValueError as e:
+        conn.rollback()
+        return invoice_detail(h, conn, user, invoice_id,
+                              error=str(e))
+    conn.commit()
+    return h._redirect(f"/billing/invoices/{invoice_id}")
+
+
+def invoice_import(h, conn, uid, user, invoice_id):
+    f = h._form_body_multi()
+    saved = [int(x) for x in f.get("saved_charge", [])]
+    entries = [int(x) for x in f.get("time_entry", [])]
+    try:
+        if not saved and not entries:
+            raise billing.BillingError(
+                "pick at least one saved charge or time entry to"
+                " import")
+        if saved:
+            billing.import_saved_charges(conn, invoice_id, saved,
+                                         uid)
+        if entries:
+            billing.import_time_entries(conn, invoice_id, entries,
+                                        uid)
+    except ValueError as e:
+        conn.rollback()
+        return invoice_detail(h, conn, user, invoice_id,
+                              error=str(e))
+    conn.commit()
+    return h._redirect(f"/billing/invoices/{invoice_id}")
+
+
+def invoice_pay(h, conn, uid, user, invoice_id):
+    f = h._form_body()
+    method = f.get("method", "")
+    kwargs = {}
+    try:
+        if f.get("destination_account_id"):
+            kwargs["destination_account_id"] = \
+                int(f["destination_account_id"])
+        if method == "trust_transfer":
+            if f.get("source_account_id"):
+                kwargs["source_account_id"] = \
+                    int(f["source_account_id"])
+            kwargs["source_trust_level"] = \
+                f.get("source_trust_level") or None
+        billing.record_payment(
+            conn, invoice_id, method, cents_of(f.get("amount")),
+            f.get("payment_date") or _today(), uid, **kwargs)
+    except ValueError as e:
+        conn.rollback()
+        return invoice_detail(h, conn, user, invoice_id,
+                              error=str(e))
+    conn.commit()
+    return h._redirect(f"/billing/invoices/{invoice_id}")
+
+
+def payment_edit(h, conn, uid, user, payment_id):
+    f = h._form_body()
+    try:
+        kwargs = {}
+        if f.get("payment_date"):
+            kwargs["payment_date"] = f["payment_date"]
+        if f.get("amount", "").strip():
+            kwargs["amount_cents"] = cents_of(f["amount"])
+        if f.get("associated_charge_id"):
+            kwargs["associated_charge_id"] = \
+                int(f["associated_charge_id"])
+        if f.get("note", "").strip():
+            kwargs["note"] = f["note"].strip()
+        if not kwargs:
+            raise billing.BillingError("change at least one field to"
+                                       " record a correction")
+        billing.edit_payment(conn, payment_id, uid, _today(), **kwargs)
+    except ValueError as e:
+        conn.rollback()
+        return payment_detail(h, conn, user, payment_id, error=str(e))
+    conn.commit()
+    return h._redirect(f"/billing/payments/{payment_id}")
+
+
+def payment_refund(h, conn, uid, user, payment_id):
+    f = h._form_body()
+    try:
+        billing.refund_payment(conn, payment_id, uid, _today(),
+                               note=f.get("note", "").strip() or None)
+    except ValueError as e:
+        conn.rollback()
+        return payment_detail(h, conn, user, payment_id, error=str(e))
+    conn.commit()
+    return h._redirect(f"/billing/payments/{payment_id}")
+
+
+def invoice_email_share(h, conn, uid, user, invoice_id):
+    try:
+        billing.send_invoice_share(conn, invoice_id, uid)
+    except ValueError as e:
+        conn.rollback()
+        return invoice_detail(h, conn, user, invoice_id, error=str(e))
+    conn.commit()
+    return h._redirect(f"/billing/invoices/{invoice_id}")
+
+
+def invoice_pdf_download(h, conn, invoice_id):
+    import tempfile
+    try:
+        inv = billing.get_invoice(conn, invoice_id)
+    except billing.BillingError:
+        raise _nf()
+    with tempfile.TemporaryDirectory() as td:
+        out = Path(td) / "invoice.pdf"
+        billing.invoice_pdf(conn, invoice_id, str(out))
+        content = out.read_bytes()
+    h._send_file(content, f"invoice-{inv['number']}.pdf")
+
+
+def invoice_share(h, conn, uid, user, invoice_id):
+    try:
+        billing.share_invoice(conn, invoice_id, uid)
+    except ValueError as e:
+        conn.rollback()
+        return invoice_detail(h, conn, user, invoice_id,
+                              error=str(e))
+    conn.commit()
+    return h._redirect(f"/billing/invoices/{invoice_id}")
+
+
+def settle_post(h, conn, uid, user):
+    f = h._form_body()
+    try:
+        processor.settle(conn, f.get("settle_date") or _today(),
+                         posted_by=uid)
+    except ValueError as e:
+        conn.rollback()
+        return trust_overview(h, conn, user, error=str(e))
+    conn.commit()
+    return h._redirect("/billing/trust")
+
+
+def time_new(h, conn, user, error=None):
+    body = (_crumbs(("Billing", "/billing"),
+                    ("Time", "/billing/time"),
+                    ("Record time", None))
+            + f"<div class='card narrow'><h1>Record time</h1>"
+            + html.error_box(error)
+            + "<form method='post' action='/billing/time/new'>"
+            + html.field("Date worked", "work_date", ftype="date",
+                         value=_today())
+            + html.field("Time spent", "duration", autofocus=True,
+                         hint="Hours or minutes: 2h, 1.5h, 45m.")
+            + html.field("Hourly rate", "rate", required=False,
+                         hint="Dollars per hour, e.g. 250.00."
+                              " Leave blank to bill at your default"
+                              " rate.")
+            + html.field("Description", "description",
+                         required=False)
+            + _select("Client", "contact_id", _contact_opts(conn),
+                      blank="-- pick a client or a matter --")
+            + _select("Matter", "matter_id", _matter_opts(conn),
+                      blank="-- no matter --")
+            + "<button class='primary'>Record time</button>"
+              "</form></div>")
+    _page(h, "Record time", body, user)
+
+
+def time_create(h, conn, uid, user):
+    f = h._form_body()
+    try:
+        rate = (cents_of(f["rate"]) if f.get("rate", "").strip()
+                else None)
+        timekeeping.create_entry(
+            conn, uid, f.get("work_date") or _today(),
+            duration=f.get("duration", ""),
+            description=f.get("description", "").strip() or None,
+            contact_id=int(f["contact_id"]) if f.get("contact_id")
+            else None,
+            matter_id=int(f["matter_id"]) if f.get("matter_id")
+            else None,
+            rate_cents_per_hour=rate)
+    except ValueError as e:
+        conn.rollback()
+        return time_new(h, conn, user, error=str(e))
+    conn.commit()
+    return h._redirect("/billing/time")
+
+
+def saved_charges(h, conn, user, error=None):
+    rows = billing.list_saved_charges(conn)
+    if rows:
+        table = html.table(
+            ["Description", "Type", "Amount"],
+            [[html.esc(s["description"]),
+              html.esc(s["charge_type"]),
+              f"<span class='money'>{fmt_cents(s['amount_cents'])}"
+              f"</span>"] for s in rows])
+    else:
+        table = html.empty_state(
+            "No saved charges yet. Save the fees you bill again and"
+            " again -- filing fees, flat fees -- and add them to any"
+            " invoice in one step.")
+    body = (_crumbs(("Billing", "/billing"),
+                    ("Saved charges", None))
+            + f"<div class='card'><h1>Saved charges</h1>"
+            + html.error_box(error) + table
+            + "<form method='post' action='/billing/charges/saved'>"
+            + "<h2 class='formhead'>Save a charge</h2>"
+            + html.field("Description", "description")
+            + html.field("Amount", "amount",
+                         hint="Dollars and cents, e.g. 2,500.00")
+            + _select("Type", "charge_type",
+                      [("service", "Service"),
+                       ("expense", "Expense")])
+            + "<button class='primary'>Save charge</button>"
+              "</form></div>")
+    _page(h, "Saved charges", body, user)
+
+
+def saved_charge_create(h, conn, uid, user):
+    f = h._form_body()
+    try:
+        billing.create_saved_charge(
+            conn, f.get("description", "").strip(),
+            cents_of(f.get("amount")), f.get("charge_type", ""), uid)
+    except ValueError as e:
+        conn.rollback()
+        return saved_charges(h, conn, user, error=str(e))
+    conn.commit()
+    return h._redirect("/billing/charges/saved")
+
+
+def disburse_form(h, conn, user, error=None):
+    trusts = [b for b in ledger.list_bank_accounts(conn)
+              if b["kind"] == "trust_bank"]
+    crumbs = _crumbs(("Billing", "/billing"),
+                     ("Trust accounting", "/billing/trust"),
+                     ("Disburse funds", None))
+    if not trusts:
+        body = (crumbs + "<div class='card narrow'>"
+                "<h1>Disburse funds</h1>"
+                + html.empty_state(
+                    "Disbursements pay third parties out of a"
+                    " client's trust funds -- and there is no trust"
+                    " account yet.")
+                + "<div class='actions'>"
+                  "<a href='/billing/accounts/new'>Create the trust"
+                  " account</a></div></div>")
+        return _page(h, "Disburse funds", body, user)
+    body = (crumbs
+            + f"<div class='card narrow'><h1>Disburse funds</h1>"
+            + html.error_box(error)
+            + "<p class='hint'>Pays a third party -- USCIS, a"
+              " provider -- out of funds held in trust. The client's"
+              " sub-ledger and the trust account move together.</p>"
+            + "<form method='post' action='/billing/trust/disburse'>"
+            + _select("From trust account", "account_id",
+                      [(b["id"], b["name"]) for b in trusts])
+            + _select("Funds held for client", "contact_id",
+                      _contact_opts(conn),
+                      blank="-- or pick a matter below --")
+            + _select("Funds held for matter", "matter_id",
+                      _matter_opts(conn), blank="-- no matter --")
+            + html.field("Amount", "amount",
+                         hint="Dollars and cents, e.g. 1,200.00")
+            + html.field("Date", "disburse_date", ftype="date",
+                         value=_today())
+            + html.field("Pay to", "counterparty",
+                         hint="Who receives the money, e.g."
+                              " SYNTH-USCIS.")
+            + html.field("Memo", "memo", required=False)
+            + "<button class='primary'>Disburse</button>"
+              "</form></div>")
+    _page(h, "Disburse funds", body, user)
+
+
+def disburse_post(h, conn, uid, user):
+    f = h._form_body()
+    try:
+        ledger.disburse(
+            conn, int(f["account_id"]), cents_of(f.get("amount")),
+            f.get("disburse_date") or _today(), uid,
+            contact_id=int(f["contact_id"]) if f.get("contact_id")
+            else None,
+            matter_id=int(f["matter_id"]) if f.get("matter_id")
+            else None,
+            counterparty=f.get("counterparty", "").strip() or None,
+            memo=f.get("memo", "").strip() or None)
+    except (ValueError, KeyError) as e:
+        conn.rollback()
+        return disburse_form(h, conn, user, error=str(e))
+    conn.commit()
+    return h._redirect("/billing/trust")
+
+
+# --- router -----------------------------------------------------------
+
+def _nf():
+    from app_ui.server import _NotFound
+    return _NotFound()
+
+
+def _id(seg):
+    try:
+        return int(seg)
+    except ValueError:
+        raise _nf() from None
+
+
+def route(h, conn, method, segs, query, now, uid, user):
+    """All /billing/* dispatch. Raises server._NotFound for anything
+    unrouted -- the tier-3 fence rides on that. Literal segments
+    (new / saved / disburse) match before id parses."""
+    if method == "GET":
+        if segs == ["billing"]:
+            return billing_landing(h, conn, user, query)
+        if segs == ["billing", "accounts", "new"]:
+            return accounts_new(h, conn, user)
+        if segs == ["billing", "invoices", "new"]:
+            return invoice_new(h, conn, user)
+        if segs == ["billing", "charges", "saved"]:
+            return saved_charges(h, conn, user)
+        if segs == ["billing", "time", "new"]:
+            return time_new(h, conn, user)
+        if segs == ["billing", "trust", "disburse"]:
+            return disburse_form(h, conn, user)
+        if segs == ["billing", "trust"]:
+            return trust_overview(h, conn, user)
+        if len(segs) == 3 and segs[:2] == ["billing", "trust"]:
+            return account_ledger(h, conn, user, _id(segs[2]))
+        if len(segs) == 4 and segs[:2] == ["billing", "invoices"] \
+                and segs[3] == "pdf":
+            return invoice_pdf_download(h, conn, _id(segs[2]))
+        if len(segs) == 3 and segs[:2] == ["billing", "invoices"]:
+            return invoice_detail(h, conn, user, _id(segs[2]))
+        if len(segs) == 3 and segs[:2] == ["billing", "journal"]:
+            return journal_detail(h, conn, user, _id(segs[2]))
+        if len(segs) == 3 and segs[:2] == ["billing", "payments"]:
+            return payment_detail(h, conn, user, _id(segs[2]))
+        if segs == ["billing", "recon"]:
+            return recon_screen(h, conn, user, query)
+        if segs == ["billing", "time"]:
+            return time_index(h, conn, user)
+    if method == "POST":
+        if segs == ["billing", "accounts", "new"]:
+            return accounts_create(h, conn, uid, user)
+        if segs == ["billing", "invoices", "new"]:
+            return invoice_create(h, conn, uid, user)
+        if segs == ["billing", "charges", "saved"]:
+            return saved_charge_create(h, conn, uid, user)
+        if segs == ["billing", "time", "new"]:
+            return time_create(h, conn, uid, user)
+        if segs == ["billing", "trust", "disburse"]:
+            return disburse_post(h, conn, uid, user)
+        if segs == ["billing", "settle"]:
+            return settle_post(h, conn, uid, user)
+        if len(segs) == 4 and segs[:2] == ["billing", "invoices"]:
+            invoice_id = _id(segs[2])
+            if segs[3] == "charges":
+                return charge_create(h, conn, uid, user, invoice_id)
+            if segs[3] == "import":
+                return invoice_import(h, conn, uid, user, invoice_id)
+            if segs[3] == "pay":
+                return invoice_pay(h, conn, uid, user, invoice_id)
+            if segs[3] == "share":
+                return invoice_share(h, conn, uid, user, invoice_id)
+            if segs[3] == "email":
+                return invoice_email_share(h, conn, uid, user,
+                                           invoice_id)
+        if len(segs) == 4 and segs[:2] == ["billing", "payments"]:
+            payment_id = _id(segs[2])
+            if segs[3] == "edit":
+                return payment_edit(h, conn, uid, user, payment_id)
+            if segs[3] == "refund":
+                return payment_refund(h, conn, uid, user, payment_id)
+    raise _nf()

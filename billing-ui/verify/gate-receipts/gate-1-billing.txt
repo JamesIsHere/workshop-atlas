@@ -1,0 +1,1 @@
+billing: 25 green, 0 red, 0 pending, 0 parked; checks pass; verdict: GREEN

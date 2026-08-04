@@ -1,0 +1,297 @@
+"""The ONE module allowed to read casework tables with SQL.
+
+goal.md's no-logic rule, made mechanical (see verify/sweeps.py):
+every other app_ui file contains zero SQL and zero .execute calls;
+mutations NEVER happen here or anywhere else in app_ui -- they go
+through casework's app modules. This file is SELECT-only display
+reads that casework's modules do not expose; the sweep fails the
+build if anything else creeps in.
+"""
+
+
+def user_count(conn):
+    return conn.execute("SELECT count(*) FROM users").fetchone()[0]
+
+
+def get_user(conn, user_id):
+    return conn.execute("SELECT * FROM users WHERE id=?",
+                        (user_id,)).fetchone()
+
+
+def session_row(conn, token):
+    """Session + user join for the pre-MFA states (twofa_passed=0),
+    which auth.session_user deliberately refuses."""
+    return conn.execute(
+        "SELECT s.token, s.user_id, s.twofa_passed, u.twofa_method,"
+        " u.email, u.name FROM sessions s JOIN users u ON u.id=s.user_id"
+        " WHERE s.token=?", (token,)).fetchone()
+
+
+def latest_twofa_email(conn, user_id):
+    """The current login-code email, for the synthetic-mailbox panel.
+    In production this message arrives in the user's real inbox."""
+    return conn.execute(
+        "SELECT subject, body FROM email_outbox WHERE template='twofa_code'"
+        " AND entity_type='users' AND entity_id=? ORDER BY id DESC LIMIT 1",
+        (user_id,)).fetchone()
+
+
+# --- P1 display reads (anchor-path screens) ---
+
+def counts(conn):
+    return {name: conn.execute(
+        f"SELECT count(*) FROM {table} WHERE deleted_at IS NULL"
+        ).fetchone()[0]
+        for name, table in (("contacts", "contacts"),
+                            ("matters", "matters"),
+                            ("events", "events"),
+                            ("files", "files"),
+                            ("tasks", "tasks"),
+                            ("notes", "notes"))}
+
+
+def list_contacts(conn):
+    return conn.execute(
+        "SELECT id, kind, display_name, created_at FROM contacts"
+        " WHERE deleted_at IS NULL ORDER BY display_name").fetchall()
+
+
+def contact_row(conn, contact_id):
+    return conn.execute(
+        "SELECT * FROM contacts WHERE id=? AND deleted_at IS NULL",
+        (contact_id,)).fetchone()
+
+
+def contact_matters(conn, contact_id):
+    return conn.execute(
+        "SELECT id, name, created_at FROM matters WHERE"
+        " primary_contact_id=? AND deleted_at IS NULL ORDER BY id",
+        (contact_id,)).fetchall()
+
+
+def matter_row(conn, matter_id):
+    return conn.execute(
+        "SELECT * FROM matters WHERE id=? AND deleted_at IS NULL",
+        (matter_id,)).fetchone()
+
+
+def matter_smart_forms(conn, matter_id):
+    return conn.execute(
+        "SELECT id, title, created_at FROM smart_forms WHERE matter_id=?"
+        " AND deleted_at IS NULL ORDER BY id", (matter_id,)).fetchall()
+
+
+def matter_events(conn, matter_id):
+    return conn.execute(
+        "SELECT id, title, starts_at FROM events WHERE matter_id=?"
+        " AND deleted_at IS NULL ORDER BY starts_at, id",
+        (matter_id,)).fetchall()
+
+
+def smart_form_row(conn, smart_form_id):
+    return conn.execute(
+        "SELECT * FROM smart_forms WHERE id=? AND deleted_at IS NULL",
+        (smart_form_id,)).fetchone()
+
+
+def invitations_of(conn, smart_form_id):
+    """Invitation rows WITH tokens -- the firm's copyable link."""
+    return conn.execute(
+        "SELECT id, token, channel, status, status_at FROM"
+        " intake_invitations WHERE smart_form_id=? ORDER BY id",
+        (smart_form_id,)).fetchall()
+
+
+def event_row(conn, event_id):
+    return conn.execute(
+        "SELECT * FROM events WHERE id=? AND deleted_at IS NULL",
+        (event_id,)).fetchone()
+
+
+def event_reminders(conn, event_id):
+    return conn.execute(
+        "SELECT offset_value, offset_unit, channel FROM event_reminders"
+        " WHERE event_id=? ORDER BY id", (event_id,)).fetchall()
+
+
+# --- P2 display reads (browse surfaces) ---
+
+def list_matters(conn):
+    return conn.execute(
+        "SELECT m.id, m.name, m.created_at, c.id AS contact_id,"
+        " c.display_name FROM matters m JOIN contacts c ON"
+        " c.id = m.primary_contact_id WHERE m.deleted_at IS NULL"
+        " ORDER BY m.id").fetchall()
+
+
+def task_row(conn, task_id):
+    return conn.execute(
+        "SELECT * FROM tasks WHERE id=? AND deleted_at IS NULL",
+        (task_id,)).fetchone()
+
+
+def note_row(conn, note_id):
+    return conn.execute(
+        "SELECT * FROM notes WHERE id=? AND deleted_at IS NULL",
+        (note_id,)).fetchone()
+
+
+def note_categories(conn):
+    return conn.execute(
+        "SELECT id, name FROM note_categories WHERE deleted_at IS NULL"
+        ).fetchall()
+
+
+def firm_settings_all(conn):
+    return conn.execute(
+        "SELECT key, value FROM firm_settings ORDER BY key").fetchall()
+
+
+def list_users(conn):
+    return conn.execute(
+        "SELECT id, name, email, role_label, is_admin, deactivated_at"
+        " FROM users WHERE deleted_at IS NULL ORDER BY id").fetchall()
+
+
+# --- billing display reads (billing-ui P1; program ruling 2026-08-04:
+# SQL stays here, rendering in billing_ui.py, writes in casework) ---
+
+def invoice_rows(conn):
+    """Invoice list joined to contact display names; status/balance
+    are computed by billing module calls in the view (derived, never
+    stored -- fx-0070)."""
+    return conn.execute(
+        "SELECT i.id, i.invoice_type, i.number, i.number_scope,"
+        " i.issued_date, i.due_date, i.matter_id, i.contact_id,"
+        " c.display_name FROM invoices i JOIN contacts c ON"
+        " c.id = i.contact_id WHERE i.deleted_at IS NULL"
+        " ORDER BY i.id DESC").fetchall()
+
+
+def invoice_payments_of(conn, invoice_id):
+    return conn.execute(
+        "SELECT * FROM invoice_payments WHERE invoice_id=? AND"
+        " deleted_at IS NULL ORDER BY id", (invoice_id,)).fetchall()
+
+
+def sub_accounts_of(conn, bank_id):
+    """Client/matter sub-accounts under a trust bank, with the
+    owning entity's name."""
+    return conn.execute(
+        "SELECT a.id, a.kind, a.name, a.contact_id, a.matter_id,"
+        " c.display_name AS contact_name, m.name AS matter_name"
+        " FROM ledger_accounts a LEFT JOIN contacts c ON"
+        " c.id = a.contact_id LEFT JOIN matters m ON m.id = a.matter_id"
+        " WHERE a.parent_id=? AND a.deleted_at IS NULL ORDER BY a.id",
+        (bank_id,)).fetchall()
+
+
+def ledger_account_row(conn, account_id):
+    return conn.execute(
+        "SELECT * FROM ledger_accounts WHERE id=? AND deleted_at IS"
+        " NULL", (account_id,)).fetchone()
+
+
+def account_entries(conn, account_id):
+    """This account's postings, entry context attached, newest first."""
+    return conn.execute(
+        "SELECT p.id AS posting_id, p.side, p.amount_cents,"
+        " e.id AS entry_id, e.kind, e.memo, e.posted_at,"
+        " e.reverses_entry_id, e.replaces_entry_id, e.invoice_id"
+        " FROM journal_postings p JOIN journal_entries e ON"
+        " e.id = p.entry_id WHERE p.account_id=?"
+        " ORDER BY e.posted_at DESC, e.id DESC", (account_id,)).fetchall()
+
+
+def journal_entry_row(conn, entry_id):
+    return conn.execute(
+        "SELECT * FROM journal_entries WHERE id=?",
+        (entry_id,)).fetchone()
+
+
+def journal_postings_of(conn, entry_id):
+    return conn.execute(
+        "SELECT p.side, p.amount_cents, a.id AS account_id, a.name,"
+        " a.kind FROM journal_postings p JOIN ledger_accounts a ON"
+        " a.id = p.account_id WHERE p.entry_id=? ORDER BY p.id",
+        (entry_id,)).fetchall()
+
+
+def entry_reversed_by(conn, entry_id):
+    return conn.execute(
+        "SELECT id FROM journal_entries WHERE reverses_entry_id=?",
+        (entry_id,)).fetchall()
+
+
+def entry_replaced_by(conn, entry_id):
+    return conn.execute(
+        "SELECT id FROM journal_entries WHERE replaces_entry_id=?",
+        (entry_id,)).fetchall()
+
+
+def events_of_payment(conn, payment_id):
+    return conn.execute(
+        "SELECT * FROM external_events WHERE payment_id=? ORDER BY id",
+        (payment_id,)).fetchall()
+
+
+def time_entry_rows(conn):
+    """Time entries with billed linkage (a charge imported from the
+    entry) and the entity names."""
+    return conn.execute(
+        "SELECT t.id, t.entry_date, t.description, t.duration_seconds,"
+        " t.rate_cents_per_hour, t.contact_id, t.matter_id,"
+        " c.display_name AS contact_name, m.name AS matter_name,"
+        " (SELECT COUNT(*) FROM invoice_charges ic WHERE"
+        "  ic.time_entry_id = t.id AND ic.deleted_at IS NULL) AS billed,"
+        " (SELECT ic.amount_cents FROM invoice_charges ic WHERE"
+        "  ic.time_entry_id = t.id AND ic.deleted_at IS NULL"
+        "  ORDER BY ic.id LIMIT 1) AS billed_cents"
+        " FROM time_entries t LEFT JOIN contacts c ON c.id=t.contact_id"
+        " LEFT JOIN matters m ON m.id=t.matter_id"
+        " WHERE t.deleted_at IS NULL ORDER BY t.entry_date DESC, t.id"
+        " DESC").fetchall()
+
+
+def max_event_date(conn):
+    return conn.execute(
+        "SELECT MAX(occurred_on) FROM external_events").fetchone()[0]
+
+
+# --- billing display reads (billing-ui P2: lifecycle write screens) ---
+
+def invoice_shares_of(conn, invoice_id):
+    """Share rows WITH tokens -- the firm's copyable client link
+    (mirrors invitations_of; the client link is the firm's to hand
+    out)."""
+    return conn.execute(
+        "SELECT id, token, created_at FROM invoice_shares WHERE"
+        " invoice_id=? AND deleted_at IS NULL ORDER BY id",
+        (invoice_id,)).fetchall()
+
+
+def entries_of_payment(conn, payment_id):
+    """The payment's full journal story: its own entries plus the
+    reversal entries that corrected them (reversals carry
+    reverses_entry_id, not payment_id)."""
+    return conn.execute(
+        "SELECT e.* FROM journal_entries e WHERE e.payment_id=?"
+        " OR e.reverses_entry_id IN (SELECT id FROM journal_entries"
+        " WHERE payment_id=?) ORDER BY e.id",
+        (payment_id, payment_id)).fetchall()
+
+
+def unbilled_time_entries(conn):
+    """Time entries with no live imported charge -- the import
+    picker's choices (importing a billed entry is a module-level
+    error; the picker never offers one)."""
+    return conn.execute(
+        "SELECT t.id, t.entry_date, t.description, t.duration_seconds,"
+        " t.rate_cents_per_hour, t.user_id, t.contact_id, t.matter_id,"
+        " c.display_name AS contact_name, m.name AS matter_name"
+        " FROM time_entries t LEFT JOIN contacts c ON c.id=t.contact_id"
+        " LEFT JOIN matters m ON m.id=t.matter_id"
+        " WHERE t.deleted_at IS NULL AND NOT EXISTS"
+        " (SELECT 1 FROM invoice_charges ic WHERE ic.time_entry_id=t.id"
+        "  AND ic.deleted_at IS NULL)"
+        " ORDER BY t.entry_date, t.id").fetchall()

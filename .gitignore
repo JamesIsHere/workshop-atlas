@@ -1,0 +1,17 @@
+# Databases and their file stores never leave the machine:
+# cold-run/rehearsal dbs under casework-ui/data/ carry real-ish PII
+# (project rule); demo/walk dbs are regenerable or retained locally
+# as completion proof.
+*.db
+data/
+storage/
+
+# Python
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+
+# Spikes-era JS artifacts
+node_modules/

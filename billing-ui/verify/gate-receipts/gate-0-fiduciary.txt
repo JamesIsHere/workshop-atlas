@@ -1,0 +1,9 @@
+F1 BALANCE: 15 entries checked, 0 unbalanced  [PASS]
+F2 CONTROL: 1 trust banks checked, 0 identity violations  [PASS]
+F3 NO-OVERDRAFT: 16 trust postings replayed, 0 negative points  [PASS]
+F4 AVAILABILITY: 0 over-available outflow entries  [PASS]
+F5 SEGREGATION: 15 entries checked, 0 violations  [PASS]
+F6 GROSS-VS-NET: 0 fee-into-trust entries, 0 batch arithmetic errors, 0 net-mode trust batches, 0 event-linkage mismatches  [PASS]
+F7 THREE-WAY-RECON: 2 accounts x 2 periods, 5 reconciling items enumerated, 0 identity breaks  [PASS]
+F8 IMMUTABILITY: probe held, 0 forbidden audit rows  [PASS]
+fiduciary: 8 pass, 0 red, 0 stub; verdict: GREEN

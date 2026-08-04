@@ -1,0 +1,37 @@
+# clock-gauntlet-report -- P3 U3.1 (verifier hardening)
+
+run started: 2026-08-03T05:18:04Z
+property: every verifier green under any single consistent clock
+
+clock pre-09Z  (hunts: time-of-day assumptions (fire-time class))
+  PASS ui-walk  exit 0  start 2026-08-03T04:30:00Z  ui-walk: 13 pass, 0 pending, 0 fail; sweeps pass; verdict GREEN
+  PASS spine    exit 0  start 2026-08-03T04:30:00Z  spine: 107 green, 0 red, 0 pending; checks pass
+  PASS anchor   exit 0  start 2026-08-03T04:30:00Z  anchor: PASS (1.323s of 900s budget)
+
+clock post-09Z  (hunts: control arm: date effects isolated from time-of-day)
+  PASS ui-walk  exit 0  start 2026-08-03T14:30:00Z  ui-walk: 13 pass, 0 pending, 0 fail; sweeps pass; verdict GREEN
+  PASS spine    exit 0  start 2026-08-03T14:30:00Z  spine: 107 green, 0 red, 0 pending; checks pass
+  PASS anchor   exit 0  start 2026-08-03T14:30:00Z  anchor: PASS (1.331s of 900s budget)
+
+clock plus-400d  (hunts: expiring literals; year rollover (esign class))
+  PASS ui-walk  exit 0  start 2027-09-07T05:18:42Z  ui-walk: 13 pass, 0 pending, 0 fail; sweeps pass; verdict GREEN
+  PASS spine    exit 0  start 2027-09-07T05:18:44Z  spine: 107 green, 0 red, 0 pending; checks pass
+  PASS anchor   exit 0  start 2027-09-07T05:18:59Z  anchor: PASS (1.334s of 900s budget)
+
+clock midnight-straddle  (hunts: date captured before the flip, compared after)
+  PASS ui-walk  exit 0  start 2026-08-03T23:59:59Z  ui-walk: 13 pass, 0 pending, 0 fail; sweeps pass; verdict GREEN
+  PASS spine    exit 0  start 2026-08-03T23:59:59Z  spine: 107 green, 0 red, 0 pending; checks pass
+  PASS anchor   exit 0  start 2026-08-03T23:59:59Z  anchor: PASS (1.317s of 900s budget)
+
+clock new-years-eve  (hunts: year+month+day all roll mid-run)
+  PASS ui-walk  exit 0  start 2026-12-31T23:59:59Z  ui-walk: 13 pass, 0 pending, 0 fail; sweeps pass; verdict GREEN
+  PASS spine    exit 0  start 2026-12-31T23:59:59Z  spine: 107 green, 0 red, 0 pending; checks pass
+  PASS anchor   exit 0  start 2026-12-31T23:59:59Z  anchor: PASS (1.330s of 900s budget)
+
+real-clock closing runs (reports on disk stay truthful; walk x2 = completion-proof receipt)
+  PASS ui-walk  exit 0  ui-walk: 13 pass, 0 pending, 0 fail; sweeps pass; verdict GREEN
+  PASS ui-walk  exit 0  ui-walk: 13 pass, 0 pending, 0 fail; sweeps pass; verdict GREEN
+  PASS spine    exit 0  spine: 107 green, 0 red, 0 pending; checks pass
+  PASS anchor   exit 0  anchor: PASS (1.322s of 900s budget)
+
+verdict: GREEN

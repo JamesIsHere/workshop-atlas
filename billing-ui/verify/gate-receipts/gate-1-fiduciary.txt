@@ -1,0 +1,1 @@
+fiduciary: 8 pass, 0 red, 0 stub; verdict: GREEN

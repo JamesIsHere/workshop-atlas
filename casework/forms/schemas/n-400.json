@@ -1,0 +1,169 @@
+{
+  "code": "n-400",
+  "title": "Application for Naturalization",
+  "agency": "USCIS",
+  "edition": "01/20/25",
+  "efilable": 1,
+  "pdf": "n-400.pdf",
+  "roles": [
+    "applicant"
+  ],
+  "primary_role": "applicant",
+  "tabs": [
+    "Applicant",
+    "Eligibility"
+  ],
+  "questions": [
+    {
+      "key": "q.n400.family_name",
+      "label": "Current legal family name",
+      "qtype": "text",
+      "tab": "Applicant",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "applicant",
+          "key": "bio.family_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].P2_Line1_FamilyName[0]"
+      ]
+    },
+    {
+      "key": "q.n400.given_name",
+      "label": "Current legal given name",
+      "qtype": "text",
+      "tab": "Applicant",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "applicant",
+          "key": "bio.given_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].P2_Line1_GivenName[0]"
+      ]
+    },
+    {
+      "key": "q.n400.middle_name",
+      "label": "Current legal middle name",
+      "qtype": "text",
+      "tab": "Applicant",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "applicant",
+          "key": "bio.middle_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].P2_Line1_MiddleName[0]"
+      ]
+    },
+    {
+      "key": "q.n400.a_number",
+      "label": "A-Number",
+      "qtype": "text",
+      "tab": "Applicant",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "applicant",
+          "key": "imm.a_number"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].#area[0].Line1_AlienNumber[0]"
+      ]
+    },
+    {
+      "key": "q.n400.date_of_birth",
+      "label": "Date of birth",
+      "qtype": "date",
+      "tab": "Applicant",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "applicant",
+          "key": "bio.date_of_birth"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].P2_Line8_DateOfBirth[0]"
+      ]
+    },
+    {
+      "key": "q.n400.country_of_nationality",
+      "label": "Country of nationality",
+      "qtype": "text",
+      "tab": "Applicant",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "applicant",
+          "key": "bio.country_of_birth"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].P2_Line11_CountryOfNationality[0]"
+      ]
+    },
+    {
+      "key": "q.n400.prior_family_name",
+      "label": "Other family names used since birth",
+      "qtype": "text",
+      "tab": "Applicant",
+      "repeating": true,
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "applicant",
+          "key": "bio.prior_family_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Line2_FamilyName1[0]",
+        "form1[0].#subform[0].Line2_FamilyName2[0]"
+      ]
+    },
+    {
+      "key": "q.n400.prior_given_name",
+      "label": "Other given names used since birth",
+      "qtype": "text",
+      "tab": "Applicant",
+      "repeating": true,
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "applicant",
+          "key": "bio.prior_given_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Line3_GivenName1[0]",
+        "form1[0].#subform[0].Line3_GivenName2[0]"
+      ]
+    },
+    {
+      "key": "q.n400.date_became_lpr",
+      "label": "Date you became a lawful permanent resident",
+      "qtype": "date",
+      "tab": "Eligibility",
+      "pdf_fields": [
+        "form1[0].#subform[1].P2_Line9_DateBecamePermanentResident[0]"
+      ]
+    },
+    {
+      "key": "q.n400.uscis_elis_account",
+      "label": "USCIS online account number",
+      "qtype": "text",
+      "tab": "Eligibility",
+      "pdf_fields": [
+        "form1[0].#subform[1].P2_Line6_USCISELISAcctNumber[0]"
+      ]
+    }
+  ],
+  "attachments": []
+}

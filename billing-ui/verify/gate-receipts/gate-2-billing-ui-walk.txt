@@ -1,0 +1,27 @@
+# billing-ui-walk-report -- verifier 1
+
+run started: 2026-08-04T06:56:28Z
+
+PASS    setup + login                      0.104s  fresh db; admin created; MFA enrolled; dashboard reached
+PASS    client + matter (existing UI)      0.010s  contact 1 + matter 1 via existing screens
+PASS    billing landing + nav              0.250s  billing area reachable; nav carries Billing
+PASS    bank accounts by click             0.033s  trust bank 1 + operating 2 created by click
+PASS    consult bill paid direct           0.039s  consult bill 1 paid direct; operating funded
+PASS    trust request paid online          0.043s  retainer 5,000.00 paid by the client over the frozen client surface; firm sees Paid + card status line
+PASS    settlement by click                0.038s  settled by click: gross 5,000.00 to trust; fee 150.30
+PASS    time entry                         0.017s  2h at 250.00/h entered by click; list shows 500.00
+PASS    bill import + earn-out             0.056s  bill 3,000.00 (saved charge + imported 2h) earned out
+PASS    disbursement                       0.018s  1,200.00 disbursed to SYNTH-USCIS; client funds 800.00
+PENDING payment edit = reversal trail      0.010s  /billing/payments/1 not built
+PASS    invoice PDF                        0.016s  invoice PDF downloaded (1159 bytes), read back
+PASS    ledger drill-down                  0.014s  ledger drill-down: account -> sub-ledger -> journal detail with debit/credit legs; negatives parenthesized
+PASS    reconciliation screen              0.002s  three-way reconciliation screen renders; identity holds
+PASS    tier-3 fence                       0.027s  8 deferred routes correctly absent
+PASS    billing audit chain                0.000s  billing audit legs present, story-ordered ([57, 59, 61])
+PASS    fiduciary on walked db             0.001s  fiduciary suite on the UI-walked db: fiduciary: 8 pass, 0 red, 0 stub; verdict: GREEN
+
+# supporting sweeps
+PASS float-sweep: no float() and no true /100 in app_ui
+
+steps: 16 pass, 1 pending, 0 fail; total 0.680s
+verdict: ON TRACK (pending screens)

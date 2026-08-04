@@ -1,0 +1,31 @@
+GREEN   invoicing-and-trust-accounting.module-exists
+GREEN   invoicing-and-trust-accounting.invoice-creation
+GREEN   invoicing-and-trust-accounting.trust-requests
+GREEN   invoicing-and-trust-accounting.trust-bank-accounts
+GREEN   invoicing-and-trust-accounting.trust-ledger
+GREEN   invoicing-and-trust-accounting.trust-transfer-payment
+GREEN   invoicing-and-trust-accounting.trust-disbursements
+GREEN   invoicing-and-trust-accounting.direct-payment-recording
+GREEN   invoicing-and-trust-accounting.payment-editing
+GREEN   invoicing-and-trust-accounting.payment-refunds
+GREEN   invoicing-and-trust-accounting.payment-charge-association
+GREEN   invoicing-and-trust-accounting.online-card-payment
+GREEN   invoicing-and-trust-accounting.invoice-sharing
+GREEN   invoicing-and-trust-accounting.payment-reminders
+GREEN   invoicing-and-trust-accounting.bulk-invoice-sharing
+GREEN   invoicing-and-trust-accounting.bulk-invoice-download
+GREEN   invoicing-and-trust-accounting.automatic-late-fees
+GREEN   invoicing-and-trust-accounting.saved-charges
+GREEN   invoicing-and-trust-accounting.payment-plans
+GREEN   invoicing-and-trust-accounting.time-tracking
+GREEN   invoicing-and-trust-accounting.time-entry-invoice-import
+GREEN   invoicing-and-trust-accounting.invoice-translation
+GREEN   invoicing-and-trust-accounting.invoice-access-permissions
+GREEN   invoicing-and-trust-accounting.default-invoice-settings
+GREEN   invoicing-and-trust-accounting.global-invoice-numbering
+CHECK   csv-export invoices: 10 cols x 0 rows (table 0) pass
+CHECK   csv-export payments: 7 cols x 0 rows (table 0) pass
+CHECK   csv-export time_entries: 7 cols x 0 rows (table 0) pass
+CHECK   csv-export trust_ledger: 8 cols x 16 rows (table 16) pass
+CHECK   float-sweep: 0 REAL columns, 0 float() on cents pass
+billing: 25 green, 0 red, 0 pending, 0 parked; checks pass; verdict: GREEN

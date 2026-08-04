@@ -1,0 +1,5 @@
+# JS justification registry (goal.md ruling 4: vanilla sprinkle).
+# One line per justified asset or inline <script> site:
+#   <path-or-path:line> | <named interaction cost it buys down>
+# The js-discipline sweep fails any JS not listed here. Empty as of
+# P0: the skeleton ships zero JS.

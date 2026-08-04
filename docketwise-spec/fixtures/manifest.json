@@ -1,0 +1,2247 @@
+[
+{
+"id": "fx-0001",
+"url": "https://www.docketwise.com/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "f1802662c43909ea30377478cebe6b044ac2cdb2f98bb92190bb56edb2e4ffc8"
+},
+{
+"id": "fx-0002",
+"url": "https://www.docketwise.com/features/immigration-forms/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "2b58f43e7ccd266b233db850928df1500d5dc6df65b9b47f9b7f90172eacf997"
+},
+{
+"id": "fx-0003",
+"url": "https://supportcenter.docketwise.com/",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "dbb443e193f1266655bdc09549a63f32edf4cb7407d6cde71b99a2d8b7617ef9"
+},
+{
+"id": "fx-0004",
+"file": "fx-0004.xml",
+"url": "https://www.docketwise.com/sitemap-index.xml",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "e9e459d55998c97f6a902478d470d7f2289f3e29860baaa77241bce19b129c67"
+},
+{
+"id": "fx-0005",
+"file": "fx-0005.html",
+"url": "https://www.youtube.com/@docketwise/videos",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "bc01b141715baf0774573b7ae51474f471a66340bff10379a19e685a1b9736b9"
+},
+{
+"id": "fx-0006",
+"file": "fx-0006.xml",
+"url": "https://www.docketwise.com/sitemap-0.xml",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "364f3d112c9903e50cf880b6883c7b92e4ef715dc1334acf3cffe5d15661642a"
+},
+{
+"id": "fx-0007",
+"file": "fx-0007.xml",
+"url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCfGhmt2TsymPPDVpro-JSIA",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "bc83b61235e1e476a170a3f7dd55d4c45e11dbc5afb5538f0a9107520497c634"
+},
+{
+"id": "fx-0008",
+"file": "fx-0008.html",
+"url": "https://www.g2.com/products/docketwise/reviews",
+"family": "reviews",
+"captured": "2026-07-31",
+"sha256": "90f5c5b50293b5595a47d89365e25357a4813fb97b4a3f914f51619068a968a6"
+},
+{
+"id": "fx-0009",
+"file": "fx-0009.html",
+"url": "https://www.capterra.com/p/171833/Docketwise/",
+"family": "reviews",
+"captured": "2026-07-31",
+"sha256": "a4d1c83b3e4db852995a8a74de069617819d1e14e79f334129971d70937005ba"
+},
+{
+"id": "fx-0010",
+"file": "fx-0010.html",
+"url": "https://www.trustradius.com/products/docketwise/reviews",
+"family": "reviews",
+"captured": "2026-07-31",
+"sha256": "005c124a9b0ccbcb48a0d733b644cfbf179100b2ca602895e10d097be1e2af3c"
+},
+{
+"id": "fx-0011",
+"file": "fx-0011.json",
+"url": "https://www.reddit.com/search.json?q=docketwise&limit=100",
+"family": "reviews",
+"captured": "2026-07-31",
+"sha256": "13bcba13bd1bad5aace04e8a76880b710337a8d595224967e874401832cc203c"
+},
+{
+"id": "fx-0011b",
+"file": "fx-0011b.html",
+"url": "https://old.reddit.com/search?q=docketwise",
+"family": "reviews",
+"captured": "2026-07-31",
+"sha256": "dfcc4b7418544f39077c9991ea7711ffcfa3a5df573dba9c550bce40b7e48f03"
+},
+{
+"id": "fx-0012",
+"file": "fx-0012.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474939-smart-forms",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "c9ee82c451521224d16d02d366fbf3d4bf38233b83dfdb29c281b6acdea3a571"
+},
+{
+"id": "fx-0013",
+"file": "fx-0013.html",
+"url": "https://supportcenter.docketwise.com/en/articles/10746327-h-1b-electronic-registration",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e25cf34572356dc7f0437d6e0968edc3d3d95e7086fa169cc5eab6cea8714ea2"
+},
+{
+"id": "fx-0014",
+"file": "fx-0014.html",
+"url": "https://supportcenter.docketwise.com/en/articles/14823990-addressing-address-population-for-u-s-territories-in-form-i-589",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "2222957d953c0adefa83ba2b72c7019f0a0b4c44cd1073e8e1b586867cb6c3b6"
+},
+{
+"id": "fx-0015",
+"file": "fx-0015.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9371974-e-filing-forms-with-docketwise",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "560e4a53e040dc87b5fb94186fe6aac23d1517636109f9526e8d5a49adc6b559"
+},
+{
+"id": "fx-0016",
+"file": "fx-0016.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9371976-e-filing-form-ds-260",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "ef5d833d8c8c5a2657e3b82a67418cf0111df42d2885efc6ca4f3e48f8078425"
+},
+{
+"id": "fx-0017",
+"file": "fx-0017.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9371979-e-filing-forms-with-uscis",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "f2b112861dcef2a7c3b6bf379d1bcd4c0dfca9b980c1663dc7a1c04a10e6fb72"
+},
+{
+"id": "fx-0018",
+"file": "fx-0018.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9371982-importing-answers-into-the-i-129",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "0c0a21f1b1247c8726468e01893be74e8bdeada2852b0d12f80393acdd6f6da3"
+},
+{
+"id": "fx-0019",
+"file": "fx-0019.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9371987-e-filing-form-ds-160",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "3c6c45f00f1531b46011a6339976f0cf93e3aadcd8ad1e85207758d7f471aefc"
+},
+{
+"id": "fx-0020",
+"file": "fx-0020.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9371989-smart-forms-version-3-with-packet-assembly-custom-questions-and-templated-intakes",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "036d079aeba9e6de1130c358c2c935bb10a30afbcbb0dd2b131cbfe91a51baef"
+},
+{
+"id": "fx-0021",
+"file": "fx-0021.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9371992-completing-the-questionnaire-as-a-client",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "3e07c3bb2c0a95d3664dec7da019f7dc0fd0444ac8d916e5acba14e23b36f64d"
+},
+{
+"id": "fx-0022",
+"file": "fx-0022.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9371993-e-filing-forms-with-dol-flag",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "7b1a20d4f2b481360b30acd4b3c15662aa1b79bc5d1261c65e0a0a9ff836203a"
+},
+{
+"id": "fx-0023",
+"file": "fx-0023.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9371998-creating-and-importing-an-interpreter-in-smart-forms",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "68bf130410085d712a151e86834834fae8883caed04f9d3bf6d18e41df2294b6"
+},
+{
+"id": "fx-0024",
+"file": "fx-0024.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9371999-downloading-forms-as-editable-or-non-editable-pdfs",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e702c189ad7d86035605c41583f7f612bb9da1af7945ce12052242396627fab9"
+},
+{
+"id": "fx-0025",
+"file": "fx-0025.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372004-downloading-printing-forms",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "c9854f0ba7a94e36ebeacac95db9556212c03e4ec00c77932afc913b3f69ce72"
+},
+{
+"id": "fx-0026",
+"file": "fx-0026.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372006-sharing-a-custom-intake",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "092ed63a21ca7a2993259177eba54e20eeeae84b2c251c43102ee88c53bf41ea"
+},
+{
+"id": "fx-0027",
+"file": "fx-0027.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372010-form-updates-and-versioning",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "878f9a7027776ae6056a94f9c017bccb92a314f61699219ae3613e56fd968ed4"
+},
+{
+"id": "fx-0028",
+"file": "fx-0028.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372012-conversations-inside-smart-forms",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "fd1dbc1ad3e05b095493797a1b19b5335c4b1aa71a5412e6a7ae859775b53995"
+},
+{
+"id": "fx-0029",
+"file": "fx-0029.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372013-custom-intakes",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "d505b3f42dc9da39c05797d4bae48d890d417bd65446601f39e981da16a1f6f8"
+},
+{
+"id": "fx-0030",
+"file": "fx-0030.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372015-searching-smart-forms",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "468f22ba337d5f7f7f9f40461fe7dd24e5f1d53fa4a245158fc79372cb041452"
+},
+{
+"id": "fx-0031",
+"file": "fx-0031.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372017-flag-and-comment-on-questions",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "34c0f4224ee33634b94450247a927aed96e1643859c422099e83d1835cba2cab"
+},
+{
+"id": "fx-0032",
+"file": "fx-0032.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372026-smart-forms-vs-smart-forms-lite",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "f9f3487821d9aba8da5712577d8a9dce53078dd5233132e093861a7c887ec42b"
+},
+{
+"id": "fx-0033",
+"file": "fx-0033.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372028-translate-smart-forms",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "239f22420a01a45c19f999386a987a0f958e1e7d4cc62deb5e445aa7c60997cf"
+},
+{
+"id": "fx-0034",
+"file": "fx-0034.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372029-smart-form-collections",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e2b362d50a1a3beaa9e671c7207cabc532816182abef5a038f1bbfa5f08abf50"
+},
+{
+"id": "fx-0035",
+"file": "fx-0035.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372032-printing-all-forms-at-once",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "a09fcde778ac96c44c422d8ce99bb5d25c082132999a22831ff01ac999a94795"
+},
+{
+"id": "fx-0036",
+"file": "fx-0036.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372033-importing-into-forms",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "a4d013618b69f7f13793ce662c9bccbb70e1a521b4b3da2786f050825f8b8779"
+},
+{
+"id": "fx-0037",
+"file": "fx-0037.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372035-autofill-empty-fields-with-n-a",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "5e6c3d9e066ad1b139ddd75e3fcd60c27a238de329a8e5ecb0c3eebbb5b4263a"
+},
+{
+"id": "fx-0038",
+"file": "fx-0038.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372036-adding-preparer-information",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "d8162b8d80cfe918667727ba66f965db7088ff7163c016b5d393b044e7528abf"
+},
+{
+"id": "fx-0039",
+"file": "fx-0039.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372037-inviting-contacts-to-smart-forms",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "9af4eb8aa71ea729f55533db69c1c9ce84a7225696599e215a7a0bb540a3a134"
+},
+{
+"id": "fx-0040",
+"file": "fx-0040.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372040-getting-started-with-docketwise",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "8c0a00f7b512c85932011042fed004b106598049c18139553cc88778454bbedd"
+},
+{
+"id": "fx-0041",
+"file": "fx-0041.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9573813-templated-smart-form-intakes",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "766320c64823261c2b723aaade79f2b3932576d2d7297dd6d0777199f2058ef7"
+},
+{
+"id": "fx-0042",
+"file": "fx-0042.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9617271-eta-9089",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "d94f65397f90449be908e753fbc018b361c88e6ec7ac87dd7aea72d0ae3a934a"
+},
+{
+"id": "fx-0043",
+"file": "fx-0043.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9773415-uscis-two-step-verification",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "7a3ff93ef2838a92b98c545e1f468dfe0b443661707401d4f666ea49c4182a89"
+},
+{
+"id": "fx-0044",
+"file": "fx-0044.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9926793-docketwise-smart-forms",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "a52a7589f0e3756c87c56a463251d91649cfdb46b8406c31d9d8f8f9135ada50"
+},
+{
+"id": "fx-0045",
+"file": "fx-0045.html",
+"url": "https://www.docketwise.com/blog/introducing-smart-forms-3/",
+"family": "release-notes",
+"captured": "2026-07-31",
+"sha256": "945b764cf388a546acf3bb3b1f5b632f8b31cdd064fdf2358a978d831d5dbd09"
+},
+{
+"id": "fx-0046",
+"file": "fx-0046.html",
+"url": "https://www.docketwise.com/blog/embracing-innovation-introducing-h-1b-e-filing-with-docketwise/",
+"family": "release-notes",
+"captured": "2026-07-31",
+"sha256": "2526eaff016a88652c80b08778221a1741f29343ac9aaaaadd279a72d55f38b2"
+},
+{
+"id": "fx-0047",
+"file": "fx-0047.html",
+"url": "https://www.docketwise.com/blog/announcement-regarding-the-new-editions-of-forms-i-765-and-i-765ws/",
+"family": "release-notes",
+"captured": "2026-07-31",
+"sha256": "931f5a191fe7e49d85e3b516e072cef5a2c22228edd4e974408620a39c2f10e4"
+},
+{
+"id": "fx-0048",
+"file": "fx-0048.html",
+"url": "https://www.youtube.com/watch?v=yvXo8G3ioRw",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "7d86ee67a78b2bae52abda92981754194ac2fc453ee0f8d862c0c364bbb5f799"
+},
+{
+"id": "fx-0049",
+"file": "fx-0049.html",
+"url": "https://www.youtube.com/watch?v=KXGeo7r4biE",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "a52a102c0f0172b6ff08ce6dc0d566e168d8f7cc320a2d9b96e04ff0afe9896d"
+},
+{
+"id": "fx-0050",
+"file": "fx-0050.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474940-invoicing-and-trust-accounting",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "4696259bd0c5e6b64461a35f811a316ce6074a09ebb172c22fa57ad4337927fe"
+},
+{
+"id": "fx-0051",
+"file": "fx-0051.html",
+"url": "https://supportcenter.docketwise.com/en/articles/12260677-request-a-w9-form",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "f31ee110d001c243f2110c1d707a466bf3a153dd4c08ee30a1c3d94e1aff00e3"
+},
+{
+"id": "fx-0052",
+"file": "fx-0052.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372042-translating-invoices",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "d0810f82050127e9ea07ae3afec221dfb78a283a6716d433269a7185e9db5e7d"
+},
+{
+"id": "fx-0053",
+"file": "fx-0053.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372044-trust-accounting-ledger",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "8a7a977b7e59733238e2b6cf7ee60703429082a80c5042fe69cf616a02132add"
+},
+{
+"id": "fx-0054",
+"file": "fx-0054.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372045-reporting-on-delinquent-payment-plans",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e5ee596e6c6cab4b02338f27ccb113e01475b9e714df6a6c45c32b728f376031"
+},
+{
+"id": "fx-0055",
+"file": "fx-0055.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372047-refunding-payments-on-bills",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "f9cf65f8198e06bfd4c7461ab97c25b5f59599fbe68d2b2d32edef0fd01b18ef"
+},
+{
+"id": "fx-0056",
+"file": "fx-0056.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372048-bulk-sharing-and-bulk-downloading-invoices",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "6e8864b76ecd04df4a26042ac7091ce1b3319c327efc37df54b694642a96df12"
+},
+{
+"id": "fx-0057",
+"file": "fx-0057.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372050-associating-payments-to-specific-invoice-charges",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "743d0306e883ba94a83b79da24a2a7dc7af50fcf1bd30cf000bf24a9fa7265c5"
+},
+{
+"id": "fx-0058",
+"file": "fx-0058.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372051-automatic-late-fees-on-invoices",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "b13b1b95ed338af76f3101ffb168afca6b6a56e20841282f75cbd03767e2bf4f"
+},
+{
+"id": "fx-0059",
+"file": "fx-0059.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372052-saved-charges-for-invoices",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "867706bf9d976de134647f44a0dbc660291b32be9bb8356db65e2db2e92946d1"
+},
+{
+"id": "fx-0060",
+"file": "fx-0060.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372054-sending-an-invoice-for-a-client-to-pay",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "5bd3a52fc4a970e4bd951896f426b86ea3205124f640be889c48264f1d0c89d2"
+},
+{
+"id": "fx-0061",
+"file": "fx-0061.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372056-creating-a-trust-request",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "bc5580a7adf6019cf909cdf70f84b3df8be082e137a2866ad94fa22c7a66b399"
+},
+{
+"id": "fx-0062",
+"file": "fx-0062.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372057-recording-a-direct-payment",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "9bffe0c90c72ee1cc861f4bf18e11665caa708329274908f6ab8cc7189087ee2"
+},
+{
+"id": "fx-0063",
+"file": "fx-0063.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372059-billing-by-time",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "02496f119dc0b6dc7a523557ce045001ca0fc78fe5732c2a422b372929f2b2f3"
+},
+{
+"id": "fx-0064",
+"file": "fx-0064.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372061-creating-a-time-entry",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "b83a41be73c7b793375ec0dea6c35ef17c81be453b84a261b08cfbe2b0f02e1c"
+},
+{
+"id": "fx-0065",
+"file": "fx-0065.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372062-creating-an-invoice",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "7e8c7516d4a11b068a66a06526f337d18f4ceae60807e194ed196354940020c4"
+},
+{
+"id": "fx-0066",
+"file": "fx-0066.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372066-paying-an-invoice-with-a-trust-transfer",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e9fde8d215c5b1438464d002d4ecc26d244e719711837ea66f58e7055725139f"
+},
+{
+"id": "fx-0067",
+"file": "fx-0067.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372068-client-experience-for-paying-invoices",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "96eb89342f0056f252f668c6fe9bf045917dc1b497653e70dc8f9c3ddfe071a4"
+},
+{
+"id": "fx-0068",
+"file": "fx-0068.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372070-sending-an-invoice-to-a-different-contact",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "d960056d6953323c79719f62ac7f41a3b7056cde2d9874cb6c731c6f3e9d81ea"
+},
+{
+"id": "fx-0069",
+"file": "fx-0069.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372072-review-your-trust-account-balances-and-transactions",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "7f02f9fb596437e2821c8c3f61855e8f797666494f27a2cf5e3eee8a3c9e4ac4"
+},
+{
+"id": "fx-0070",
+"file": "fx-0070.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372073-billing-clients-on-docketwise",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "f54205d7c00761c15c35c86247a30ffed86d52b7e84536d795692fd133ea8ec2"
+},
+{
+"id": "fx-0071",
+"file": "fx-0071.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372075-trust-requests-in-docketwise",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "727faf4975fbf296fdbd2b04220c7122c0675e593b8579c6148a69bccf6aec9c"
+},
+{
+"id": "fx-0072",
+"file": "fx-0072.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372076-payment-plans-in-docketwise",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e29d89b1f03c2f61229a96d3a7a5986cc5a3b3ebd3dabd64c7c73162f81e661c"
+},
+{
+"id": "fx-0073",
+"file": "fx-0073.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372077-time-tracking",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "1f3b7d034959e8feb1fee0200f67724cd2fe5d92d8c5b9fcef6cd8b1223e8883"
+},
+{
+"id": "fx-0074",
+"file": "fx-0074.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372079-disbursing-funds-from-a-trust-account",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "1acfea8baac976d87c05f29399eb2af15d4936378aca3a24ede304900017a8b1"
+},
+{
+"id": "fx-0075",
+"file": "fx-0075.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372081-restrict-invoice-access",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "0aa1242770edef0a734d631f4a1f52789633476b9b50d753dbf0e4a953846ad3"
+},
+{
+"id": "fx-0076",
+"file": "fx-0076.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372082-global-invoice-settings",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "5e86984ead19deb25d1c0fcc11956a1d10ae437d206bb443b5f775f7bf7bb3ff"
+},
+{
+"id": "fx-0077",
+"file": "fx-0077.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372084-edit-payments-on-invoices",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "87642796f735c48f2398271ee80f793b6d9d847664c4aeab99c5b516a51484ea"
+},
+{
+"id": "fx-0078",
+"file": "fx-0078.html",
+"url": "https://www.docketwise.com/blog/invoicing-updates-september-2021/",
+"family": "release-notes",
+"captured": "2026-07-31",
+"sha256": "0ec9444b921f95c02ffe07af70d18d53e050f839cb1d1f040aee84d66e620537"
+},
+{
+"id": "fx-0079",
+"file": "fx-0079.html",
+"url": "https://www.docketwise.com/integrations/lawpay/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "a2c4903d1618af83a9f841223c8442ff4de98ab461d4c3f4024ec77eb6261cae"
+},
+{
+"id": "fx-0080",
+"file": "fx-0080.html",
+"url": "https://www.docketwise.com/integrations/quickbooks/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "fe2eff37316908e664b906a531caa8917b8b2afaf0a2420951f6c40a117731eb"
+},
+{
+"id": "fx-0081",
+"file": "fx-0081.html",
+"url": "https://www.youtube.com/watch?v=kIVDe765Bhg",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "efb73d5c243735a9f1d4284d0bb2b71b9e9e4921fe729acacd0eed8d758ab71a"
+},
+{
+"id": "fx-0082",
+"file": "fx-0082.html",
+"url": "https://www.youtube.com/watch?v=1nO0C2YYSX0",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "40080a979e45f2c862b790eea629cde70380c9c3a0df9a985cfe56e769f06a2b"
+},
+{
+"id": "fx-0083",
+"file": "fx-0083.html",
+"url": "https://www.youtube.com/watch?v=G23wZo2PXZs",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "1761d602f1e8edaff4349057876f584af7146a1f59d2b49046978fbe5c0fb8d1"
+},
+{
+"id": "fx-0084",
+"file": "fx-0084.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474942-firm-settings",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "a110666b28cfc591c6f85b2d6760667d59414bdf6341c37789bbd2ad8b1af2e3"
+},
+{
+"id": "fx-0085",
+"file": "fx-0085.html",
+"url": "https://supportcenter.docketwise.com/en/articles/12038039-8am-docketwise-brand-faq",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "0b185cb9863bd869e708abfb15ee7ed765c68e2df6154537ead35aa965433acf"
+},
+{
+"id": "fx-0086",
+"file": "fx-0086.html",
+"url": "https://supportcenter.docketwise.com/en/articles/12633622-how-does-user-deactivation-impact-billing-and-what-steps-ensure-accurate-charges",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "a6c60e288d8ad2d143a4b6dbccfab772acbdcbeecdf77da4704e7d07acca4d70"
+},
+{
+"id": "fx-0087",
+"file": "fx-0087.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372109-two-factor-authentication-2fa",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "051d2e47012ac95c9829206d782e3f41f88d585a500584753d3e2ecae4fadbb1"
+},
+{
+"id": "fx-0088",
+"file": "fx-0088.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372110-trash-can",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "b6466cbe35f03d97e6e6afe567f309b34ea65359e427099ec980aa6b861da459"
+},
+{
+"id": "fx-0089",
+"file": "fx-0089.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372112-results-per-page-in-dashboards-and-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e9b999983a976970db71a6d083091585e835d400d8585fdb37f7947343653f54"
+},
+{
+"id": "fx-0090",
+"file": "fx-0090.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372114-navigating-8am-docketwise",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e30f7050cd8be54a5cf0fe16c17710804430d83ccc30487a97007b1aba5b47b8"
+},
+{
+"id": "fx-0091",
+"file": "fx-0091.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372116-uploading-your-firm-s-logo",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "c97acc957c572be87c068d9d2a40cefe578766250862cebba25ea8c8f20f6d72"
+},
+{
+"id": "fx-0092",
+"file": "fx-0092.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372118-custom-dashboard",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "15ec441511acf1ff013a1c13c3171fbb1c876c09a98ba8bae515cbcef694d59c"
+},
+{
+"id": "fx-0093",
+"file": "fx-0093.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372120-custom-columns",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "b97d2f3446e227aa9bbe4e057d2418fafae089089e1e88a700a3c531400a4ee5"
+},
+{
+"id": "fx-0094",
+"file": "fx-0094.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372122-docketwise-advanced",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "9f241596a4047007604fcad31dd440e6794bb4ccd3ce0335a2e2a928507a52df"
+},
+{
+"id": "fx-0095",
+"file": "fx-0095.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372125-user-permission-groups",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "fcded36cd17215851331b38c85029d21cb0efdce5eba5ebc27ebb7dc7689de72"
+},
+{
+"id": "fx-0096",
+"file": "fx-0096.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372127-invitation-settings",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "391bb5f696d3a14bd1f4bfdbd8fba2307a4ef21e4fe59ff4f6be2c47c7e26cc9"
+},
+{
+"id": "fx-0097",
+"file": "fx-0097.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372129-docketwise-data-security",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "3d0af0ebf3bde9381e9ee2e36b93e1adab4811cf05d1c64717e423d05076cd0f"
+},
+{
+"id": "fx-0098",
+"file": "fx-0098.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372130-firm-branches",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "247e49ec8aa270db2ac8bc8c7ecd6b0c9768b887467f7c660e1a8b539d7b5e6e"
+},
+{
+"id": "fx-0099",
+"file": "fx-0099.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372132-canceling-your-docketwise-account",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "7974d34d918ddd758b86367165fe1c0c431776b4fb36b17fb49675057ddb905f"
+},
+{
+"id": "fx-0100",
+"file": "fx-0100.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372133-docketwise-training-and-help",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "1be09e88ca98ac30d3296612231e1c4f60e70d1d4d4c4bb23ab72a498a8a868d"
+},
+{
+"id": "fx-0101",
+"file": "fx-0101.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372136-docketwise-pro",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "3d8aa4511019a82aa78238f2b01791cecc3eb3973f218ee78e82544c58e889e0"
+},
+{
+"id": "fx-0102",
+"file": "fx-0102.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372139-changing-firm-member-s-name-and-email",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "7e1743a0e5a0dbd765c608acfd6669d566668b245ac64ba2ad88c2c659a44483"
+},
+{
+"id": "fx-0103",
+"file": "fx-0103.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372141-changing-time-zone",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "a99e39a573166e93107c7213409d4b2fdb4af5396afa184922d08da5dd75181a"
+},
+{
+"id": "fx-0104",
+"file": "fx-0104.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372142-notification-settings",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "4523ca17da4b5d99a1713f75b4f0f7f258dfece92cbbacd80a15a5ba53130696"
+},
+{
+"id": "fx-0105",
+"file": "fx-0105.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372144-add-or-update-payment-details",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "b1981f502f859a098344926bf0255b3b047c78ee0371a3a98e1c7f7c0a667a82"
+},
+{
+"id": "fx-0106",
+"file": "fx-0106.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372145-managing-your-subscription",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "3f37dfb36f86b687379f9becf035545207ffb709f406dd7ec5bf37d64200b038"
+},
+{
+"id": "fx-0107",
+"file": "fx-0107.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372149-managing-users",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "cee590a73a69d9f997c5b9be1ddd7fb47f4ea7bf2b43d8deed8ad4d23774bda2"
+},
+{
+"id": "fx-0108",
+"file": "fx-0108.html",
+"url": "https://www.docketwise.com/pricing/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "d257a05e6b8c420e68df5bbe00bf5ffed7046829e5bc96c71ba072818afbc346"
+},
+{
+"id": "fx-0109",
+"file": "fx-0109.html",
+"url": "https://www.docketwise.com/security/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "4c9401330cb02e148446e686331c204052cd3ddc3dbb3d2085b388fdfeecd208"
+},
+{
+"id": "fx-0110",
+"file": "fx-0110.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474943-integrations",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "92e320d235bdb0145edf42f05368c24d30ba9f8b6bd28fb22090ba43e2794381"
+},
+{
+"id": "fx-0111",
+"file": "fx-0111.html",
+"url": "https://supportcenter.docketwise.com/en/articles/11038086-case-status-integration",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "7fa7e96ee6849c2893853b608929a3b1ecdae50a365d8010d68697fc0fd1faf2"
+},
+{
+"id": "fx-0112",
+"file": "fx-0112.html",
+"url": "https://supportcenter.docketwise.com/en/articles/12386027-8am-docketwise-integrations-overview",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "6c504fb605da6553fe7c6dc1447547ff5d7380a2a3b6ed77a6a7a00572b87a0a"
+},
+{
+"id": "fx-0113",
+"file": "fx-0113.html",
+"url": "https://supportcenter.docketwise.com/en/articles/15177819-visalaw-ai",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "2420f2058f475f6c63e94b1630dd16bab19e61da78778610141b37ec010110fc"
+},
+{
+"id": "fx-0114",
+"file": "fx-0114.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372152-mycase-integration",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "97e78325a1c9127ea06fd37a8f075cbdf065c580a0ec410ad3b7867bed13b3ef"
+},
+{
+"id": "fx-0115",
+"file": "fx-0115.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372153-outlook-email-add-in",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e4f59cab0d6eeca20715cb8ae1636c2a110c91fa546722987011ed644fb5f180"
+},
+{
+"id": "fx-0116",
+"file": "fx-0116.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372155-immitranslate-integration",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "7e11b6203228e4803ad3316e87f62080017ad7c19dd0459d690662051221c998"
+},
+{
+"id": "fx-0117",
+"file": "fx-0117.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372158-quickbooks-integration",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "2f9ac905e965ad03fd05426a38119b005145baf7afab987c4182831f26e613e4"
+},
+{
+"id": "fx-0118",
+"file": "fx-0118.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372162-gmail-add-on",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "fa4578d91659ea88fac3533a0c46aea2bcd093ecc10a83a9001b2997e6ea573b"
+},
+{
+"id": "fx-0119",
+"file": "fx-0119.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372164-outlook-calendar-integration",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "d2a8877b2c2581c0c5dec2e517dde6617321eaddf54a8531005f66ed6e2635f4"
+},
+{
+"id": "fx-0120",
+"file": "fx-0120.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372168-zapier-integration",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "787b3eff01ad033272bbff10f80d21e171bc972cc344204c282f6c8ad78b5630"
+},
+{
+"id": "fx-0121",
+"file": "fx-0121.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372170-troubleshooting-clio-integration",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "182ffffda45989867ba5f766f5efc83458ee88d2e42cb9d509b4920fe38d85a3"
+},
+{
+"id": "fx-0122",
+"file": "fx-0122.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372172-google-calendar-integration",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "90dc0b8d7feb63490dce5e7a2e1d7e4196dfe9f5ac821dc8633f09c45f8b3c52"
+},
+{
+"id": "fx-0123",
+"file": "fx-0123.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372174-lawpay-integration",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "4cb98aac14792d84f2df1c2b2d5a11f310175bba838ede855922ca38737212d1"
+},
+{
+"id": "fx-0124",
+"file": "fx-0124.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372177-sync-docketwise-with-practicepanther",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "9cb9b6a9711fa4fa25e8b539cc92a16ad9182cfd4174ad8539d7f1e79daf2556"
+},
+{
+"id": "fx-0125",
+"file": "fx-0125.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372178-sync-docketwise-with-clio",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "da2e61ecc3f0219110cd325f967babd72f9d5d1f78ca056063d5a69e0716b416"
+},
+{
+"id": "fx-0126",
+"file": "fx-0126.html",
+"url": "https://www.docketwise.com/integrations/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "6b46c9afb365e2389f9ff9aa0ad268dfb42673e5db668bf65a0b9c61057cdfd6"
+},
+{
+"id": "fx-0127",
+"file": "fx-0127.html",
+"url": "https://www.docketwise.com/integrations/candle-ai/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "6be492ff09ebba5d6ed5b093fc6bd90f5ff27400895626b40626b2c01ae193e2"
+},
+{
+"id": "fx-0128",
+"file": "fx-0128.html",
+"url": "https://www.docketwise.com/integrations/visalaw-ai/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "854d06420e49f38ef6ac274e2bdf5ae0d5530081a6257fcd5459a939d52e9634"
+},
+{
+"id": "fx-0129",
+"file": "fx-0129.html",
+"url": "https://www.docketwise.com/integrations/laborless/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "7e53618b7c40e857376300e16e398d0f2f0fe5873a6f171f5e3cbcf7eed47d02"
+},
+{
+"id": "fx-0130",
+"file": "fx-0130.html",
+"url": "https://www.docketwise.com/integrations/motaword/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "83e60276c66dfbf6b34ac097450496cdd93ec03e5b9531032202250921788bd1"
+},
+{
+"id": "fx-0131",
+"file": "fx-0131.html",
+"url": "https://www.docketwise.com/integrations/immitranslate/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "c50abf694dd8c235913b188413fdea1e99b09aa7047012a296cf4ed95e1f4280"
+},
+{
+"id": "fx-0132",
+"file": "fx-0132.html",
+"url": "https://www.docketwise.com/integrations/gmail/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "27200236a9537a6530453501c9e0e66ad056ae4f87152fbf049fc4f2255e7b1f"
+},
+{
+"id": "fx-0133",
+"file": "fx-0133.html",
+"url": "https://www.docketwise.com/integrations/outlook-calendar/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "ac5a370b9eb15a8d947f974016a6fd6b8e51c1fca5f2a5cec5ecd4c959f85312"
+},
+{
+"id": "fx-0134",
+"file": "fx-0134.html",
+"url": "https://www.docketwise.com/integrations/legalboards/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "8ccacc327ff6e42801036de5679850eba2d1f95cc48ce3c03a5b0ee77a525dfe"
+},
+{
+"id": "fx-0135",
+"file": "fx-0135.html",
+"url": "https://www.docketwise.com/integrations/practicepanther/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "c356ca6486900984aae525d4ceabecd7f15db8c0ddb4de727bd23e4debcfe380"
+},
+{
+"id": "fx-0136",
+"file": "fx-0136.html",
+"url": "https://www.docketwise.com/integrations/outlook-email/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "ad2addfcd4b2df97944558941248023165c20945fb01414b540e44417519d098"
+},
+{
+"id": "fx-0137",
+"file": "fx-0137.html",
+"url": "https://www.docketwise.com/integrations/clio/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "c81559b3ccacf00c52eeef91c1fba0a5a2912567ad695be47272a46aa269d4c6"
+},
+{
+"id": "fx-0138",
+"file": "fx-0138.html",
+"url": "https://www.docketwise.com/integrations/mycase/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "d9c870f74b9a9688fb00edd7d81744daec7c1e497933d77558871c4655c19dd2"
+},
+{
+"id": "fx-0139",
+"file": "fx-0139.html",
+"url": "https://www.docketwise.com/integrations/google-calendar/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "5e11682850d5ac6d0f5fc36acf37b3fcbcff4d18ffcdc0d87f97d3567bbf2a8d"
+},
+{
+"id": "fx-0140",
+"file": "fx-0140.html",
+"url": "https://www.docketwise.com/integrations/zapier/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "9c337ca4f0412f5a0a0f3306a4e2718af9e32448cb139ba474a61cb472edae19"
+},
+{
+"id": "fx-0141",
+"file": "fx-0141.html",
+"url": "https://www.docketwise.com/integrations/casestatus/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "a3e32dcb84e854727a01c681f80d6e1945602303efa7e5873018fdf0b26f5878"
+},
+{
+"id": "fx-0142",
+"file": "fx-0142.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474944-contacts-and-matters",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "a7634cacd7dd0c0f6ba268b1ed7e38b695739b54e9bcd8518957f51b1fb39ee4"
+},
+{
+"id": "fx-0143",
+"file": "fx-0143.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372180-archiving-contacts",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "febc534eac031e590dd509fe83f604433013d361aa0ff5a7936a5896e079d420"
+},
+{
+"id": "fx-0144",
+"file": "fx-0144.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372182-custom-attributes",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "272e9d20fc593fdbf2b30ffcfc8361e96a94179f6e5c5c6420d573e08c359279"
+},
+{
+"id": "fx-0145",
+"file": "fx-0145.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372185-indicating-related-contacts",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "131736993390fddb5316eed967350227a3ec3c0e41b26a6371ac2dcea5cf78b2"
+},
+{
+"id": "fx-0146",
+"file": "fx-0146.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372187-open-pending-and-closed-matter-status",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "61a6163a4cb5aa7bc5a3206043b63d51f1346c0f01e21f47728acd8893991cc7"
+},
+{
+"id": "fx-0147",
+"file": "fx-0147.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372189-expiry-date-reminders",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "27b3e5e4e6060939984aa346b3aae58549dd63ed828cdab296cd9342de7ec270"
+},
+{
+"id": "fx-0148",
+"file": "fx-0148.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372191-creating-a-matter",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "bde9577f2f2379c2d5c4a7e35e87e14d9b8f21360b6ba6c2836484957fcef230"
+},
+{
+"id": "fx-0149",
+"file": "fx-0149.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372193-creating-a-contact",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "5046414129abfd41cfc621855ad69381d5f886a0f7c5b97f2fa8c6455e042e28"
+},
+{
+"id": "fx-0150",
+"file": "fx-0150.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372195-searching-contacts",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "8715961bb18b022f838f10d0bdaa3186a3aafe362a56bcbfb878311254d11a31"
+},
+{
+"id": "fx-0151",
+"file": "fx-0151.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372196-archiving-matters",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e8dc6ad29107a8a83f4d2f1b4bd84bb5e8d457d4bdf3cd725149e6ff2cad7376"
+},
+{
+"id": "fx-0152",
+"file": "fx-0152.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372198-workflows-with-matter-types-and-statuses",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "ed90ab5291cb1aa6f94d7cac22a07ae09aa3727f195fccefd054a4bf01823d83"
+},
+{
+"id": "fx-0153",
+"file": "fx-0153.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372200-firm-contact-and-matter-feeds",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "23d76da049fce917f6d9cf70f0fd0f856a5467a1134668ac8770fa01d9f388eb"
+},
+{
+"id": "fx-0154",
+"file": "fx-0154.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372202-how-to-link-multiple-contacts-to-an-existing-matter",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "1db91917dbfb54e732a67b9e179f0c339adbfa419d142f576a6d1f6e09d82641"
+},
+{
+"id": "fx-0155",
+"file": "fx-0155.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372203-export-contacts-and-matters",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "8675fa7049d4ee2b2d43d1f7994c698c7125de8859fc017e5af8845618919c17"
+},
+{
+"id": "fx-0156",
+"file": "fx-0156.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372205-merging-duplicate-contacts",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "fcfef799a379a4c9af1c4d22cf61858a48e629144cfe1674082d739a2587f4a1"
+},
+{
+"id": "fx-0157",
+"file": "fx-0157.html",
+"url": "https://www.docketwise.com/features/case-management/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "3d6146b7fc1ccdb78128f6b0273de166a4272050ff2647ad05a58ec73fcbec0f"
+},
+{
+"id": "fx-0158",
+"file": "fx-0158.html",
+"url": "https://www.youtube.com/watch?v=zZen4TiOYPE",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "317eed7e457cdaf9b7cbde3a6ba4666dd1a9cde46b71cb144cc2761e9cce907c"
+},
+{
+"id": "fx-0159",
+"file": "fx-0159.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474945-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e433397b0357e78990fc66419b53a176a1ee6bb8e6a5c3679f233548b17b9d42"
+},
+{
+"id": "fx-0160",
+"file": "fx-0160.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372207-custom-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "7beac06c778fb1805669adf3d19375cf6a328311b6a152ff14e59b37f0142227"
+},
+{
+"id": "fx-0161",
+"file": "fx-0161.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372209-payment-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "5fcca94b1fd378adc0a310c2b41e0b4d96a9649ea6a582d1620573287bc303eb"
+},
+{
+"id": "fx-0162",
+"file": "fx-0162.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372211-contact-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "155c489e5c655e044957edbd78e6afaac74746f70b82ed99a1a0756f15af7cb1"
+},
+{
+"id": "fx-0163",
+"file": "fx-0163.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372213-matter-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "5ffb01ac07ce74d5fc722f89cb0bbb08a6a0a0710eb9e89523e7d6f43d3ddfc7"
+},
+{
+"id": "fx-0164",
+"file": "fx-0164.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372215-lead-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "6fc3e9758170a73f7da11d24b9cd40e257b0d793f7a06212efdf62628e55930e"
+},
+{
+"id": "fx-0165",
+"file": "fx-0165.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372216-task-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "4e1b347ffd08ea4abc94e56cbbf7e63f2b5a9fdaca8aa3bc916a451e41473ae4"
+},
+{
+"id": "fx-0166",
+"file": "fx-0166.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372218-user-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "12972ffbed407016cf51985b4e01d81936075dd89d62703cabac8fcf9b67ec2c"
+},
+{
+"id": "fx-0167",
+"file": "fx-0167.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372221-invoice-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "c3205acd550a9c81854db42fe523e22d072203c6caf092eec8098883e0f59677"
+},
+{
+"id": "fx-0168",
+"file": "fx-0168.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372223-vmax-tracking",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "2144b6b70b3bcea725f327ff29c5d0206de173a4500cba17671c02d5f493708a"
+},
+{
+"id": "fx-0169",
+"file": "fx-0169.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372225-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "013d22ab1f83346c1f277303e48df40995bbd7b7b1216933da8c9b522aaf0fb0"
+},
+{
+"id": "fx-0170",
+"file": "fx-0170.html",
+"url": "https://www.docketwise.com/features/custom-reports/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "fb115fdbd6505b6318a0429a54a4c2c2e8312236786597b0c2af8ed3dc4c5cc3"
+},
+{
+"id": "fx-0171",
+"file": "fx-0171.html",
+"url": "https://www.youtube.com/watch?v=dOKWbfsj440",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "8f718228031287b1cf49ff38b19d456367f568f9a0c013648dc9d3f2b14b7568"
+},
+{
+"id": "fx-0172",
+"file": "fx-0172.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474949-client-communication",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "e0cbd60493362ec0f61d18f9efc311cc28cfef1476a81626bb6e09ec7478c653"
+},
+{
+"id": "fx-0173",
+"file": "fx-0173.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372240-two-way-text-messaging-client-consent",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "9aa4b3b971c9c6d251a749e8635e82c8665f145ac98738ae06359ce830a73dc4"
+},
+{
+"id": "fx-0174",
+"file": "fx-0174.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372241-opt-in-for-sms-notifications-with-docketwise",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "90dea9e677707119c32087cbf34d1a1af0f4a29e136f7ffbc97398ca10f82adb"
+},
+{
+"id": "fx-0175",
+"file": "fx-0175.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372243-secure-portal-messaging",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "5460c214f35a53b7743cba4ed63b1ddf1e02ad850ff2293d4c08f3e7dcdff38a"
+},
+{
+"id": "fx-0176",
+"file": "fx-0176.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372245-email-signatures",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "1c0a581eaa4090296356dc7db1e782b5af0eb368d1137d82f4c38b8e1fe07b7d"
+},
+{
+"id": "fx-0177",
+"file": "fx-0177.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372247-ccing-and-bccing-in-email-messages",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "dc2838ff320cebcdc5beb618193bd65c4332e357e6c84eeffa9f5f716ffb85b7"
+},
+{
+"id": "fx-0178",
+"file": "fx-0178.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372248-merge-tags-in-email-messages",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "c8a78b38ff49a2ee1cde8a3706deec7a1b5c3d86b80ad54da328dcea00cdca2b"
+},
+{
+"id": "fx-0179",
+"file": "fx-0179.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372250-text-message-conversations",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "f461e89b65d7aac71693caeebb382fba7e2b8f3a3e9c8ebba60da7ff57d3e92a"
+},
+{
+"id": "fx-0180",
+"file": "fx-0180.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372251-sending-messages-with-attachments",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "43e819370becf5d3762d72fcfddd8fda3189a91aebcac6318a82bf7ea29d2eba"
+},
+{
+"id": "fx-0181",
+"file": "fx-0181.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372253-bulk-text-messages-and-emails",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "854a327c3b5a8578ce2bab9ac3751482b0d6af16b62493db1788bf51c48d92bf"
+},
+{
+"id": "fx-0182",
+"file": "fx-0182.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372254-emailing-custom-templates",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "228a79dba3e3351663ed8225b1d8866f68c1debc23b5419cf97fe853a10770b5"
+},
+{
+"id": "fx-0183",
+"file": "fx-0183.html",
+"url": "https://www.youtube.com/watch?v=VR9jnheW9AE",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "9acdf78209a1fb5ab86c128d99f9d246aae20ce67164f5d6e62d5d720566a654"
+},
+{
+"id": "fx-0184",
+"file": "fx-0184.html",
+"url": "https://www.youtube.com/watch?v=Sd2xzuZhklA",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "d253d3c72630e33664df38ec8bfe319e019a72824b793ffa0c1cc38f927a3d7e"
+},
+{
+"id": "fx-0185",
+"file": "fx-0185.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474941-client-portal",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "06247e59bd681bbd1faacbfa7c98e72487db56b7ec4b3b6f3f50b8b0ef55ffad"
+},
+{
+"id": "fx-0186",
+"file": "fx-0186.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372086-accessing-using-your-portal-as-a-client",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "43cdca414164b8aef243852e3797fa2a5be1455aded3a6dd404deecafa7f218d"
+},
+{
+"id": "fx-0187",
+"file": "fx-0187.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372088-hr-portal-reports",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "8da329167a9cf6bfe9c786ecfdd661e866651cc2b33e5ef4a63767c58b4d1503"
+},
+{
+"id": "fx-0188",
+"file": "fx-0188.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372091-hr-portal",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "117ab40ff553c22bed82d1f45895d1ee8fb659d67fdd2633c68327210bdf705f"
+},
+{
+"id": "fx-0189",
+"file": "fx-0189.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372097-accessing-files-uploaded-by-client",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "55af5e65a5d2696e734c23670d7a72d35eee8259ac89e0705e4e8e308640e5c9"
+},
+{
+"id": "fx-0190",
+"file": "fx-0190.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372098-uploading-files-to-the-client-portal",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "7d31d66590352324cc25f33fc5963eebc0844d422a3651917bff6f1ea763a6c7"
+},
+{
+"id": "fx-0191",
+"file": "fx-0191.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372106-client-portal",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "9760247f2811981c0510320a2747a4bf6160a5c6f5c3ebd5ab569d1017dd1404"
+},
+{
+"id": "fx-0192",
+"file": "fx-0192.html",
+"url": "https://www.youtube.com/watch?v=Pm7vjWYP7DI",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "49d88855336054b7e5edbb0e0f54aa2bdb6a1c8e829f3eb5031ca691e5e635a4"
+},
+{
+"id": "fx-0193",
+"file": "fx-0193.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474950-files-and-documents",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "a7bfc95d827959ba9fd335a8f3ff646d7cba4b81c02fbc360cf91f986a930ab2"
+},
+{
+"id": "fx-0194",
+"file": "fx-0194.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372256-docketwise-e-signature",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "c1219bb9f0f5e96ad7e000c12d2536d00d6b5e071a4234ba7ea4ff41233564a6"
+},
+{
+"id": "fx-0195",
+"file": "fx-0195.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372258-files-and-folders",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "16a57e33d762c828d18cea80865f8395871874cdbe08e523494f38f141c941f7"
+},
+{
+"id": "fx-0196",
+"file": "fx-0196.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372260-uploading-files-to-docketwise",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "3e39039307e3ac0c27bffd9524d81fea20e5629579d1e753a6b7509f80fc649a"
+},
+{
+"id": "fx-0197",
+"file": "fx-0197.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372262-document-upload-requests",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "97bc33903985b9a09902f2f7b64e84e7ecc4d50c0fb855311401b45e6d4731e1"
+},
+{
+"id": "fx-0198",
+"file": "fx-0198.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9927994-motaword",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "3050729266aad744d0697623670f41c123c21b492d602132ecd9c1306acbddcd"
+},
+{
+"id": "fx-0199",
+"file": "fx-0199.html",
+"url": "https://www.docketwise.com/features/e-signature/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "ecba3bd129bd4e60aa7b15d4edc41b2e27357d97dc49425cf0cfe908c52778dc"
+},
+{
+"id": "fx-0200",
+"file": "fx-0200.html",
+"url": "https://www.youtube.com/watch?v=xCpkXjKPqVM",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "ca752d98c2a449e7352700eb39073b60945199187ce3d610507f31eccbc3f20b"
+},
+{
+"id": "fx-0201",
+"file": "fx-0201.html",
+"url": "https://supportcenter.docketwise.com/en/collections/10969438-docketwise-iq",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "99ff360e6593d38f4da9011be1a421f21cdb3769a3f282e3714568ea18e7d3f1"
+},
+{
+"id": "fx-0202",
+"file": "fx-0202.html",
+"url": "https://supportcenter.docketwise.com/en/articles/10165612-docketwise-iq-faqs",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "0c9c271c6cf36afa664b84fbbaf4ef45191532dd993ece348c79f13e1d90b7ef"
+},
+{
+"id": "fx-0203",
+"file": "fx-0203.html",
+"url": "https://supportcenter.docketwise.com/en/articles/10246376-docketwise-iq-writing-assistant",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "cb2477fc3bb104765ff9b45d668f649f33eddbb7b398115976aa6238bcd5fefa"
+},
+{
+"id": "fx-0204",
+"file": "fx-0204.html",
+"url": "https://supportcenter.docketwise.com/en/articles/10247778-docketwise-iq-data-capture",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "eea207cf011c3a1cbf13ba5791c4e17e6396f554ad3fc152e00cc0045ecf1d05"
+},
+{
+"id": "fx-0205",
+"file": "fx-0205.html",
+"url": "https://www.docketwise.com/features/ai-for-law-firms/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "a564a5e3ce69d6fbd092bbf71ae6616364973b4d86bbee389f102c502d172d5e"
+},
+{
+"id": "fx-0206",
+"file": "fx-0206.html",
+"url": "https://www.docketwise.com/features/ai-legal-document-extraction/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "0d7854d3c13ef113b959e3f323f5ddef75ee86cc50d0932524d42b4a6df31c28"
+},
+{
+"id": "fx-0207",
+"file": "fx-0207.html",
+"url": "https://www.docketwise.com/features/ai-legal-writing-tool/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "6a00f0a04956d8650c23d89e782d12613c55bceed1eb434b405bb7218d783ca5"
+},
+{
+"id": "fx-0208",
+"file": "fx-0208.html",
+"url": "https://www.youtube.com/watch?v=I24AwVwvK3U",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "94f412523522a5ac1c384dfa3e9de0347f255965f892497bda637a202a3ff27d"
+},
+{
+"id": "fx-0209",
+"file": "fx-0209.html",
+"url": "https://old.reddit.com/r/immigrationlaw/comments/1p6z9ej/",
+"family": "reviews",
+"captured": "2026-07-31",
+"sha256": "b0a78777d4fdf774603eeb55c4c96c7b4a93cad00fbc6e88b7bb97e062820f8d"
+},
+{
+"id": "fx-0210",
+"file": "fx-0210.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474948-case-tracking",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "4c5aef63d12d15a84d282e5ee87c37065c027a9fd86b24900e9aba870bbaf824"
+},
+{
+"id": "fx-0211",
+"file": "fx-0211.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372233-priority-date-tracking",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "2de8db250b67759221da09e60cff890c1229a0e4e96b773821fc622b9240e249"
+},
+{
+"id": "fx-0212",
+"file": "fx-0212.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372235-uscis-receipt-number-tracking",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "d7e326a949c7b5e193e39f75ec826cc99b80ab29a946f685899354fd9713299e"
+},
+{
+"id": "fx-0213",
+"file": "fx-0213.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372238-tasks-and-task-lists",
+"family": "help",
+"captured": "2026-07-31",
+"sha256": "a759ebf3f1e5392965f223b3ac92f6bef0b0510af86a104c05d5c84e409c57b6"
+},
+{
+"id": "fx-0214",
+"file": "fx-0214.html",
+"url": "https://www.docketwise.com/features/immigration-case-tracking/",
+"family": "marketing",
+"captured": "2026-07-31",
+"sha256": "46820de6de71718d83b71ba42ff75296119c305cbde0d80127eec88cefb1ee7c"
+},
+{
+"id": "fx-0215",
+"file": "fx-0215.html",
+"url": "https://www.youtube.com/watch?v=d192jH3oxcQ",
+"family": "youtube",
+"captured": "2026-07-31",
+"sha256": "24d95a0ff9d00ca18ff663b52734c7c067bea56bf89f9610d3f2fe1c2c26d068"
+},
+{
+"id": "fx-0216",
+"file": "fx-0216.html",
+"url": "https://old.reddit.com/r/legaltech/comments/1qtbdim/",
+"family": "reviews",
+"captured": "2026-07-31",
+"sha256": "0277c97172de45885419f4c6b11a6a8e2baa9207d5cc52cd3a44fdeaa97acbe6"
+},
+{
+"id": "fx-0217",
+"file": "fx-0217.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474947-template-automation",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "792839c72ad5e8465493a3d89ab02b0946d9e2198f870276af9489e0fecdc967"
+},
+{
+"id": "fx-0218",
+"file": "fx-0218.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372230-automated-templates",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "605d43f460ec809ad367b0d6ffa8dd7d3e179f3402c94c5f6e06502e005540e1"
+},
+{
+"id": "fx-0219",
+"file": "fx-0219.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372232-merge-tags",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "181730ab0531bfa880ae3d3937a483926889c783d88c2f19e443b7abe2b1bfd0"
+},
+{
+"id": "fx-0220",
+"file": "fx-0220.html",
+"url": "https://www.youtube.com/watch?v=Kl4ItwRpCZQ",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "d7c503fe3e754eb8f6f75a1892a71254478aa5b4c2fcb656328308c3ba1873a7"
+},
+{
+"id": "fx-0221",
+"file": "fx-0221.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474955-notes",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "5288ec96703d1b2fda9ba4f4d78ebebdb93249d7fb2b4aa3026d1b75f4f18d30"
+},
+{
+"id": "fx-0222",
+"file": "fx-0222.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372267-exporting-notes-for-a-contact-or-matter",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "3a8fe554606bb14ead3c785494cb21eb3e80aa3b8c62f02717395ab793d2fbc0"
+},
+{
+"id": "fx-0223",
+"file": "fx-0223.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372269-notes",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "828375f6329f106f34c06f81f9bc62ea034f71b135540be8dab172c6bd13ea2f"
+},
+{
+"id": "fx-0224",
+"file": "fx-0224.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474957-personal-settings",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "8843306e38eb25d1cf79a23e04e3a14588e4b67e656705f8925377b86db084dc"
+},
+{
+"id": "fx-0225",
+"file": "fx-0225.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372271-user-roles",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "9031c7c55005106bb9df8c9b4860f6a6cbfd049b96095d4121f36c620343f33b"
+},
+{
+"id": "fx-0226",
+"file": "fx-0226.html",
+"url": "https://supportcenter.docketwise.com/en/articles/10058520-multi-factor-authentication-mfa",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "7878b15fa1a85bf00e6fbd20d7f94ee458d67f68cc2ef56378268462d1ae058d"
+},
+{
+"id": "fx-0227",
+"file": "fx-0227.html",
+"url": "https://supportcenter.docketwise.com/en/collections/16331831-login",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "0add6006bd385c15c0ea5550195ea07989df79ca46baa53c496cf7457bf9df36"
+},
+{
+"id": "fx-0228",
+"file": "fx-0228.html",
+"url": "https://supportcenter.docketwise.com/en/articles/12691504-how-to-login-to-8am-docketwise",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "c35311cfd04e33c0051efd1006253a0727c1210711c3e8d91f0fd7beb3f2c0e8"
+},
+{
+"id": "fx-0229",
+"file": "fx-0229.html",
+"url": "https://supportcenter.docketwise.com/en/articles/12691533-login-troubleshooting",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "ac85aedf07fe0c0bb273b837db3696180a7f179db37eab53766630dabe6bf621"
+},
+{
+"id": "fx-0230",
+"file": "fx-0230.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474946-internal-chat",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "e9c21e827ab6422b408f399ef2cdfcc1c3ccf252592b86fe2d55ac52d7262f40"
+},
+{
+"id": "fx-0231",
+"file": "fx-0231.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372228-docketwise-chat",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "27b689e74c9200ec0de26041a675a066bf9f241741dca67c463be744d0267ab3"
+},
+{
+"id": "fx-0232",
+"file": "fx-0232.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474951-free-trial",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "d381ce53dddf0fbbb8e0c199f21a462e9984d961cd378729f2b975e0b8286e28"
+},
+{
+"id": "fx-0233",
+"file": "fx-0233.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372264-getting-started-with-docketwise-free-trial",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "ba8cafb40386a6ccc0f7223e2d4d723c20b3af429cffe5fefe551a87b6ae3601"
+},
+{
+"id": "fx-0234",
+"file": "fx-0234.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474954-docketwise-leads-crm",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "3ba5f6904a3b2035372b1cf4555c2af4008c03d73ac447de08b7e982ddf8115c"
+},
+{
+"id": "fx-0235",
+"file": "fx-0235.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372265-docketwise-leads-crm",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "75c1592c0590d4cd05cce7c5af4152e4787769521fd6a184020b7d2ac33d5815"
+},
+{
+"id": "fx-0236",
+"file": "fx-0236.html",
+"url": "https://www.docketwise.com/features/crm/",
+"family": "marketing",
+"captured": "2026-08-01",
+"sha256": "c6e2d7f295a6783ab43f9d640edf44782825c2ca577f696563e155c2027d8849"
+},
+{
+"id": "fx-0237",
+"file": "fx-0237.html",
+"url": "https://www.youtube.com/watch?v=abFLWaQc1K4",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "c11a448e9fee2e1511b64a225c188fb76486e044bb415ac37f5ffdfe3efd2663"
+},
+{
+"id": "fx-0238",
+"file": "fx-0238.html",
+"url": "https://www.youtube.com/watch?v=j6KonbWdl6I",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "e254e5e77e34156696cce3ed4f8eeceb15dcd5a2745b88073af98396e14d3dbe"
+},
+{
+"id": "fx-0239",
+"file": "fx-0239.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474959-events",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "2a211d42ac1976d52970fe86a73754b168e49af27eabb2539779a610048984f3"
+},
+{
+"id": "fx-0240",
+"file": "fx-0240.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372273-event-reminders",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "fb94b4c7685e4c7674c57c5003fe8c476167864800d6646062d191754d4aa2f6"
+},
+{
+"id": "fx-0241",
+"file": "fx-0241.html",
+"url": "https://supportcenter.docketwise.com/en/collections/9474961-desktop-app",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "95a707bd11c686e98fc61bf9cec8f70337af2680caeaad75dc8cffa15c0271f3"
+},
+{
+"id": "fx-0242",
+"file": "fx-0242.html",
+"url": "https://supportcenter.docketwise.com/en/articles/9372275-downloading-the-docketwise-chrome-app",
+"family": "help",
+"captured": "2026-08-01",
+"sha256": "58ec6ec67710105a14a1d5d479f6e859424a18bc0670790a6417309cb25e2f7c"
+},
+{
+"id": "fx-0243",
+"file": "fx-0243.html",
+"url": "https://www.docketwise.com/features/translations/",
+"family": "marketing",
+"captured": "2026-08-01",
+"sha256": "79f9b163a9e7d7bcf3a54c1ddcbb771f083821d2baa7c99acffd4f1a2a4316b0"
+},
+{
+"id": "fx-0244",
+"file": "fx-0244.html",
+"url": "https://www.docketwise.com/features/",
+"family": "marketing",
+"captured": "2026-08-01",
+"sha256": "5d65673e7d6a7fab382b41fc3783cc31061bc1ffe67ec996cd231315f87c9344"
+},
+{
+"id": "fx-0245",
+"file": "fx-0245.html",
+"url": "https://www.docketwise.com/comparison/docketwise-vs-inszoom/",
+"family": "marketing",
+"captured": "2026-08-01",
+"sha256": "5e60ea8e2c7eb4fca039db871040857f9348eeb80f61c1fd344d4415891fbf28"
+},
+{
+"id": "fx-0246",
+"file": "fx-0246.html",
+"url": "https://www.docketwise.com/reviews/",
+"family": "marketing",
+"captured": "2026-08-01",
+"sha256": "ba00dd98b8ef7876986c611e5e63978f769d7b48af4688410f197878518768a1"
+},
+{
+"id": "fx-0247",
+"file": "fx-0247.html",
+"url": "https://www.docketwise.com/support/learning-center/",
+"family": "marketing",
+"captured": "2026-08-01",
+"sha256": "a61d756f470601e0e7e60a88fa1fa5dd4f65b85760c771983cffc291c3ce5426"
+},
+{
+"id": "fx-0248",
+"file": "fx-0248.html",
+"url": "https://www.docketwise.com/developers/",
+"family": "marketing",
+"captured": "2026-08-01",
+"sha256": "e4ddb98af3834364f7fe1d328b6be17edf2f832964804ac25edf4b2b62ee33c5"
+},
+{
+"id": "fx-0249",
+"file": "fx-0249.html",
+"url": "https://old.reddit.com/r/LawFirm/comments/17uwsa2/",
+"family": "reviews",
+"captured": "2026-08-01",
+"sha256": "581c80ba91d67bdb222c77588e6e3ed4f882da820e08fa22d33aa41206e66c18"
+},
+{
+"id": "fx-0250",
+"file": "fx-0250.html",
+"url": "https://old.reddit.com/r/LawFirm/comments/1n3j137/",
+"family": "reviews",
+"captured": "2026-08-01",
+"sha256": "74215034d773217c56fd6d2b5ae29cbe9ea85ce6e78b8111de5fb95a32d81058"
+},
+{
+"id": "fx-0251",
+"file": "fx-0251.html",
+"url": "https://old.reddit.com/r/LawFirm/comments/1g5eede/",
+"family": "reviews",
+"captured": "2026-08-01",
+"sha256": "b470f15e60645e8d57db94d46c8f635b5c429b64f183953a6e006d61edfd82f5"
+},
+{
+"id": "fx-0252",
+"file": "fx-0252.html",
+"url": "https://old.reddit.com/r/LawFirm/comments/170ikwh/",
+"family": "reviews",
+"captured": "2026-08-01",
+"sha256": "36028e3fab27aa2bd045fde771e308ecd2e43bccb289a82150bfd8669c1332e3"
+},
+{
+"id": "fx-0253",
+"file": "fx-0253.html",
+"url": "https://old.reddit.com/r/LawFirm/comments/1edkvrg/",
+"family": "reviews",
+"captured": "2026-08-01",
+"sha256": "faf35e7b41991cb8bd1bb76c1a0fa3343c9dbc2a6807a054d30e197d1cd51438"
+},
+{
+"id": "fx-0254",
+"file": "fx-0254.html",
+"url": "https://old.reddit.com/r/LawFirm/comments/1jojli0/",
+"family": "reviews",
+"captured": "2026-08-01",
+"sha256": "e26720d45f543c43be686e5ea6bf6584b11a9fe7f15947fce0af4d75f1452e18"
+},
+{
+"id": "fx-0255",
+"file": "fx-0255.html",
+"url": "https://www.youtube.com/watch?v=vf8fBNLIgqg",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "f5e6282d906bac2dfda377978ba3bbe1412d4d20f3af3a3416f032e657004164"
+},
+{
+"id": "fx-0256",
+"file": "fx-0256.html",
+"url": "https://www.youtube.com/watch?v=sfsSt27VrWw",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "40b5ab171c5d3637c618ba5fe7d744b671d27a8f416e95b30631fa97f646a3a1"
+},
+{
+"id": "fx-0257",
+"file": "fx-0257.html",
+"url": "https://www.youtube.com/watch?v=cJguxcujytY",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "8e647b247b7c4e78e9995d66edc20cf6a61757084ad1d928f0ea684dd0fe78ce"
+},
+{
+"id": "fx-0258",
+"file": "fx-0258.html",
+"url": "https://www.youtube.com/watch?v=ZkrcON0m1m8",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "fbe0ddebe64155db81ffcd253b577ab25b791a9c06da71b72584b040d7bca7ad"
+},
+{
+"id": "fx-0259",
+"file": "fx-0259.html",
+"url": "https://www.youtube.com/watch?v=bHweEsDFftA",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "bffcb0be47a201a8e5fc92179a99311796e2897fd119143b6e0c9eccc7edfbb4"
+},
+{
+"id": "fx-0260",
+"file": "fx-0260.html",
+"url": "https://www.youtube.com/watch?v=NHaegl5VLAE",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "b83735221024baa7f0c39b8d490d26f305944bd4d50e970939ed04425a5959e3"
+},
+{
+"id": "fx-0261",
+"file": "fx-0261.html",
+"url": "https://www.docketwise.com/blog/ai-document-extraction/",
+"family": "release-notes",
+"captured": "2026-08-01",
+"sha256": "974ea5e2b527d19808b81ad34cf4188d1ea741bb7f14eed59a82767deb98f6b2"
+},
+{
+"id": "fx-0262",
+"file": "fx-0262.html",
+"url": "https://www.docketwise.com/blog/a-review-of-integrations-with-immigration-software-docketwise/",
+"family": "release-notes",
+"captured": "2026-08-01",
+"sha256": "580475fff8adf35f324f9bed7f9d193a63e9551f46f34e64d297b04fefeb3770"
+},
+{
+"id": "fx-0263",
+"file": "fx-0263.html",
+"url": "https://www.docketwise.com/blog/candle-ai-email-assistant/",
+"family": "release-notes",
+"captured": "2026-08-01",
+"sha256": "da3757cecbb0904cb4e4e6284f56094c1663babff73583872cedea510d431527"
+},
+{
+"id": "fx-0264",
+"file": "fx-0264.html",
+"url": "https://www.docketwise.com/blog/docketwise-iq-legal-ai/",
+"family": "release-notes",
+"captured": "2026-08-01",
+"sha256": "c52bd37adc66239a4a675f4c5f452795198c7be068ee4f4cef0e4530ac7e7f27"
+},
+{
+"id": "fx-0265",
+"file": "fx-0265.html",
+"url": "https://www.docketwise.com/blog/motaword-integration/",
+"family": "release-notes",
+"captured": "2026-08-01",
+"sha256": "71019a9152f204b5cfb6f31f4c1cca68387fc10463427538ce90d921b017e1ca"
+},
+{
+"id": "fx-0266",
+"file": "fx-0266.html",
+"url": "https://www.docketwise.com/blog/mycase-imigration-add-on/",
+"family": "release-notes",
+"captured": "2026-08-01",
+"sha256": "f72f8c9a9d3c7f522d483732d0329fbc3a8b84fa2e88df8beadb96b97f8dca82"
+},
+{
+"id": "fx-0267",
+"file": "fx-0267.html",
+"url": "https://www.docketwise.com/blog/simplify-and-expedite-your-eta-9141-filing-save-time-and-effort-with-docketwise/",
+"family": "release-notes",
+"captured": "2026-08-01",
+"sha256": "dd93ec1bce38edce7a22857519d6293ea5df540f00d064e79ea59f8095f47656"
+},
+{
+"id": "fx-0268",
+"file": "fx-0268.html",
+"url": "https://www.docketwise.com/blog/smart-forms/",
+"family": "release-notes",
+"captured": "2026-08-01",
+"sha256": "8eee73a9b99f83726e5f0ffa6c9f28266a3652cd73611ed132aaa617974b894f"
+},
+{
+"id": "fx-0269",
+"file": "fx-0269.html",
+"url": "https://www.docketwise.com/blog/the-benefits-of-using-docketwise-for-form-i-9-compliance-and-e-verify/",
+"family": "release-notes",
+"captured": "2026-08-01",
+"sha256": "b414d7fc1f013240627b93306cf8a59f3cb72c2acf33214ec43ae6be9eb50016"
+},
+{
+"id": "fx-0270",
+"file": "fx-0270.html",
+"url": "https://www.docketwise.com/blog/using-docketwise-to-track-the-visa-bulletin/",
+"family": "release-notes",
+"captured": "2026-08-01",
+"sha256": "8050aba960b59d5a82ce11acfaf46509a7c5407752d4157620a18ab9149a2a73"
+},
+{
+"id": "fx-0271",
+"file": "fx-0271.html",
+"url": "https://www.docketwise.com/blog/year-in-review/",
+"family": "release-notes",
+"captured": "2026-08-01",
+"sha256": "35b7c094b2c2d4a878f87535f30d293c29c2a7adb59ad08dea6cca0f3778656c"
+},
+{
+"id": "fx-0272",
+"file": "fx-0272.html",
+"url": "https://www.youtube.com/playlist?list=UUfGhmt2TsymPPDVpro-JSIA",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "d4e7eccdbd3a4bcc1d7f6e9cc4cce951d0d86c4799934421467528462bfc71ac"
+},
+{
+"id": "fx-0273",
+"file": "fx-0273.html",
+"url": "https://www.youtube.com/watch?v=eU91vT4-R3Y",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "cf55ca9ac2fa097f8497d4a6a4b136b29d5d781639a71f50a0d1bd4e89cbc9f6"
+},
+{
+"id": "fx-0274",
+"file": "fx-0274.html",
+"url": "https://www.youtube.com/watch?v=r9sT9rnaBDg",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "3f98fdff13783fe755195f021df5940bf12a2d830390eca4b766f116faff65ff"
+},
+{
+"id": "fx-0275",
+"file": "fx-0275.html",
+"url": "https://www.youtube.com/watch?v=4HBVeUVrGs4",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "456cc308fc793cd7875bac568e5662aca9473f304503c748281813f789567106"
+},
+{
+"id": "fx-0276",
+"file": "fx-0276.html",
+"url": "https://www.youtube.com/watch?v=xXhHf3rzaII",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "781fb7dd928e0b2f349ae002acc39b75da4ca5c08378794a162a9bd47b5695f2"
+},
+{
+"id": "fx-0277",
+"file": "fx-0277.html",
+"url": "https://www.youtube.com/watch?v=TQMq22ENXgM",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "d25a3a58810b588bbbdbf53eb51d94bbd3b3c0e255f2ee0578fe8f7387023760"
+},
+{
+"id": "fx-0278",
+"file": "fx-0278.html",
+"url": "https://www.youtube.com/watch?v=6OoCWPJlGXg",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "1a680a8ac7cbf717d9394defabf9f028254b847a3fdc0b7e7ec940a201ec3fec"
+},
+{
+"id": "fx-0279",
+"file": "fx-0279.html",
+"url": "https://www.youtube.com/watch?v=EBNoew2wuqc",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "d76a1cb699a847f7d5114857da6712b59e1a8a67a07b5d3d903ed072bf6a7a1f"
+},
+{
+"id": "fx-0280",
+"file": "fx-0280.html",
+"url": "https://www.youtube.com/watch?v=l0tV4Tye5Kk",
+"family": "youtube",
+"captured": "2026-08-01",
+"sha256": "d802718b80ae365d2c198247167a1e7b2a292ef5964f1bc06a8ff56bbfac9fd3"
+}
+]

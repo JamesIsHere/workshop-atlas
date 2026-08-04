@@ -1,0 +1,9 @@
+# source-gap-inventory.txt -- Phase 4 exit artifact,
+# 2026-08-01. Every live corpus entry carrying a gap field:
+# the trial-account decision list (program ruling: a trial-
+# account pass is a separate, deliberate, supervised decision
+# taken with this inventory in hand).
+# 1 SOURCE-GAP entries.
+
+invoicing-and-trust-accounting.trust-requests (module invoicing-and-trust-accounting)
+  what: whether trust requests accept online card or eCheck payment via LawPay or only direct payment (the captured help articles conflict); source: trial-account billing flow (live product).

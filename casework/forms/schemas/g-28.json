@@ -1,0 +1,351 @@
+{
+  "code": "g-28",
+  "title": "Notice of Entry of Appearance as Attorney or Accredited Representative",
+  "agency": "USCIS",
+  "edition": "09/17/18",
+  "efilable": 1,
+  "pdf": "g-28.pdf",
+  "roles": [
+    "client"
+  ],
+  "primary_role": "client",
+  "tabs": [
+    "Attorney",
+    "Appearance",
+    "Client"
+  ],
+  "questions": [
+    {
+      "key": "q.g28.atty_family_name",
+      "label": "Attorney family name",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "preparer": "family_name"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Pt1Line2a_FamilyName[0]"
+      ]
+    },
+    {
+      "key": "q.g28.atty_given_name",
+      "label": "Attorney given name",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "preparer": "given_name"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Pt1Line2b_GivenName[0]"
+      ]
+    },
+    {
+      "key": "q.g28.atty_middle_name",
+      "label": "Attorney middle name",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "preparer": "middle_name"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Pt1Line2c_MiddleName[0]"
+      ]
+    },
+    {
+      "key": "q.g28.atty_email",
+      "label": "Attorney email address",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "preparer": "email"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Line6_EMail[0]"
+      ]
+    },
+    {
+      "key": "q.g28.atty_bar_number",
+      "label": "Attorney bar number",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "preparer": "bar_number"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Pt2Line1b_BarNumber[0]"
+      ]
+    },
+    {
+      "key": "q.g28.atty_licensing_authority",
+      "label": "Licensing authority",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "preparer": "licensing_authority"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Pt2Line1a_LicensingAuthority[0]"
+      ]
+    },
+    {
+      "key": "q.g28.firm_name",
+      "label": "Name of law firm or organization",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "firm": "firm.name"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Pt2Line1d_NameofFirmOrOrganization[0]"
+      ]
+    },
+    {
+      "key": "q.g28.firm_street",
+      "label": "Firm street number and name",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "firm": "firm.street"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Line3a_StreetNumber[0]"
+      ]
+    },
+    {
+      "key": "q.g28.firm_city",
+      "label": "Firm city or town",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "firm": "firm.city"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Line3c_CityOrTown[0]"
+      ]
+    },
+    {
+      "key": "q.g28.firm_state",
+      "label": "Firm state",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "firm": "firm.state"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Line3d_State[0]"
+      ]
+    },
+    {
+      "key": "q.g28.firm_zip",
+      "label": "Firm ZIP code",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "firm": "firm.zip"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Line3e_ZipCode[0]"
+      ]
+    },
+    {
+      "key": "q.g28.firm_phone",
+      "label": "Firm daytime telephone number",
+      "qtype": "text",
+      "tab": "Attorney",
+      "source": {
+        "firm": "firm.phone"
+      },
+      "pdf_fields": [
+        "form1[0].#subform[0].Line4_DaytimeTelephoneNumber[0]"
+      ]
+    },
+    {
+      "key": "q.g28.appearance_uscis",
+      "label": "This appearance is before USCIS",
+      "qtype": "boolean",
+      "tab": "Appearance",
+      "pdf_fields": [
+        "form1[0].#subform[1].Line1a_USCIS[0]"
+      ]
+    },
+    {
+      "key": "q.g28.appearance_form_number",
+      "label": "List the form number(s)",
+      "qtype": "text",
+      "tab": "Appearance",
+      "pdf_fields": [
+        "form1[0].#subform[1].Line1b_ListFormNumber[0]"
+      ]
+    },
+    {
+      "key": "q.g28.receipt_number",
+      "label": "Receipt number (if any)",
+      "qtype": "text",
+      "tab": "Appearance",
+      "pdf_fields": [
+        "form1[0].#subform[1].Pt3Line4_ReceiptNumber[0]"
+      ]
+    },
+    {
+      "key": "q.g28.client_family_name",
+      "label": "Client family name",
+      "qtype": "text",
+      "tab": "Client",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "client",
+          "key": "bio.family_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].Pt3Line5a_FamilyName[0]"
+      ]
+    },
+    {
+      "key": "q.g28.client_given_name",
+      "label": "Client given name",
+      "qtype": "text",
+      "tab": "Client",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "client",
+          "key": "bio.given_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].Pt3Line5b_GivenName[0]"
+      ]
+    },
+    {
+      "key": "q.g28.client_middle_name",
+      "label": "Client middle name",
+      "qtype": "text",
+      "tab": "Client",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "client",
+          "key": "bio.middle_name"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].Pt3Line5c_MiddleName[0]"
+      ]
+    },
+    {
+      "key": "q.g28.client_a_number",
+      "label": "Client A-Number",
+      "qtype": "text",
+      "tab": "Client",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "client",
+          "key": "imm.a_number"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].Pt3Line9_ANumber[0]"
+      ]
+    },
+    {
+      "key": "q.g28.client_phone",
+      "label": "Client daytime telephone number",
+      "qtype": "text",
+      "tab": "Client",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "client",
+          "key": "contact.phone"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].Line9_DaytimeTelephoneNumber[0]"
+      ]
+    },
+    {
+      "key": "q.g28.client_email",
+      "label": "Client email address",
+      "qtype": "text",
+      "tab": "Client",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "client",
+          "key": "contact.email"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].Line11_EMail[0]"
+      ]
+    },
+    {
+      "key": "q.g28.client_street",
+      "label": "Client street number and name",
+      "qtype": "text",
+      "tab": "Client",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "client",
+          "key": "addr.street"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].Line12a_StreetNumberName[0]"
+      ]
+    },
+    {
+      "key": "q.g28.client_city",
+      "label": "Client city or town",
+      "qtype": "text",
+      "tab": "Client",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "client",
+          "key": "addr.city"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].Line12c_CityOrTown[0]"
+      ]
+    },
+    {
+      "key": "q.g28.client_state",
+      "label": "Client state",
+      "qtype": "text",
+      "tab": "Client",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "client",
+          "key": "addr.state"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].Line12d_State[0]"
+      ]
+    },
+    {
+      "key": "q.g28.client_zip",
+      "label": "Client ZIP code",
+      "qtype": "text",
+      "tab": "Client",
+      "source": {
+        "fact": {
+          "subject": "contact",
+          "role": "client",
+          "key": "addr.zip"
+        }
+      },
+      "pdf_fields": [
+        "form1[0].#subform[1].Line12e_ZipCode[0]"
+      ]
+    }
+  ],
+  "attachments": []
+}

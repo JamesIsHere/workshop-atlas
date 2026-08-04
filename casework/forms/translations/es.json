@@ -1,0 +1,20 @@
+{
+  "q.n400.family_name": "Apellido legal actual",
+  "q.n400.given_name": "Nombre legal actual",
+  "q.n400.middle_name": "Segundo nombre legal actual",
+  "q.n400.a_number": "Numero A",
+  "q.n400.date_of_birth": "Fecha de nacimiento",
+  "q.n400.country_of_nationality": "Pais de nacionalidad",
+  "q.n400.prior_family_name": "Otros apellidos utilizados desde el nacimiento",
+  "q.n400.prior_given_name": "Otros nombres utilizados desde el nacimiento",
+  "q.g28.client_family_name": "Apellido del cliente",
+  "q.g28.client_given_name": "Nombre del cliente",
+  "q.g28.client_middle_name": "Segundo nombre del cliente",
+  "q.g28.client_a_number": "Numero A del cliente",
+  "q.g28.client_phone": "Telefono del cliente",
+  "q.g28.client_email": "Correo electronico del cliente",
+  "q.g28.client_street": "Calle y numero del cliente",
+  "q.g28.client_city": "Ciudad del cliente",
+  "q.g28.client_state": "Estado del cliente",
+  "q.g28.client_zip": "Codigo postal del cliente"
+}

@@ -1,0 +1,9 @@
+STATEMENT account 1 through 2026-08-04: 1 lines, 2 pending, closing 500000
+account 1 period 2026-08-04: bank 500000 + DIT 0 - outstanding 420000 = book 80000 = subledger 80000 -> HOLDS
+  item: outstanding disbursement 300000 (2026-08-03, entry 4)
+  item: outstanding disbursement 120000 (2026-08-04, entry 5)
+account 1 period 2026-08-14: bank 80000 + DIT 0 - outstanding 0 = book 80000 = subledger 80000 -> HOLDS
+STATEMENT account 2 through 2026-08-04: 2 lines, 1 pending, closing 34970
+account 2 period 2026-08-04: bank 34970 + DIT 300000 - outstanding 0 = book 334970 -> HOLDS
+  item: deposit in transit 300000 (2026-08-03, entry 4)
+account 2 period 2026-08-14: bank 334970 + DIT 0 - outstanding 0 = book 334970 -> HOLDS
