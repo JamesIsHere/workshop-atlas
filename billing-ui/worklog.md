@@ -780,3 +780,331 @@ fiduciary on the walked db, eyeball, three-part verdict.
 Wind-down at James's request ("park it"): fresh walk queued for
 a new session. Gate server left on 8500 (gate-f1 db). state.md
 rewritten clean; commit + push ordered by James.
+
+## 2026-08-06 -- s5: pre-walk end-to-end drive of the sheet;
+## 9 coupling defects found and fixed; all suites green
+
+James, resuming: "a lot of amendments and a lot of work just to
+get to step 12 ... Before I try to start I want to run
+end-to-end ... do a full review" -- explicit order to get the
+sheet/UI coupling into best shape before his fresh walk.
+
+METHOD: the 08-04 label audit checked labels against SOURCE;
+this session drove every one of the 32 steps against the LIVE
+screens by script (scratchpad drive_sheet.py; scratch db,
+ephemeral ports, 8500 untouched), checking each Go: target,
+field, fold (existence AND open state), button, and Observe: on
+the page the click actually lands on. That closes the gap the
+label oracle cannot see: a label can exist in source yet be
+absent (or collapsed) in the STATE the driver reaches --
+check_sheet_labels.py greps a corpus of all branches, and
+run_billing_ui_walk.py POSTs routes directly, so neither renders
+the in-between states James's hands meet. Two prior escapes
+(steps 15 and 22 below) were exactly that class.
+
+NINE defects found; steps 1-9, 11-14, 16-21, 24, 26-28, 30-31
+verified clean label-for-label. Fixes in three artifacts:
+
+UI (app_ui/billing_ui.py, rendering-only, disclosed -- the F-1
+page passed its mini-gate 08-04, so these are post-gate edits):
+1. Step 15 walk-killer: "Create client link" reloaded the page
+   with the fold holding the new URL COLLAPSED (s4's auto-open-
+   until-first-share rule backfired: creating the first share
+   closed the fold at the exact moment its content mattered).
+   The trust "Send the request to the client" fold is now always
+   open while a balance is due; the bill-side "Send the client a
+   payment link" fold opens once a share exists.
+2. Step 22 walk-killer: an EMPTY bill rendered the import
+   checkboxes bare in the Charges card -- the sheet's named fold
+   "Import saved charges and time" did not exist in that state
+   (it only wrapped the checkboxes once a charge existed). The
+   fold now wears the same label in both states.
+
+Sheet (verify/demo-walk-protocol.md, wording re-pinned to what
+the screens render; amendment block added; data values, step
+semantics, and numbering unchanged):
+3. Steps 10/13: "side by side"/LEFT/RIGHT -> the two New-invoice
+   cards are STACKED; TOP = "New bill", LOWER = "New trust
+   request". (The 08-04 audit had introduced "side by side" from
+   source-reading -- .card divs are block elements.)
+4. Steps 25/29: "open the 500.00 / 3,000.00 bill" -> paid rows
+   all show Balance 0.00, no amount column identifies them; the
+   sheet now says open Bill #1 / #3 by the Invoice column. The
+   25 tab-click also moved from End: into Go: (STEP RULE: one
+   End per screen of work; navigation compresses into Go:).
+5. Step 18 Observe pinned to visible numbers: Trust (IOLTA) tile
+   $5,000.00, Operating tile $349.70 (150.30 itself renders
+   nowhere on that screen; 3% + 0.30 on 5,000.00 verified
+   against processor.py).
+6. Step 22 Observe: "Charges table now totals 3,000.00" -> the
+   table has no totals row; now reads "both rows land ... page
+   says Balance due: $3,000.00".
+7. Step 23 Observe claimed Vera's remaining 2,000.00 on the bill
+   page -- it renders only on Trust accounting; observation
+   moved into step 24's pass-through of that screen.
+8. Step 32: operating recon card carries no "= client claims"
+   leg (no sub-ledger); sheet now says which card shows which
+   identity. Plus minor: steps 1/2 name their on-screen
+   headings; step 7 notes the prefilled Client box.
+
+Close-out checker (verify/check_demo_walk.py):
+9. BUG, would have failed a PERFECT walk at close-out: the
+   earn-out receipt keyed the bill on matter_id IS NOT NULL, but
+   the sheet's consultation bill ALSO carries the matter (the
+   automated walk's doesn't -- the two artifacts diverge there),
+   so the query grabbed Bill #1 (1 charge, no trust transfer).
+   Now keyed on THE bill paid by trust_transfer. Check labels
+   also re-numbered from the dead 12-step narrative to the
+   atomic sheet's step ranges. This was state.md's standing
+   watch item ("REVIEW IT before the walk") -- confirmed real.
+
+Verified, quoted this session, post-fix:
+- drive_sheet.py full 32-step drive: 0 findings.
+- check_demo_walk.py on the sheet-driven db: all receipts PASS +
+  "fiduciary: 8 pass, 0 red, 0 stub; verdict: GREEN" exit 0 --
+  first proof of the checker against a db produced by the SHEET's
+  exact data (matter on Bill #1) rather than the verifier's.
+- check_sheet_labels.py: "84 labels checked, 0 not found" exit 0.
+- run_billing_ui_walk.py: "17 pass, 0 pending, 0 fail;
+  float-sweep pass; verdict GREEN" x2, timing-stripped sha
+  d7ee3ace IDENTICAL both runs -- SUPERSEDES 485b2463 (delta =
+  UI fixes 1-2; strip recipe this session: drop "run started:"
+  line, per-step elapsed column, total figure; sha256 first 8).
+- ui-walk 13 GREEN; spine 107 green; billing 25 GREEN; fiduciary
+  --seeded 8 GREEN.
+
+The fresh P4 walk remains the only contract item and can start
+from step 1 on a fresh dated db behind 8500.
+
+## 2026-08-07 -- s5 cont: exploratory notes banked (no build)
+
+PAYMENTS LANDSCAPE (James-directed exploration, web-sourced, for
+the strategic flag's file): LawPay powered Clio Payments from
+2015; Clio went native 2021-22 and is discontinuing the LawPay
+integration entirely end of Aug 2026 (LawSites, 2026-05).
+AffiniPay answered by buying distribution: MyCase 2022,
+Docketwise 2023, rebrand 8am 2025. Paradigm (PracticePanther/
+Bill4Time/MerusCase) bought Headnote 2020 -> PantherPayments.
+Independent trust-safe processor: Confido Legal -- which IS
+Gravity Legal renamed (Dec 2023, spun out of Gravity Payments;
+$9M raise Feb 2026, Aquiline) -- CORRECTION to the 2026-08-01
+ledger's candidate list, which named "Confido, Gravity" as two.
+Card rails are commodity (Stripe Connect / Adyen / Finix /
+Payrix class); the legal product is the wrapper: IOLTA-safe
+gross settlement + fee-pull from operating -- exactly the shape
+our simulator's adapter models. Business answer to the rake:
+deliberately undecided, untriggered.
+
+PROGRAM ORIENTATION (same sitting): corpus totals 242 entries;
+built+verified 136 (spine 111 + billing 25) = 56% by count; the
+number is true and misleading (entry grain hides the form-library
+treadmill, productization mass, and distribution moats). James's
+personal gap map written OUTSIDE the program at
+C:\Users\james\Desktop\atlas-untouched-map.md (his state file,
+not a contract artifact). Payments cleared from working memory
+by his ruling; fresh P4 walk remains the only open contract item.
+
+## 2026-08-07 -- s6: walk attempt 2 FAIL; sheet-UI coupling built
+
+ATTEMPT 2 (James driving, fresh data/demo-walk-2026-08-07.db on
+8500): stalled at step 12, diverged at step 14, stopped at 17.
+Audit-log reconstruction (walked db, read-only): steps 1-11 all
+correct. Step 12's payment landed dated 2026-08-07 (the Date
+field prefills today; the prefill beat the sheet's typed
+2026-08-01). At step 14 the retainer was recorded as a FIRM-SIDE
+direct deposit -- the fold the sheet said "do NOT open" -- two
+seconds before the client link was created, so the request went
+Paid before Vera saw it, processor_transactions stayed empty,
+and Part F had nothing to settle. Db unwalkable from step 18;
+retained (delete=archive) as the attempt-2 record. James's
+verdict on the artifact: driving it was "like taking the CPA
+audit test with no background" -- procedures without goals, in
+agent vocabulary (card/fold/Collect "button") no screen shows.
+
+FINDINGS (all artifact defects, none driver error):
+1. Sheet vocabulary unexplained; no button named Collect exists.
+2. No recovery rail: reorienting via the menu (which has no
+   active-section marker -- his finding) strands the driver.
+3. Date prefills silently beat typed sheet values.
+4. Negative instruction lost to a visible prefilled affordance.
+5. Steps stated procedures, never goals.
+6. (Found by the new drive) an invoice with NO charges derives
+   status paid, so a just-created bill is on NEITHER default
+   list tab -- the old If-lost route to steps 11/14/22 dead-ends.
+   Product observation parked for James: is empty-bill-counts-as-
+   paid acceptable list behavior? Sheet routes via All for now.
+
+FIXES (James ratified the gate in-session; edit surfaces: sheet
++ UI both authorized by him verbatim):
+- demo-walk-protocol.md AMENDED (6th amendment, recorded in the
+  header): vocabulary block (card/fold/tab/tile/crumb line + "no
+  Collect button exists"); Goal line under every part; Go: or If
+  lost: route on every step, always starting from menu/address
+  bar; every date field states its prefill (change it / leave
+  it); Part E rewritten positively -- deposit fold never named,
+  CHECKPOINT at step 17 stops the walk if the payment method
+  reads direct; crumb-line anchors on the create steps; empty-
+  state routes via tab All. Steps still 32, data values and
+  semantics unchanged, no renumbering.
+- UI (rendering-only): html.page() gains active_href; billing
+  screens pass /billing -> the top menu underlines Billing on
+  every billing screen. Shared-chrome change ratified by James
+  in-session; inert for all non-billing callers (default None).
+- verify/drive_sheet.py NEW, PERMANENT (the 08-06 drive was
+  scratch and evaporated -- lesson recorded): drives all 32
+  steps entering EVERY step from scratch via its own sheet
+  route (the recovery rail attempt 2 lacked), asserts the
+  sheet's quoted labels on the landing pages, locks the
+  attempt-2 regressions (prefill claims, request-unpaid-before-
+  client-link, checkpoint-17 card-not-direct), and carries a
+  SHEET LOCK: sha256 of the walk-sheet section; sheet edits
+  without a driver re-sync fail loudly (exit 2).
+  First runs caught: my own crumb needle written against
+  rendered text not markup; bare #N needles false-matching CSS
+  hex colors (#1a1d21); finding 6 above. All fixed, then GREEN.
+- verify/report_sha.py NEW: canonical timing-strip sha recipe
+  as code. Evidence this session: the s4-COMMITTED walk report
+  and today's report strip to the SAME sha under one recipe,
+  zero diff -- so the worklog's a506f085 -> 485b2463 -> d7ee3ace
+  lineage was RECIPE drift across sessions, not report deltas.
+  The walk report content has been stable since the s4 commit.
+  Canonical sha of that stable content: a506f085. result.md
+  must disclose this reconciliation; prior histories unedited.
+
+VERIFIED, quoted this session, post-fix:
+- drive_sheet: 24/24 groups pass; verdict GREEN.
+- check_sheet_labels: 82 labels checked, 0 not found.
+- run_billing_ui_walk: "17 pass, 0 pending, 0 fail; float-sweep
+  pass; verdict GREEN" x2; report_sha.py -> a506f085 both runs.
+- ui-walk 13 GREEN; spine 107 GREEN; billing 25 GREEN;
+  fiduciary --seeded 8 GREEN.
+
+Session hygiene: dead 8500 server stopped; fresh
+data/demo-walk-2026-08-07b.db serving on 8500, /setup confirmed
+answering -- attempt 3 starts at sheet step 1. CLAUDE.md "How to
+run" corrected: run_billing.py / run_fiduciary.py live in
+../casework-billing/verify, not ../casework/verify (verified on
+disk today; the old line failed when run).
+
+METHOD: three instances of ONE defect class surfaced today, all
+"generated artifact verified against its own assumptions":
+(a) the sheet's happy-path drive could not model a human
+reorienting mid-walk (deck-vs-hands, one layer deeper: script-
+vs-hands); (b) the sha receipts compared incomparable hand-made
+normalizations; (c) the agent itself queried guessed table
+names mid-investigation (James caught it live). Standing cure
+in all three: the procedure becomes versioned code with a loud
+failure mode (drive_sheet + sheet lock; report_sha; Evidence
+Discipline block added to James's global CLAUDE.md -- read
+before assert, ground first, fail loud, no error-tolerant
+probing). James's framing worth keeping: agent claims are
+management representations; verification is segregation of
+duties -- the generator never solely attests its own work.
+
+## 2026-08-07 -- s6 cont: attempt 3 COMPLETE end to end; verdict FAIL
+
+Attempt 3 (fresh demo-walk-2026-08-07c.db behind 8500): James
+drove ALL 32 steps -- the first complete James-driven walk.
+Deviations en route: an extra empty bill took the #2 slot, so
+every downstream invoice number shifted +1 (sheet hardcodes
+numbers = new finding; recorder remapped mid-walk at his
+request -- assistance disclosed for the verdict); the trust
+request issue date, time entry, earn-out and disbursement dates
+stayed on today's prefill. Root cause visible in his snaps: date
+inputs display/accept US MM/DD/YYYY while the sheet speaks ISO
+-- a format conversion at every field. His ruling: COUPLE to
+MM/DD/YYYY user-facing, data stays ISO (gated-items queue A).
+
+Close-out quoted: check_demo_walk PASS on the walked db -- all
+receipts held THROUGH the number offset (s5's structural keying
+paid off: "trust request 3 paid via processor", "bill 4 ...
+trust_transfer paid"); "fiduciary: 8 pass, 0 red, 0 stub;
+verdict: GREEN" in place; exit 0. Eyeball leg: his 25 labeled
+snaps, copied to walk-artifacts/2026-08-07-attempt3/ (standing
+home for walk documentation).
+
+VERDICT (James, all three axes): (a) FAIL -- "reconciliation
+was not adequate and I think incorrect"; (b) FAIL -- "I'd
+apologize for many"; (c) FAIL -- "no chance, this suckers
+half-baked not up to my internal standards even." P4 stays
+open; iteration ordered. Contract note: the walk MECHANICS now
+survive his hands end to end (close-out green); the FAIL is
+product quality, which is exactly what the three-axis verdict
+exists to measure.
+
+Friction ledger from the snaps: no route back to dashboard
+(brand not a link); client pay page bare HTML beside the styled
+firm surface (frozen casework -- gated); date format mismatch
+(root cause above); inconsistent date defaults (charge dates
+copy issue date, payment/time/disburse default today);
+"unrecognized duration: '2'" (strict field, good error); blank
+select options read as noise; Pay to free text; copy-link
+button wanted (zero-JS -> select-on-click box); imported saved
+charge shows blank DATE cell; show client trust balance on the
+bill/PDF (his 800.00 idea); two snap labels awaiting one-line
+clarifications.
+
+BACKLOG AGGREGATED at his order: atlas/gated-items.md -- every
+locked/parked item program-wide, plus the break-in method
+(F7-amendment precedent formalized: name item, scope-limited
+in-session authorization, hard limits restated, all suites
+rerun green, canonical shas, worklog carries the incident).
+Axis-(a) recon work is ALREADY AUTHORIZED under the 2026-08-04
+F7 amendment; blocked only on his specifics (asked, one
+question, end of session message).
+
+METHOD: the three-attempt arc is the finding. Attempt 1 died at
+step 12 on a model-shaped page; attempt 2 died at 14 on sheet-
+reality decoupling; attempt 3 ran 32/32 with a green close-out
+after the coupling machinery landed -- and STILL failed the
+human verdict on quality. Oracles bound correctness; only the
+ratifier's hands bound demo-grade. Both layers are needed;
+neither substitutes.
+
+## 2026-08-07 -- s6 cont 2: recon rebuilt vertical (axis-(a) fix 1)
+
+James's diagnosis on the recon screen, confirmed against the
+engine in a plain-text CLI walkthrough: (1) no visible bank
+side -- the statement never appeared as its own artifact, so the
+rec read as books reconciling to themselves; (2) horizontal
+identity sentence where a CPA reads vertical footing columns;
+(3) unsigned amounts -- the items column footed to nothing; (4)
+the 500.00 "check" he never wrote = the correction machinery's
+fabricated compensating bank events (s2 fix's trade-off),
+surfaced to him for a held decision.
+
+REBUILD (F7-authorized, rendering-only, billing_ui.py): the
+recon card is now three vertical panes per account -- Bank
+statement (independent; cleared lines, then in-transit /
+outstanding items, footing Statement balance -> Adjusted bank),
+Books (posted entries, system corrections labeled, footing
+Books balance), Client claims (trust only, footing total) --
+with parenthesized outflows, a tie line (adjusted bank = books
+= client claims), and an error box enumerating any unmatched
+lines/postings. bank_statement.py now imported by the renderer
+(same witness the engine reads; never the journal). Sheet step
+32 re-pinned to the new screen (amendment recorded); drive s32
+STRENGTHENED: asserts all three pane titles, all four foot
+labels, the (system correction) tag, Adjusted bank on BOTH
+cards, claims column on the trust card only.
+
+Quoted green after rebuild: drive-sheet 24/24; labels 82/0;
+billing-ui walk 17/17 x2 report_sha a506f085; ui-walk 13; spine
+107; billing 25; fiduciary --seeded 8. Server on 8500 restarted
+over the WALKED db (demo-walk-2026-08-07c) so James eyeballs
+the new screen on his own books.
+
+HELD DECISIONS (gated-items updated): fabricated correction
+events vs real-bank-matching engine (his call after eyeball);
+period-end placement so statements show a cleared/pending mix.
+
+## 2026-08-07 -- s6 wind-down
+
+James's eyeball on the rebuilt recon: "solid for where we are
+at" -- axis-(a) presentation accepted for this stage; the two
+engine-level decisions stay held on gated-items item 1. Session
+closed with commit + push (this commit carries s5's uncommitted
+pre-walk fixes AND all of s6: coupling machinery, attempt-3
+walk artifacts, verdict record, recon rebuild, gated-items.md,
+Evidence Discipline incident). Server left on 8500 over the
+walked attempt-3 db. state.md is the resume authority.

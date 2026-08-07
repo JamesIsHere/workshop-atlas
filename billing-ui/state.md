@@ -2,67 +2,93 @@
 
 ## Status
 
-P4 attempt 1 (2026-08-04): FAIL at step 12 on axis (b), finding
-F-1 -- the invoice page was model-shaped. Protocol followed:
-findings -> redesign -> mini-gate. F-1 REDESIGN BUILT and GATE
-CLOSED PASS same day (James: "Designs better", zero kills):
-state-shaped Bill / Trust request page (building -> awaiting
-money -> paid), one "Collect $X" card with per-method folds,
-native <details> (zero-JS), rendering-only, nouns unified.
-Extra defects fixed en route: status-shadowing bug (caught by
-walk verifier), empty bill wore a Paid pill (caught by deck
-frame 1 -- first hands/deck-visible state no deck had shown).
+P4 OPEN after attempt 3 (2026-08-07): the FIRST COMPLETE
+James-driven walk, all 32 steps, close-out PASS quoted on the
+walked db (check_demo_walk exit 0 through his +1 invoice-number
+offset; fiduciary 8 GREEN in place) -- but VERDICT FAIL on all
+three axes, his words in worklog s6 cont: (a) recon "not
+adequate and I think incorrect", (b) "I'd apologize for many",
+(c) "half-baked". Walk MECHANICS are proven; the FAIL is
+product quality.
 
-All suites green post-rebuild, quoted in worklog: billing-ui
-walk 17/17 x2, timing-stripped sha 485b2463 SUPERSEDES a506f085
-(F-1 redesign is the delta; disclose both in result.md);
+Same session, two fix rounds shipped and verified:
+- Attempt-2 root causes -> coupling machinery: sheet 6th+7th
+  amendments (vocabulary block, Goal per part, Go:/If lost:
+  recovery rail on every step, prefill callouts, Part E
+  positive-only + step-17 CHECKPOINT, All-tab routes, step 32
+  re-pin); nav underlines Billing on billing screens (shared
+  chrome, ratified); verify/drive_sheet.py PERMANENT coupling
+  oracle (every step entered from scratch; SHEET LOCK sha
+  308332708dd1); verify/report_sha.py canonical sha (a506f085;
+  prior lineage a506f085->485b2463->d7ee3ace exposed as RECIPE
+  drift -- content byte-stable since the s4 commit; result.md
+  must disclose).
+- Axis-(a) fix 1: recon screen REBUILT as three vertical
+  footing panes (Bank statement independent leg / Books with
+  system-correction tags / Client claims), parenthesized
+  outflows, tie line, unmatched-item error box. James's
+  eyeball: "solid for where we are at". Driver s32 strengthened
+  to pin all pane titles and foot labels.
+
+All suites green at close (worklog s6 cont 2): drive-sheet
+24/24; labels 82/0; billing-ui walk 17/17 x2 sha a506f085;
 ui-walk 13; spine 107; billing 25; fiduciary --seeded 8.
-
-The SHEET is now an oracle-checked artifact: atomic STEP RULE
-(one step = one screen; 32 steps, parts A-J), verify/
-check_sheet_labels.py green (79 labels / 0 missing; fences:
-slash-tuples, multi-End steps, labels must exist in rendering
-source). Papercut ledger (8 entries) + walk finding F-1 in
-worklog s4.
 
 ## Next actions
 
-1. FRESH P4 WALK -- the only remaining contract item. One
-   sitting, ~15 min. Recorder order: fresh dated db served ON
-   8500 (stop the gate server first), quote run_billing_ui_walk
-   AND check_sheet_labels green, hand James the sheet at step 1
-   (fresh db = account creation, NO login-memory wall). He
-   drives to step 32; then check_demo_walk.py + fiduciary on the
-   walked db, PDF/ledger/recon eyeball, three-part verdict.
-   PASS -> completion proof, result.md, roster flip.
+1. Work atlas/gated-items.md UNLOCKED queue, A first per his
+   ruling: dates render MM/DD/YYYY on billing screens AND in
+   the sheet's typed values (root cause of 4 of 5 attempt-3
+   date misses), data stays ISO, drive_sheet asserts it. Then
+   B (sheet identifies invoices by TYPE, never number), then
+   C-H; clarify the two snap labels in I.
+2. Held recon decisions (gated item 1, his call): (i) keep
+   fabricated compensating bank events on corrections, or move
+   the engine to real-bank matching; (ii) place the demo
+   period end so statements show a cleared/pending mix.
+3. Gate-by-gate through the locked list -- client pay page
+   styling first (his axis-(b) driver; needs a program-ruling
+   break-in, method in gated-items.md).
+4. Attempt 4 (fresh db, full walk, verdict) once the queue
+   lands.
 
 ## Watch items and caveats
 
-- Gate server LEFT RUNNING on 8500 with
-  data/gate-f1-2026-08-04.db (billing.walk@synthetic.test /
-  billing-walk-pass, code on screen) for James's solo clicking.
-  Swap a fresh db behind 8500 at walk time. Machine restart:
-  serve per CLAUDE.md "How to run", always 8500.
-- Dead walk dbs retained (delete=archive): demo-walk-2026-08-04
-  (steps 1-2), demo-walk-2026-08-04b (steps 1-5-ish, F-1 db).
-- Verifier assertion edits + sha supersession disclosed in
-  worklog s4 cont -- result.md must carry both shas.
-- check_demo_walk.py predates the redesign and the atomic sheet
-  -- REVIEW IT before the walk (it asserts db-state receipts,
-  likely fine, but verify no stale page-content assertions).
-- Standing gates at every close: ui-walk 13, spine 107, billing
-  25, fiduciary 8 -- all green post-rebuild this session.
+- SHEET LOCK: any walk-sheet edit makes drive_sheet.py exit 2
+  until EXPECTED_SHEET_SHA is re-synced after verifying steps
+  against the driver. Deliberate friction.
+- Sha receipts: ONLY report_sha.py output counts. result.md
+  must carry the recipe-drift reconciliation note.
+- Server LEFT RUNNING on 8500 serving the WALKED attempt-3 db
+  (casework-ui/data/demo-walk-2026-08-07c.db) with the new
+  recon screen, for James's eyeballing. Fresh-walk day: swap a
+  new dated db behind 8500. Machine restart: serve per
+  CLAUDE.md "How to run", always 8500. Login on 07c:
+  demo.driver@synthetic.test / demo-walk-pass, code on screen.
+- Walk dbs retained (delete=archive): demo-walk-2026-08-04,
+  -04b, -07 (attempt 2; audit log = divergence record), -07b
+  (staged, unused), -07c (attempt 3, WALKED -- the verdict db).
+- Attempt-3 snaps (25, labeled) archived at
+  billing-ui/walk-artifacts/2026-08-07-attempt3/ -- the
+  friction-log evidence; committed.
+- Backlog: atlas/gated-items.md is the ONE list of locked/
+  parked items + the break-in method (F7-precedent). Keep it
+  current from any child session.
+- billing + fiduciary suites run from ../casework-billing/
+  (CLAUDE.md corrected s6; they never lived in ../casework/).
+- Standing gates at every close: ui-walk 13, spine 107,
+  billing 25, fiduciary 8 -- all green at this close.
 - Anti-stall ledgers: P2 1/2, P3 0/2, F-1 redesign 1/2 used.
 - Firm question still unasked: flat-fee vs hourly mix.
 - PARKED PROGRAM-LEVEL FINDING (unchanged): client intake
-  questionnaire loses unsaved fields / no re-render / submit
-  verifies nothing (worklog s3). Not this child's scope; carry
-  until routed.
-- METHOD: deck-vs-hands discriminator FIRED (s3 predicted it) --
-  three zero-kill decks passed a page James's hands failed in
-  one minute. Weight future gates toward hands-on. Also: prose
-  facing the ratifier needs oracles (label-audit pattern is
-  portable; casework-ui's cold-run sheet should get one).
+  questionnaire defects (worklog s3); carried on gated-items.
+- METHOD (s6 triple): script-vs-hands, sha recipe drift, and
+  the agent guessed-table incident are ONE class -- generated
+  artifacts verified against their own assumptions. Cure:
+  procedures become versioned code with loud failure modes
+  (drive_sheet lock, report_sha, Evidence Discipline in the
+  global CLAUDE.md). James's hands stay the decisive oracle:
+  three attempts, every stall a real defect.
 
 ## Interface rulings (2026-08-04, all standing)
 
@@ -72,16 +98,20 @@ worklog s4.
 - ONE-ADDRESS: James's URL is http://127.0.0.1:8500, forever.
   Dbs swap behind the port. Other ports are agent-internal.
 - FULL-PATHS: absolute file paths always; instruction steps name
-  menu path + control label, verified never guessed.
-- STEP RULE: one step = one screen ("when the user loads a new
-  page its a new step"); Go:/Field = value/one End: per step.
+  menu path + control label, verified never guessed. EXTENDED
+  2026-08-07: binds agent evidence-gathering too -- ground
+  first, read before assert, no error-tolerant probing.
+- STEP RULE: one step = one screen; Go:/Field = value/one End:
+  per step. EXTENDED 2026-08-07: every step carries a
+  from-scratch re-entry route (Go: or If lost:).
 - No levity while the driver is eating friction.
 
 ## Open decisions
 
-- Walk scheduling (James) -- fresh sitting, next session.
-- QUEUED GATE DECISION: demo-login prefill + no-expiry sessions
-  on synthetic dbs only (kills the login-memory wall for parked/
-  resumed demos; touches casework-ui's login screen -> needs
-  James's ratification). Not blocking a fresh single-sitting
-  walk.
+- Held recon pair (gated item 1): fabricated correction events
+  vs real-bank matching; period-end placement. James rules
+  after living with the new screen.
+- Empty-invoice list behavior (gated item 3): acceptable, or
+  rendering-side list-filter change?
+- QUEUED GATE DECISION (unchanged): demo-login prefill +
+  no-expiry sessions on synthetic dbs only. Not blocking.

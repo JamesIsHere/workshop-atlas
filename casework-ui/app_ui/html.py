@@ -18,6 +18,8 @@ header { background: #1f2a3d; color: #e8ebf0; padding: 0.6rem 1.2rem;
 header .brand { font-weight: 600; letter-spacing: 0.02em; }
 nav a { color: #b9c4d4; text-decoration: none; margin-right: 1rem; }
 nav a:hover { color: #ffffff; }
+nav a.active { color: #ffffff; font-weight: 600;
+               border-bottom: 2px solid #7ea6e0; padding-bottom: 0.1rem; }
 header .who { margin-left: auto; font-size: 0.85rem; color: #b9c4d4; }
 header form { display: inline; }
 header button { background: none; border: 1px solid #55627a;
@@ -76,13 +78,19 @@ NAV_ITEMS = [("Clients", "/contacts"), ("Matters", "/matters"),
              ("Search", "/search"), ("Settings", "/settings")]
 
 
-def page(title, body, user_name=None):
-    """Full document. Nav renders only for an authenticated user."""
+def page(title, body, user_name=None, active_href=None):
+    """Full document. Nav renders only for an authenticated user.
+    active_href marks one nav item as the current section (walk
+    finding 2026-08-07: drivers reorient by the menu; an unmarked
+    menu gives no way to confirm where you are)."""
     nav = ""
     who = ""
     if user_name is not None:
-        links = "".join(f"<a href='{href}'>{esc(label)}</a>"
-                        for label, href in NAV_ITEMS)
+        links = "".join(
+            f"<a class='active' href='{href}'>{esc(label)}</a>"
+            if href == active_href else
+            f"<a href='{href}'>{esc(label)}</a>"
+            for label, href in NAV_ITEMS)
         nav = f"<nav>{links}</nav>"
         who = (f"<span class='who'>{esc(user_name)}"
                f" <form method='post' action='/logout'>"

@@ -19,13 +19,15 @@ contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P4 attempt 1 FAIL (F-1: invoice page); redesign    |
-|              | BUILT + gate PASS same day; fresh walk pending     |
-| Last session | 2026-08-04 s4 -- walk stopped at step 12 on F-1;   |
-|              | state-shaped page rebuilt, gate closed ("Designs   |
-|              | better"); sheet atomic (32 steps) + label oracle;  |
-|              | all suites green, sha 485b2463 supersedes          |
-| Next action  | Fresh P4 walk, one sitting, ~15 min; see state.md  |
+| Status       | P4 open -- attempt 3 COMPLETE (32/32, close-out    |
+|              | PASS) but VERDICT FAIL a/b/c; recon rebuilt        |
+|              | vertical same day, James: "solid for where we are" |
+| Last session | 2026-08-07 s6 -- coupling machinery (drive_sheet   |
+|              | + sheet lock, report_sha); attempt 3 full walk;    |
+|              | verdict FAIL; recon three-pane rebuild shipped;    |
+|              | backlog aggregated at ../gated-items.md            |
+| Next action  | gated-items unlocked queue (dates MM/DD/YYYY       |
+|              | first); held recon decisions; then attempt 4       |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.
@@ -35,10 +37,16 @@ worse than none -- it tells a cold resume confident lies.
 Nothing runs from here yet. The substrate: from ../casework-ui/,
 `python -m app_ui.server --db data/ui.db [--port 8500]` starts the UI
 and `python verify/run_ui_walk.py` is the walk guard; from
-../casework/, `python verify/run_billing.py` and
-`python verify/run_fiduciary.py` are the billing-layer suites and
-`python verify/run_spine.py` the spine regression. All must stay
-green -- this child never modifies their tests.
+../casework-billing/, `python verify/run_billing.py` and
+`python verify/run_fiduciary.py` are the billing-layer suites
+(path corrected 2026-08-07 -- they never lived in ../casework/);
+from ../casework/, `python verify/run_spine.py` is the spine
+regression. All must stay green -- this child never modifies
+their tests. This child's own oracles, from here:
+`python verify/drive_sheet.py` (sheet-UI coupling + recovery
+rail; refuses to run if the sheet changed without a re-sync),
+`python verify/check_sheet_labels.py`, and
+`python verify/report_sha.py` (the ONLY valid walk-report sha).
 
 ## Gotchas
 

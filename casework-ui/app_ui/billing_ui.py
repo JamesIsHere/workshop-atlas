@@ -28,6 +28,8 @@ _CWB_VERIFY = Path(__file__).resolve().parent.parent.parent \
 if str(_CWB_VERIFY) not in sys.path:
     sys.path.insert(0, str(_CWB_VERIFY))
 import reconcile  # noqa: E402
+import bank_statement  # noqa: E402  (the statement pane renders the
+# same independent witness the recon engine reads -- never the journal)
 
 BILLING_STYLE = """
 .tiles { display: flex; gap: 1rem; flex-wrap: wrap; margin: 0 0 1.2rem; }
@@ -73,6 +75,21 @@ label.pick { display: block; margin: 0.35rem 0; font-size: 0.95rem;
 form.inline { display: inline-block; margin-right: 0.6rem; }
 form.inline button.primary { margin-top: 0; }
 form button.primary { display: block; }
+.recon-cols { display: flex; gap: 1.4rem; flex-wrap: wrap;
+              align-items: flex-start; margin: 0.6rem 0; }
+.recon-col { flex: 1 1 16rem; min-width: 15rem; }
+.recon-col h2 { font-size: 0.8rem; text-transform: uppercase;
+                letter-spacing: 0.05em; color: #6a7383;
+                margin: 0 0 0.4rem; }
+table.rec { width: 100%; border-collapse: collapse;
+            font-size: 0.9rem; }
+table.rec td { padding: 0.3rem 0.4rem; border-bottom: 1px solid
+               #eef0f3; vertical-align: top; }
+table.rec td.amt { text-align: right; white-space: nowrap;
+                   font-variant-numeric: tabular-nums; }
+table.rec tr.foot td { border-top: 2px solid #d9dde3;
+                       border-bottom: none; font-weight: 600; }
+table.rec td.none { color: #6a7383; font-style: italic; }
 """
 
 
@@ -115,7 +132,8 @@ def fmt_duration(seconds):
 
 def _page(h, title, body, user):
     styled = f"<style>{BILLING_STYLE}</style>" + body
-    h._send_page(200, html.page(title, styled, user_name=user["name"]))
+    h._send_page(200, html.page(title, styled, user_name=user["name"],
+                                active_href="/billing"))
 
 
 def _pill(kind, text=None):
@@ -413,9 +431,13 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
                              ftype="date", value=_today())
                 + "<button class='primary'>Record deposit</button>"
                   "</form>")
+            # open always: before a link exists, sending is the
+            # primary action; after "Create client link" the page
+            # must SHOW the link (a result that hides itself inside
+            # a collapsed fold failed the 2026-08-06 sheet drive)
             paths = (
                 _fold("Send the request to the client", share_block,
-                      open_=not shares)
+                      open_=True)
                 + _fold("Record the deposit (received directly by"
                         " the firm)", deposit_form))
         else:
@@ -467,7 +489,7 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
                       direct_form)
                 + trust_fold
                 + _fold("Send the client a payment link",
-                        share_block))
+                        share_block, open_=bool(shares)))
         collect_card = (f"<div class='card'><h1>Collect"
                         f" {dollars(balance)}</h1>{paths}</div>")
 
@@ -491,8 +513,13 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
     # add form and nothing else; awaiting money leads with Collect;
     # paid keeps only the record.
     if not charges:
+        # the import options wear the SAME fold label in every state
+        # (2026-08-06 sheet drive: the bare-checkbox empty state left
+        # the sheet's named fold nonexistent on screen)
+        import_fold = (_fold("Import saved charges and time",
+                             import_inner) if import_inner else "")
         charges_card = (f"<div class='card'><h1>Charges</h1>"
-                        f"{charge_form}{import_inner}</div>")
+                        f"{charge_form}{import_fold}</div>")
         rest = ""
     else:
         folds = _fold("Add another charge", charge_form)
@@ -731,32 +758,111 @@ def recon_screen(h, conn, user, query):
     else:
         for b in banks:
             r = reconcile.three_way(conn, b["id"], period)
+            stmt = bank_statement.statement(conn, b["id"], period)
+            books = reconcile._book_postings(conn, b["id"], period)
             badge = (_pill("holds", "HOLDS") if r["identity_holds"]
                      else _pill("broken", "BROKEN"))
-            identity = (
-                f"<div class='identity'>bank {fmt_cents(r['bank_balance_cents'])}"
-                f" + in transit {fmt_cents(r['deposits_in_transit_cents'])}"
-                f" - outstanding {fmt_cents(r['outstanding_disbursements_cents'])}"
-                f" = books {fmt_cents(r['book_balance_cents'])}"
-                + (f" = client claims {fmt_cents(r['sub_ledger_sum_cents'])}"
-                   if r["sub_ledger_sum_cents"] is not None else "")
-                + "</div>")
-            if r["items"]:
-                irows = [[html.esc(i["cause"]), html.esc(i["date"]),
-                          html.link(f"/billing/journal/{i['entry_id']}",
-                                    f"e{i['entry_id']}"),
-                          f"<span class='money'>"
-                          f"{fmt_cents(i['amount_cents'])}</span>"]
-                         for i in r["items"]]
-                items = html.table(["Reconciling item", "Date",
-                                    "Entry", "Amount"], irows)
-            else:
-                items = html.empty_state(
-                    "No reconciling items at this period end --"
-                    " everything cleared.")
+
+            def _amt(cents):
+                return f"<td class='amt'>{fmt_cents(cents)}</td>"
+
+            def _foot(label, cents):
+                return (f"<tr class='foot'><td></td><td>{label}</td>"
+                        f"{_amt(cents)}</tr>")
+
+            def _pane(title, rows):
+                return (f"<div class='recon-col'><h2>{title}</h2>"
+                        f"<table class='rec'>{''.join(rows)}</table>"
+                        f"</div>")
+
+            # Pane 1 -- the bank statement, then the classic vertical
+            # bridge: statement balance + in transit - outstanding =
+            # adjusted bank. Outflows parenthesized; the column FOOTS.
+            rows = []
+            for l in stmt["lines"]:
+                sign = 1 if l["direction"] == "in" else -1
+                what = l["event_type"].replace("_", " ")
+                if l["memo"]:
+                    what += f" -- {l['memo']}"
+                rows.append(f"<tr><td>{html.esc(l['cleared_on'])}</td>"
+                            f"<td>{html.esc(what)}</td>"
+                            f"{_amt(sign * l['amount_cents'])}</tr>")
+            if not stmt["lines"]:
+                rows.append("<tr><td colspan='3' class='none'>no"
+                            " cleared activity this period</td></tr>")
+            rows.append(_foot("Statement balance",
+                              stmt["closing_balance_cents"]))
+            adjusted = r["bank_balance_cents"]
+            for i in r["items"]:
+                sign = (1 if i["cause"] == "deposit in transit"
+                        else -1)
+                adjusted += sign * i["amount_cents"]
+                word = ("in transit" if sign > 0 else "outstanding")
+                rows.append(
+                    f"<tr><td>{html.esc(i['date'])}</td>"
+                    f"<td>{word} "
+                    + html.link(f"/billing/journal/{i['entry_id']}",
+                                f"e{i['entry_id']}")
+                    + f"</td>{_amt(sign * i['amount_cents'])}</tr>")
+            rows.append(_foot("Adjusted bank", adjusted))
+            bank_pane = _pane("Bank statement (independent)", rows)
+
+            # Pane 2 -- the books: every posted entry, signed, footing
+            # to the ledger balance. System reversals labeled.
+            rows = []
+            for p in books:
+                sign = 1 if p["direction"] == "in" else -1
+                kind = p["kind"].replace("_", " ")
+                if p["reverses"] or p["kind"] == "reversal":
+                    kind += " (system correction)"
+                rows.append(
+                    f"<tr><td>{html.esc(p['date'])}</td>"
+                    f"<td>"
+                    + html.link(f"/billing/journal/{p['entry_id']}",
+                                f"e{p['entry_id']}")
+                    + f" {html.esc(kind)}</td>"
+                    f"{_amt(sign * p['amount_cents'])}</tr>")
+            rows.append(_foot("Books balance", r["book_balance_cents"]))
+            books_pane = _pane("Books (ledger)", rows)
+
+            # Pane 3 -- client claims, trust accounts only.
+            claims_pane = ""
+            if r["sub_ledger_sum_cents"] is not None:
+                rows = []
+                for s in reads.sub_accounts_of(conn, b["id"]):
+                    owner = (s["contact_name"] or s["matter_name"]
+                             or s["name"])
+                    rows.append(
+                        f"<tr><td></td><td>{html.esc(owner)}</td>"
+                        f"{_amt(ledger.account_balance(conn, s['id']))}"
+                        f"</tr>")
+                rows.append(_foot("Client claims total",
+                                  r["sub_ledger_sum_cents"]))
+                claims_pane = _pane("Client claims", rows)
+
+            tie = (f"<div class='identity'>adjusted bank"
+                   f" {fmt_cents(adjusted)} = books"
+                   f" {fmt_cents(r['book_balance_cents'])}"
+                   + (f" = client claims"
+                      f" {fmt_cents(r['sub_ledger_sum_cents'])}"
+                      if r["sub_ledger_sum_cents"] is not None
+                      else " (operating account: no client funds, no"
+                           " claims leg)")
+                   + "</div>")
+            trouble = ""
+            if (r["unmatched_statement_lines"]
+                    or r["unmatched_book_postings"]):
+                bits = [f"{len(r['unmatched_statement_lines'])}"
+                        f" unmatched statement line(s),"
+                        f" {len(r['unmatched_book_postings'])}"
+                        f" unmatched posting(s) -- the identity does"
+                        f" not account for these"]
+                trouble = html.error_box("; ".join(bits))
             sections.append(
                 f"<div class='card'><h1>{html.esc(b['name'])}"
-                f" {badge}</h1>{identity}{items}</div>")
+                f" {badge}</h1>{trouble}"
+                f"<div class='recon-cols'>{bank_pane}{books_pane}"
+                f"{claims_pane}</div>{tie}</div>")
 
     body = (_crumbs(("Billing", "/billing"),
                     ("Reconciliation", None))

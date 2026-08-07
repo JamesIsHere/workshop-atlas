@@ -27,8 +27,9 @@ import run_fiduciary as fid  # noqa: E402
 
 
 def checks(conn):
-    """Yield (name, ok, detail) per walk-sheet leg (sheet step in
-    parentheses). Amounts are the sheet's, verbatim."""
+    """Yield (name, ok, detail) per walk-sheet leg (atomic-sheet
+    step range in parentheses; 32-step sheet, parts A-J). Amounts
+    are the sheet's, verbatim."""
     def one(sql, args=()):
         row = conn.execute(sql, args).fetchone()
         return row[0] if row else None
@@ -36,14 +37,14 @@ def checks(conn):
     banks = {r["kind"]: r["id"] for r in conn.execute(
         "SELECT id, kind FROM ledger_accounts WHERE kind IN"
         " ('trust_bank','operating_bank')")}
-    yield ("accounts (3)", len(banks) == 2,
+    yield ("accounts (8-9)", len(banks) == 2,
            f"trust+operating present: {sorted(banks)}")
 
     contact = one("SELECT id FROM contacts WHERE display_name LIKE"
                   " 'Vera%'")
     matter = one("SELECT id FROM matters WHERE name LIKE"
                  " 'Vera Synthetic I-130%'")
-    yield ("client + matter (2)", contact is not None
+    yield ("client + matter (4-7)", contact is not None
            and matter is not None,
            f"contact {contact}, matter {matter}")
 
@@ -51,7 +52,7 @@ def checks(conn):
                   " ORDER BY id LIMIT 1")
     consult_paid = (consult is not None and
                     billing.invoice_status(conn, consult) == "paid")
-    yield ("consult bill paid direct (4)", consult_paid,
+    yield ("consult bill paid direct (10-12)", consult_paid,
            f"invoice {consult} status"
            f" {billing.invoice_status(conn, consult) if consult else '-'}")
 
@@ -60,44 +61,45 @@ def checks(conn):
     tr_paid = (tr is not None
                and billing.invoice_status(conn, tr) == "paid")
     txn = one("SELECT count(*) FROM processor_transactions")
-    yield ("retainer paid online (5)", tr_paid and (txn or 0) > 0,
+    yield ("retainer paid online (13-17)", tr_paid and (txn or 0) > 0,
            f"trust request {tr} paid via processor ({txn} txns)")
 
     batch = conn.execute("SELECT gross_cents, fee_cents FROM"
                          " settlement_batches").fetchone()
-    yield ("settlement gross/fee (6)",
+    yield ("settlement gross/fee (18)",
            batch is not None and batch["gross_cents"] == 500000
            and batch["fee_cents"] == 15030,
            f"batch {dict(batch) if batch else None}")
 
     te = conn.execute("SELECT duration_seconds, rate_cents_per_hour"
                       " FROM time_entries").fetchone()
-    yield ("time entry 2h @ 250.00 (7)",
+    yield ("time entry 2h @ 250.00 (19)",
            te is not None and te["duration_seconds"] == 7200,
            f"entry {dict(te) if te else None}")
 
-    bill = one("SELECT id FROM invoices WHERE invoice_type='bill'"
-               " AND matter_id IS NOT NULL")
+    # the earn-out bill is THE bill paid from trust -- never keyed
+    # on matter_id (2026-08-06 review: the sheet's consult bill also
+    # carries the matter, so a matter_id key grabs Bill #1 and fails
+    # a perfect walk)
+    bill = one("SELECT invoice_id FROM invoice_payments WHERE"
+               " method='trust_transfer'")
     n_charges = one("SELECT count(*) FROM invoice_charges WHERE"
                     " invoice_id=?", (bill,)) if bill else 0
     earned = (bill is not None and n_charges == 2
-              and billing.invoice_status(conn, bill) == "paid"
-              and one("SELECT count(*) FROM invoice_payments WHERE"
-                      " invoice_id=? AND method='trust_transfer'",
-                      (bill,)) == 1)
-    yield ("bill imported + earned out (8)", earned,
+              and billing.invoice_status(conn, bill) == "paid")
+    yield ("bill imported + earned out (20-23)", earned,
            f"bill {bill}: {n_charges} charges, trust_transfer paid")
 
     disb = conn.execute("SELECT amount_cents, counterparty FROM"
                         " external_events WHERE event_type='check_cut'"
                         " AND counterparty LIKE '%USCIS%'").fetchone()
-    yield ("disbursement 1,200.00 (9)",
+    yield ("disbursement 1,200.00 (24)",
            disb is not None and disb["amount_cents"] == 120000,
            f"event {dict(disb) if disb else None}")
 
     funds = billing.available_trust_funds(
         conn, "client", contact_id=contact) if contact else None
-    yield ("client funds 800.00 (9)", funds == 80000,
+    yield ("client funds 800.00 (24)", funds == 80000,
            f"available {funds}")
 
     reversal = one("SELECT count(*) FROM journal_entries WHERE"
@@ -108,7 +110,7 @@ def checks(conn):
     edited = one("SELECT count(*) FROM invoice_payments WHERE"
                  " payment_date='2026-08-02' AND invoice_id=?",
                  (consult,)) if consult else 0
-    yield ("correction trail (10)",
+    yield ("correction trail (25-28)",
            (reversal or 0) >= 1 and (repost or 0) >= 1
            and (edited or 0) == 1,
            f"{reversal} reversal(s), {repost} repost(s), consult"
