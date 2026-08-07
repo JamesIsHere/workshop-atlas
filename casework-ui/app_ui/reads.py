@@ -295,3 +295,29 @@ def unbilled_time_entries(conn):
         " (SELECT 1 FROM invoice_charges ic WHERE ic.time_entry_id=t.id"
         "  AND ic.deleted_at IS NULL)"
         " ORDER BY t.entry_date, t.id").fetchall()
+
+
+def known_counterparties(conn):
+    """Distinct payees from prior bank events -- the disburse form's
+    known-payee datalist (gated item F). Free entry stays allowed;
+    this only feeds suggestions."""
+    return [r[0] for r in conn.execute(
+        "SELECT DISTINCT counterparty FROM external_events"
+        " WHERE counterparty IS NOT NULL AND counterparty != ''"
+        " ORDER BY counterparty")]
+
+
+def trust_sub_accounts_of_contact(conn, contact_id):
+    """Trust sub-ledger account ids belonging to a contact: their
+    client-level funds plus funds held for their matters (gated
+    item H -- the bill page shows the client's remaining trust).
+    Balances are summed by the caller via ledger.account_balance;
+    money math stays in the core module."""
+    return [r[0] for r in conn.execute(
+        "SELECT a.id FROM ledger_accounts a"
+        " JOIN ledger_accounts p ON p.id = a.parent_id"
+        " AND p.kind = 'trust_bank'"
+        " LEFT JOIN matters m ON m.id = a.matter_id"
+        " WHERE a.deleted_at IS NULL"
+        " AND (a.contact_id = ? OR m.primary_contact_id = ?)"
+        " ORDER BY a.id", (contact_id, contact_id))]

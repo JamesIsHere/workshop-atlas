@@ -45,14 +45,16 @@ INVOICE_STRINGS = {
            "matter": "Matter", "description": "Description",
            "amount": "Amount", "date": "Date", "discount": "Discount",
            "balance_due": "Balance Due", "issued": "Issued",
-           "due": "Due", "charges": "Charges"},
+           "due": "Due", "charges": "Charges",
+           "trust_held": "Client funds held in trust"},
     "es": {"invoice": "Factura", "bill": "Factura",
            "trust_request": "Solicitud de fondos de fideicomiso",
            "client": "Cliente", "matter": "Caso",
            "description": "Descripcion", "amount": "Importe",
            "date": "Fecha", "discount": "Descuento",
            "balance_due": "Saldo pendiente", "issued": "Emitida",
-           "due": "Vence", "charges": "Cargos"},
+           "due": "Vence", "charges": "Cargos",
+           "trust_held": "Fondos del cliente en fideicomiso"},
 }
 
 SETTINGS_COLUMNS = ("preparer_user_id", "issued_date", "due_date",
@@ -958,9 +960,32 @@ def export_trust_ledger_csv(conn):
 
 # --- rendering (fpdf2) ------------------------------------------------
 
+def _pdf_cents(cents):
+    """Accounting presentation, integer math only (a float never
+    touches money): 1,234.56 / (1,234.56)."""
+    neg = cents < 0
+    d, c = divmod(abs(cents), 100)
+    s = f"{d:,}.{c:02d}"
+    return f"({s})" if neg else s
+
+
+def _pdf_date(iso):
+    """User-facing date: MM/DD/YYYY, matching the billing screens
+    (2026-08-07 break-in, authorized by James; presentation only,
+    data stays ISO). Strict -- a stored date that is not ISO is a
+    data defect and fails loud, never renders half-formatted."""
+    if not iso:
+        return ""
+    y, m, d = iso.split("-")
+    return _date(int(y), int(m), int(d)).strftime("%m/%d/%Y")
+
+
 def invoice_pdf(conn, invoice_id, out_path):
     """Render the invoice as a PDF. Language translates template chrome
-    only (fx-0052): stored descriptions and custom text stay verbatim."""
+    only (fx-0052): stored descriptions and custom text stay verbatim.
+    Dates MM/DD/YYYY; charges as a footed column table (2026-08-07
+    break-in, authorized by James: presentation only -- the inline
+    description-amount lines and float division were the defect)."""
     inv = get_invoice(conn, invoice_id)
     strings = INVOICE_STRINGS.get(inv["language"], INVOICE_STRINGS["en"])
     contact = conn.execute("SELECT display_name FROM contacts WHERE id=?",
@@ -979,27 +1004,56 @@ def invoice_pdf(conn, invoice_id, out_path):
     pdf.cell(0, 6, f"{strings['client']}: {contact['display_name']}",
              new_x="LMARGIN", new_y="NEXT")
     if inv["issued_date"]:
-        pdf.cell(0, 6, f"{strings['issued']}: {inv['issued_date']}",
+        pdf.cell(0, 6,
+                 f"{strings['issued']}: {_pdf_date(inv['issued_date'])}",
                  new_x="LMARGIN", new_y="NEXT")
     if inv["due_date"]:
-        pdf.cell(0, 6, f"{strings['due']}: {inv['due_date']}",
+        pdf.cell(0, 6, f"{strings['due']}: {_pdf_date(inv['due_date'])}",
                  new_x="LMARGIN", new_y="NEXT")
     pdf.ln(3)
     pdf.set_font("helvetica", size=11)
     pdf.cell(0, 7, strings["charges"], new_x="LMARGIN", new_y="NEXT")
+    # description | date | amount columns, amounts right-aligned --
+    # the shape the bill screen and a working paper use; header
+    # underlined, balance due over a top rule. Column chrome reuses
+    # the translated strings (fx-0052); no new labels invented.
+    w_desc, w_date, w_amt = 100, 40, 50
+    pdf.set_font("helvetica", "B", size=10)
+    pdf.cell(w_desc, 6, strings["description"], border="B")
+    pdf.cell(w_date, 6, strings["date"], border="B")
+    pdf.cell(w_amt, 6, strings["amount"], border="B", align="R",
+             new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("helvetica", size=10)
     for ch in invoice_charges(conn, invoice_id):
-        amt = ch["amount_cents"] / 100
-        pdf.cell(0, 6, f"  {ch['description']}  {amt:,.2f}",
+        pdf.cell(w_desc, 6, ch["description"])
+        pdf.cell(w_date, 6, _pdf_date(ch["charge_date"]))
+        pdf.cell(w_amt, 6, _pdf_cents(ch["amount_cents"]), align="R",
                  new_x="LMARGIN", new_y="NEXT")
     if inv["discount_cents"]:
-        pdf.cell(0, 6, f"{strings['discount']}: "
-                       f"-{inv['discount_cents'] / 100:,.2f}",
-                 new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(w_desc, 6, strings["discount"])
+        pdf.cell(w_date, 6, "")
+        pdf.cell(w_amt, 6, f"-{_pdf_cents(inv['discount_cents'])}",
+                 align="R", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("helvetica", size=12)
     pdf.cell(0, 8, f"{strings['balance_due']}: "
-                   f"{invoice_balance(conn, invoice_id) / 100:,.2f}",
-             new_x="LMARGIN", new_y="NEXT")
+                   f"{_pdf_cents(invoice_balance(conn, invoice_id))}",
+             border="T", align="R", new_x="LMARGIN", new_y="NEXT")
+    # the client's remaining trust on the document itself (2026-08-07
+    # break-in, item H, authorized by James: presentation only) --
+    # rendered only once the client actually has trust sub-ledgers
+    subs = [r[0] for r in conn.execute(
+        "SELECT a.id FROM ledger_accounts a"
+        " JOIN ledger_accounts p ON p.id = a.parent_id"
+        " AND p.kind = 'trust_bank'"
+        " LEFT JOIN matters m ON m.id = a.matter_id"
+        " WHERE a.deleted_at IS NULL"
+        " AND (a.contact_id = ? OR m.primary_contact_id = ?)",
+        (inv["contact_id"], inv["contact_id"]))]
+    if subs:
+        held = sum(account_balance(conn, a) for a in subs)
+        pdf.set_font("helvetica", size=10)
+        pdf.cell(0, 6, f"{strings['trust_held']}: {_pdf_cents(held)}",
+                 align="R", new_x="LMARGIN", new_y="NEXT")
     if inv["footer"]:
         pdf.set_font("helvetica", size=8)
         pdf.cell(0, 6, inv["footer"], new_x="LMARGIN", new_y="NEXT")

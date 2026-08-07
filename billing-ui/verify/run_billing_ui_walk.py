@@ -218,7 +218,9 @@ def step_consult_bill_direct(w):
         f"/billing/invoices/{w.consult_id}/charges", {
         "charge_type": "service", "description": "SYNTH consultation",
         "amount": "500.00", "charge_date": "2026-08-01"})
-    assert "SYNTH consultation" in page and "2026-08-01" in page
+    # rendered dates are MM/DD/YYYY (gated item A); the POST above
+    # stays ISO -- that is what a browser submits from a date input
+    assert "SYNTH consultation" in page and "08/01/2026" in page
     assert "<h1>Collect $500.00</h1>" in page \
         and ">Record payment</button>" in page, \
         "Collect card did not appear after the charge"
@@ -248,7 +250,7 @@ def step_trust_request_online(w):
         "charge_type": "service",
         "description": "SYNTH retainer request", "amount": "5000.00",
         "charge_date": "2026-08-01"})
-    assert "SYNTH retainer request" in page and "2026-08-01" in page
+    assert "SYNTH retainer request" in page and "08/01/2026" in page
     assert "Record deposit" in page, \
         "firm-side direct-deposit control missing after charge"
     assert "Create client link" in page, \
@@ -321,9 +323,18 @@ def step_time_entry(w):
         "description": "SYNTH case work",
         "contact_id": str(w.contact_id),
         "matter_id": str(w.matter_id)})
+    # gated item D: a bare number is accepted as hours (the UI
+    # normalizes "2" -> "2h" before the corpus-pinned core parser)
+    w.browser.post("/billing/time/new", {
+        "work_date": "2026-08-02", "duration": "2", "rate": "100.00",
+        "description": "SYNTH bare-number hours",
+        "matter_id": str(w.matter_id)})
     page = probe(w, "/billing/time")
     assert "SYNTH case work" in page and "500.00" in page
-    return "2h at 250.00/h entered by click; list shows 500.00"
+    assert "SYNTH bare-number hours" in page and "200.00" in page, \
+        "bare-number duration was not accepted as hours"
+    return ("2h at 250.00/h entered by click; bare '2' at 100.00/h"
+            " accepted as hours (200.00)")
 
 
 def step_bill_import_earn_out(w):
@@ -426,6 +437,9 @@ def step_invoice_pdf(w):
                          for pg in PdfReader(str(p)).pages)
     assert "SYNTH I-130 preparation" in text
     assert "Balance Due: 0.00" in text
+    # gated item H: the client's remaining trust rides the document
+    assert "Client funds held in trust: 800.00" in text, \
+        "client trust balance missing from the invoice PDF"
     return f"invoice PDF downloaded ({len(content)} bytes), read back"
 
 

@@ -19,15 +19,17 @@ contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P4 open -- attempt 3 COMPLETE (32/32, close-out    |
-|              | PASS) but VERDICT FAIL a/b/c; recon rebuilt        |
-|              | vertical same day, James: "solid for where we are" |
-| Last session | 2026-08-07 s6 -- coupling machinery (drive_sheet   |
-|              | + sheet lock, report_sha); attempt 3 full walk;    |
-|              | verdict FAIL; recon three-pane rebuild shipped;    |
-|              | backlog aggregated at ../gated-items.md            |
-| Next action  | gated-items unlocked queue (dates MM/DD/YYYY       |
-|              | first); held recon decisions; then attempt 4       |
+| Status       | P4 open -- attempt 3 FAILED verdict a/b/c, but s7  |
+|              | closed the ENTIRE unlocked backlog A-I + two       |
+|              | James-authorized core break-ins (PDF, trust line)  |
+| Last session | 2026-08-07 s7 -- dates MM/DD/YYYY end to end; PDF  |
+|              | rebuilt; landing + back-nav cleanups; sheet routes |
+|              | by type+date w/ stray-invoice regression; invoice  |
+|              | codes B0001/T0001 designed (invoice-codes.md);     |
+|              | items C-I closed; all suites green at close        |
+| Next action  | DRAFT client-pay-page program-ruling amendment for |
+|              | James (his order at context reset); then held      |
+|              | recon pair; invoice-code gate; attempt 4           |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

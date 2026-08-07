@@ -88,6 +88,39 @@ Billing on every billing screen -- active-section marker;
 shared-chrome change ratified by James in-session. Data values
 and step semantics unchanged; no steps renumbered.
 
+AMENDED 2026-08-07 third time (gated item A, ordered by James):
+every date in the walk sheet is re-expressed MM/DD/YYYY -- the
+format the on-screen date boxes take typed input in (US locale)
+and, as of the same fix, the format every billing screen renders.
+Attempt 3's root cause: the sheet gave ISO values (2026-08-01)
+while the date boxes wanted 08/01/2026 -- 4 of its 5 date misses.
+Same calendar days throughout; data stays ISO in the database;
+no step semantics changed. drive_sheet.py now asserts both sides
+(no ISO date typed in the sheet, no ISO date rendered visibly on
+any billing screen).
+
+AMENDED 2026-08-07 fourth time (gated item B, ordered by James):
+the sheet no longer identifies any invoice by its absolute
+number. Attempt 3 proved the defect: one extra invoice created
+mid-walk shifted every downstream number the sheet had pinned
+(#1/#2/#3), and the close-out had to tolerate a +1 offset.
+Invoices are now identified by TYPE (the list's TYPE column:
+Bill / Trust Request) plus ISSUE DATE, which no stray invoice
+can shift; crumb-line checks pin the prefix (Billing / Bill
+#<n>) and say outright that the app assigns the number. Steps
+10-29 re-worded; a preamble block states the rule. Data values
+and step semantics unchanged; no steps renumbered. The product-
+level cure (stored B0001/T0001 display codes) is designed in
+../invoice-codes.md and waits on its own gate.
+
+AMENDED 2026-08-07 fifth time (gated item E, ordered by James):
+the blank options in billing selects traded dash-noise for plain
+guidance ("-- no matter --" -> "No matter (funds are
+client-level)", etc.); the three sheet lines quoting those
+options re-pinned to the new wording. Wording is an agent
+judgment call, flagged for James's re-rule. No data values or
+step semantics changed.
+
 Contract hooks (goal.md): James drives the full billing lifecycle
 entirely through screens on a FRESH database -- no terminal, no
 SQL, no dev tools mid-walk. The fiduciary suite must run green
@@ -126,8 +159,10 @@ protocol, untouched).
 ## Walk sheet (driver reads top to bottom; data values inline)
 
 All data is synthetic: type the values shown EXACTLY. Leave any
-field this sheet does not mention alone. A new client, Vera
-Synthetic, has retained the firm for an I-130 petition.
+field this sheet does not mention alone. Dates are month/day/year
+-- 08/01/2026 is August 1, 2026 -- the same way the date boxes on
+screen take them. A new client, Vera Synthetic, has retained the
+firm for an I-130 petition.
 
 WHAT THE WORDS MEAN. The app does not use these words on screen;
 they are this sheet's names for shapes you will see:
@@ -154,12 +189,21 @@ There is no button named Collect anywhere. Collect is the TITLE
 of a card that appears on a bill or trust request once money is
 owed. The ways of getting paid are folds inside that card.
 
+INVOICE NUMBERS. The app numbers invoices on its own (#1, #2,
+...). This sheet NEVER identifies an invoice by that number: it
+names the TYPE -- Bill or Trust Request, read from the TYPE
+column of the invoice list -- and the ISSUE DATE. If an extra
+invoice gets created by accident, the numbers move; the types
+and dates do not. Where a step says "crumb line reads Billing /
+Bill #<n>", the <n> is whatever number the app assigned -- any
+number is correct there.
+
 STOP RULE: do not guess or substitute labels. If a named heading,
 button, field, or expected result is missing, stop the walk at
 that screen and record the mismatch. The walk has found a product
 or instruction defect; James does not debug it.
 
-STEP RULE (ratified mid-walk 2026-08-04, James: "when the user
+STEP RULE (ratified mid-walk 08/04/2026, James: "when the user
 loads a new page its a new step"): every step is ONE screen. A
 step opens by naming the screen, lists what to do there as
 "Field" = value lines, and ends with "End:" -- the single click
@@ -243,28 +287,30 @@ account -- the simplest money path, no trust involved.
     titled "New bill":
     - "Client" = Vera Synthetic
     - "Matter" = Vera Synthetic I-130
-    - "Issue date" = 2026-08-01 (the box starts on today's
+    - "Issue date" = 08/01/2026 (the box starts on today's
       date -- change it)
-    End: click "Create bill" -> Bill #1's page; its crumb
-    line reads Billing / Bill #1.
-11. Bill #1's page, the "Add a charge" form in the Charges card
-    (If lost: menu "Billing" -> tab "All" -> the row #1 link in
-    the INVOICE column. Use All: a bill with no charges yet is
-    on neither the Outstanding nor the Paid tab)
+    End: click "Create bill" -> the new bill's page; its crumb
+    line reads Billing / Bill #<n>. This is the CONSULT bill --
+    the app picks the number, and any number is fine.
+11. The consult bill's page, the "Add a charge" form in the
+    Charges card (If lost: menu "Billing" -> tab "All" -> the
+    Bill row issued 08/01/2026; click its link in the INVOICE
+    column. Use All: a bill with no charges yet is on neither
+    the Outstanding nor the Paid tab)
     - "Description" = SYNTH consultation
     - "Amount" = 500.00
     - "Type" = Service
-    - "Date" = already shows 2026-08-01, copied from the issue
+    - "Date" = already shows 08/01/2026, copied from the issue
       date -- leave it
     End: click "Add charge". The page reloads and a new card
     appears, titled Collect $500.00. No money has moved yet.
-12. Bill #1's page, the Collect $500.00 card (If lost: menu
-    "Billing" -> tab "All" -> the row #1 link; the card sits
-    below the Charges card)
+12. The consult bill's page, the Collect $500.00 card (If
+    lost: menu "Billing" -> tab "All" -> the Bill row issued
+    08/01/2026; the card sits below the Charges card)
     - click the fold line "Record a direct payment (check,
       cash, wire)" to expand it
     - "Amount" = leave at 500.00
-    - "Date" = 2026-08-01 (starts on today's date -- change
+    - "Date" = 08/01/2026 (starts on today's date -- change
       it; this date is wrong on purpose, Part I corrects it)
     - "Deposit to" = SYNTH Operating
     End: click "Record payment". The bill's title now carries
@@ -283,30 +329,34 @@ processor until Part F settles it.
     - "Client" = Vera Synthetic
     - "Deposits to" = SYNTH IOLTA
     - "Hold funds for" = The client
-    - leave "Matter" at -- client-level funds --
-    - "Issue date" = 2026-08-01 (starts on today -- change it)
-    End: click "Create trust request" -> Trust request #2's
-    page; its crumb line reads Billing / Trust request #2.
-14. Trust request #2's page, the "Add a charge" form in the
+    - leave "Matter" at Client-level funds (no specific
+      matter)
+    - "Issue date" = 08/01/2026 (starts on today -- change it)
+    End: click "Create trust request" -> the new trust
+    request's page; its crumb line reads Billing / Trust
+    request #<n>.
+14. The trust request's page, the "Add a charge" form in the
     Charges card (If lost: menu "Billing" -> tab "All" -> the
-    row #2 link in the INVOICE column)
+    Trust Request row -- the TYPE column names it; click its
+    link in the INVOICE column)
     - "Description" = SYNTH retainer request
     - "Amount" = 5000.00
     - "Type" = Service
-    - "Date" = already shows 2026-08-01 -- leave it
+    - "Date" = already shows 08/01/2026 -- leave it
     End: click "Add charge". A card titled Collect $5,000.00
     appears; its fold "Send the request to the client" is
     already open. Do nothing else on this screen -- step 15
     uses that open fold. Remember the Goal: in this part the
     firm records no payment.
-15. Trust request #2's page, inside the open fold "Send the
+15. The trust request's page, inside the open fold "Send the
     request to the client" (If lost: menu "Billing" -> tab
-    "All" -> the row #2 link -> the Collect card)
-    End: click "Create client link". A web address appears
-    ending in /invoice/<token> -- copy it, switch to the blank
-    incognito window, paste it there and go. (Its address
-    differs from the firm URL; that is Vera's own surface,
-    expected.)
+    "All" -> the Trust Request row -> the Collect card)
+    End: click "Create client link". A web address appears in
+    a boxed field, ending in /invoice/<token>. Click inside
+    the box, press Ctrl+A then Ctrl+C to copy the whole link,
+    switch to the blank incognito window, paste it there and
+    go. (Its address differs from the firm URL; that is Vera's
+    own surface, expected.)
 16. The request as Vera sees it (incognito window)
     - "Synthetic payment token" = SYNTHETIC-VISA-DEMO (exactly,
       no spaces; a demo token, not a card number)
@@ -314,8 +364,9 @@ processor until Part F settles it.
     End: click "Pay". The next page must say "Payment
     received." If it says anything else -- Declined, or
     already paid -- STOP and record it.
-17. Trust request #2's page, back in the firm window (If lost:
-    menu "Billing" -> tab "Paid" -> the row #2 link)
+17. The trust request's page, back in the firm window (If
+    lost: menu "Billing" -> tab "Paid" -> the Trust Request
+    row)
     End: refresh the page.
     Observe: a Paid pill, and the payment line reads card
     (online, simulated processor). CHECKPOINT: if the payment
@@ -346,11 +397,11 @@ both on a new bill, and pay that bill FROM Vera's trust money
 
 19. Record time (Go: menu "Billing" -> "Time" -> "Record
     time")
-    - "Date worked" = 2026-08-02 (starts on today -- change it)
+    - "Date worked" = 08/02/2026 (starts on today -- change it)
     - "Time spent" = 2h
     - "Hourly rate" = 250.00
     - "Description" = SYNTH case work
-    - leave "Client" at -- pick a client or a matter --
+    - leave "Client" at No client (use the matter below)
     - "Matter" = Vera Synthetic I-130
     End: click "Record time".
 20. Saved charges (Go: menu "Billing" -> "Saved charges"), the
@@ -363,23 +414,25 @@ both on a new bill, and pay that bill FROM Vera's trust money
     card "New bill" again
     - "Client" = Vera Synthetic
     - "Matter" = Vera Synthetic I-130
-    - "Issue date" = 2026-08-02 (starts on today -- change it)
-    End: click "Create bill" -> Bill #3's page; its crumb
-    line reads Billing / Bill #3.
-22. Bill #3's page, the Charges card (If lost: menu "Billing"
-    -> tab "All" -> the row #3 link. Use All: a bill with no
-    charges yet is on neither default tab)
+    - "Issue date" = 08/02/2026 (starts on today -- change it)
+    End: click "Create bill" -> the new bill's page; its crumb
+    line reads Billing / Bill #<n>. This is the WORK bill.
+22. The work bill's page, the Charges card (If lost: menu
+    "Billing" -> tab "All" -> the Bill row issued 08/02/2026.
+    Use All: a bill with no charges yet is on neither default
+    tab)
     - click the fold line "Import saved charges and time"
     - tick BOTH boxes: the 2,500.00 saved charge and the
-      2026-08-02 time entry (500.00)
+      08/02/2026 time entry (500.00)
     End: click "Import selected".
     Observe: both rows land in the Charges table and the page
     says Balance due: $3,000.00.
-23. Bill #3's page, the Collect $3,000.00 card (If lost: menu
-    "Billing" -> tab "All" -> the row #3 link)
+23. The work bill's page, the Collect $3,000.00 card (If lost:
+    menu "Billing" -> tab "All" -> the Bill row issued
+    08/02/2026)
     - click the fold line "Pay from client trust (earn-out)"
     - "Amount" = leave at 3,000.00
-    - "Date" = 2026-08-03 (starts on today -- change it)
+    - "Date" = 08/03/2026 (starts on today -- change it)
     - "From trust account" = SYNTH IOLTA
     - "Trust funds held for" = The client
     - "Deposit to" = SYNTH Operating
@@ -398,32 +451,34 @@ trust, leaving her 800.00.
     then click "Disburse funds")
     - "From trust account" = SYNTH IOLTA
     - "Funds held for client" = Vera Synthetic
-    - leave "Funds held for matter" at -- no matter --
+    - leave "Funds held for matter" at No matter (funds are
+      client-level)
     - "Amount" = 1200.00
-    - "Date" = 2026-08-04 (starts on today -- change it)
+    - "Date" = 08/04/2026 (starts on today -- change it)
     - "Pay to" = SYNTH-USCIS
     - "Memo" = SYNTH I-130 filing fee
     End: click "Disburse". Her remaining funds: 800.00.
 
 Part I -- the correction: fix a wrong date, watch the books
 
-Goal: the consultation payment was dated 2026-08-01 on purpose;
-it should be 2026-08-02. Fix it and watch the books repair
+Goal: the consultation payment was dated 08/01/2026 on purpose;
+it should be 08/02/2026. Fix it and watch the books repair
 themselves by ADDING entries -- never by rewriting history.
 
 25. The invoice list (Go: menu "Billing", then click the tab
     "Paid" -- the list opens on Outstanding, where paid bills
     are NOT). Paid bills all show balance 0.00, so find the
-    consultation bill by its number: the row whose INVOICE
-    column reads #1.
-    End: click that #1 link -> Bill #1's page.
-26. Bill #1's page, the Payments table -- the payment's date
-    2026-08-01 is a link (If lost: menu "Billing" -> tab
-    "Paid" -> the row #1 link)
+    consult bill by TYPE and DATE, never by number: the Bill
+    row issued 08/01/2026.
+    End: click its link in the INVOICE column -> the consult
+    bill's page.
+26. The consult bill's page, the Payments table -- the
+    payment's date 08/01/2026 is a link (If lost: menu
+    "Billing" -> tab "Paid" -> the Bill row issued 08/01/2026)
     End: click the date link -> the payment's own page.
 27. The payment's page, the "Correct this payment" card (If
     lost: repeat step 26's route)
-    - "Date" = 2026-08-02
+    - "Date" = 08/02/2026
     - leave "Amount" and "Apply to charge" as they are
     End: click "Save correction".
 28. The payment's page, after the save (you are still on it)
@@ -438,8 +493,8 @@ Goal: see the same money from every side -- the bill's PDF, the
 trust ledger, one journal entry, and the reconciliation
 identity tying bank to books to client claims.
 
-29. Bill #3's page (Go: menu "Billing" -> tab "Paid" -> the
-    row whose INVOICE column reads #3)
+29. The work bill's page (Go: menu "Billing" -> tab "Paid" ->
+    the Bill row issued 08/02/2026)
     End: click "Download PDF" (top card) and open the file.
 30. Trust accounting (Go: menu "Billing" -> "Trust
     accounting")

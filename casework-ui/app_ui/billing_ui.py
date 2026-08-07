@@ -49,10 +49,16 @@ span.money { display: block; text-align: right;
 .pill.holds { background: #e6f4e6; color: #256325; }
 .pill.broken { background: #fdecec; color: #8a2525; }
 .pill.refunded { background: #f3e9f7; color: #6b3a86; }
-.tabs { margin: 0 0 0.9rem; }
-.tabs a { display: inline-block; padding: 0.3rem 0.9rem; border-radius:
-          4px; text-decoration: none; color: #2456a6; }
-.tabs a.on { background: #2456a6; color: #ffffff; }
+.actions { overflow: auto; }
+input.copylink { font-family: Consolas, monospace; font-size: 0.9rem;
+                 background: #f0f2f5; border: 1px dashed #b9c0cb;
+                 margin: 0.4rem 0; }
+.actions a.back { float: right; margin-right: 0; }
+.tabs { margin: 0 0 0.9rem; border-bottom: 1px solid #d9dde3; }
+.tabs a { display: inline-block; padding: 0.3rem 0.2rem;
+          margin-right: 1.2rem; text-decoration: none; color: #2456a6; }
+.tabs a.on { color: #1a1d21; font-weight: 600; margin-bottom: -1px;
+             border-bottom: 2px solid #2456a6; }
 .crumbs { font-size: 0.85rem; margin: 0 0 0.8rem; color: #6a7383; }
 .crumbs a { color: #2456a6; text-decoration: none; }
 .trail { background: #f7f8fa; border-left: 3px solid #2456a6;
@@ -109,6 +115,18 @@ def cents_of(text):
 
 def _today():
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
+def fmt_date(iso):
+    """User-facing date: MM/DD/YYYY (gated item A, James 2026-08-07).
+    Data stays ISO end to end; this formats at render time only, the
+    same boundary fmt_cents is. Date INPUTS are untouched: their
+    value attribute is ISO by HTML spec and the browser localizes the
+    widget. Strict on purpose -- a value that is not a bare ISO date
+    is a data defect and must fail loud, never render half-formatted."""
+    if not iso:
+        return ""
+    return datetime.strptime(iso, "%Y-%m-%d").strftime("%m/%d/%Y")
 
 
 def fmt_cents(cents):
@@ -179,6 +197,14 @@ def _noun(inv):
             else "Bill")
 
 
+def _back_to_billing():
+    """One obvious route home from every billing sub-area (James's
+    snap, 2026-08-07: crumbs and the top menu work, but the four
+    sub-area screens need a big button too). Quiet style, floated
+    top-right, so it never competes with the screen's primary action."""
+    return "<a class='quiet back' href='/billing'>Back to billing</a>"
+
+
 def _fold(summary, inner, open_=False):
     """Native no-JS disclosure: the page's secondary actions live
     behind <details> so each state shows one primary thing."""
@@ -198,9 +224,10 @@ def billing_landing(h, conn, user, query):
         else:
             op_total += bal
     rows = reads.invoice_rows(conn)
+    status_of = {r["id"]: billing.invoice_status(conn, r["id"])
+                 for r in rows}
     outstanding = [r for r in rows
-                   if billing.invoice_status(conn, r["id"])
-                   == "outstanding"]
+                   if status_of[r["id"]] == "outstanding"]
     out_sum = sum(billing.invoice_balance(conn, r["id"])
                   for r in outstanding)
     tiles = (
@@ -221,13 +248,20 @@ def billing_landing(h, conn, user, query):
     tab = (query.get("tab", ["outstanding"]))[0]
     if tab not in ("outstanding", "paid", "all"):
         tab = "outstanding"
+    # counts on the tabs: an empty filtered tab must say where the
+    # invoices ARE, not imply none exist (James's snap, 2026-08-07:
+    # tile said 0 open, list said "No invoices here yet" -- a
+    # contradiction on one screen)
+    counts = {t: sum(1 for s in status_of.values() if s == t)
+              for t in ("outstanding", "paid")}
+    counts["all"] = len(rows)
     tabs = "<div class='tabs'>" + "".join(
         f"<a class='{'on' if t == tab else ''}'"
-        f" href='/billing?tab={t}'>{t.capitalize()}</a>"
+        f" href='/billing?tab={t}'>{t.capitalize()}"
+        f" ({counts[t]})</a>"
         for t in ("outstanding", "paid", "all")) + "</div>"
     shown = [r for r in rows
-             if tab == "all"
-             or billing.invoice_status(conn, r["id"]) == tab]
+             if tab == "all" or status_of[r["id"]] == tab]
     if shown:
         trows = []
         for r in shown:
@@ -237,7 +271,7 @@ def billing_landing(h, conn, user, query):
                 _type_pill(r),
                 html.link(f"/contacts/{r['contact_id']}",
                           r["display_name"]),
-                html.esc(r["issued_date"]),
+                html.esc(fmt_date(r["issued_date"])),
                 _status_pill(conn, r["id"]),
                 f"<span class='money'>"
                 f"{fmt_cents(billing.invoice_balance(conn, r['id']))}"
@@ -245,10 +279,19 @@ def billing_landing(h, conn, user, query):
             ])
         table = html.table(["Invoice", "Type", "Client", "Issued",
                             "Status", "Balance"], trows)
-    else:
+    elif not rows:
         table = html.empty_state(
             "No invoices here yet. Bills and trust requests appear in"
             " this list the moment they are created.")
+    elif tab == "outstanding":
+        # the good kind of empty -- say so, and say where the rest is
+        table = html.empty_state(
+            "Nothing outstanding -- every invoice is collected. The"
+            " Paid tab has the full record.")
+    else:
+        table = html.empty_state(
+            "Nothing collected yet -- every invoice is still"
+            " outstanding.")
     nav = ("<div class='actions'>"
            + f"<a href='/billing/invoices/new'>New invoice</a>"
            + f"<a class='quiet' href='/billing/trust'>Trust"
@@ -283,20 +326,30 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
         matter = reads.matter_row(conn, inv["matter_id"])
         kv.append(("Matter", html.link(f"/matters/{matter['id']}",
                                        matter["name"])))
-    kv.append(("Issued", html.esc(inv["issued_date"])))
+    kv.append(("Issued", html.esc(fmt_date(inv["issued_date"]))))
     if inv["due_date"]:
-        kv.append(("Due", html.esc(inv["due_date"])))
+        kv.append(("Due", html.esc(fmt_date(inv["due_date"]))))
     if inv["invoice_type"] == "trust_request":
         kv.append(("Deposits to", html.esc(
             reads.ledger_account_row(
                 conn, inv["trust_account_id"])["name"])))
+    # the client's remaining trust, right where money decisions are
+    # made (gated item H: fiduciary storytelling; only shown once
+    # the client actually has a trust sub-ledger)
+    trust_subs = reads.trust_sub_accounts_of_contact(
+        conn, inv["contact_id"])
+    if trust_subs:
+        held = sum(ledger.account_balance(conn, a)
+                   for a in trust_subs)
+        kv.append(("Client funds in trust",
+                   f"<span class='money'>{fmt_cents(held)}</span>"))
     kvs = "<dl class='kv'>" + "".join(
         f"<dt>{html.esc(k)}</dt><dd>{v}</dd>" for k, v in kv) + "</dl>"
 
     if charges:
         crows = [[html.esc(c["description"]),
                   html.esc(c["charge_type"]),
-                  html.esc(c["charge_date"] or ""),
+                  html.esc(fmt_date(c["charge_date"])),
                   f"<span class='money'>{fmt_cents(c['amount_cents'])}"
                   f"</span>"] for c in charges]
         ctable = html.table(["Description", "Type", "Date", "Amount"],
@@ -315,7 +368,7 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
             refund_pill = (_pill("refunded") if p["refunded"]
                            else "")
             prows.append([html.link(f"/billing/payments/{p['id']}",
-                                    p["payment_date"]),
+                                    fmt_date(p["payment_date"])),
                           html.esc(method + note),
                           refund_pill,
                           f"<span class='money'>"
@@ -361,7 +414,8 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
             boxes.append(
                 f"<label class='pick'><input type='checkbox'"
                 f" name='time_entry' value='{t['id']}'"
-                f" style='width:auto'> {html.esc(t['entry_date'])}"
+                f" style='width:auto'>"
+                f" {html.esc(fmt_date(t['entry_date']))}"
                 f" {html.esc(t['description'] or 'time entry')}"
                 f" ({fmt_duration(t['duration_seconds'])}) -- {tail}"
                 f"</label>")
@@ -374,9 +428,13 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
                   "</form>")
 
     shares = reads.invoice_shares_of(conn, invoice_id)
+    # readonly input, not a <code> block (gated item G): click the
+    # box, Ctrl+A selects the whole link cleanly -- the zero-JS
+    # stand-in for a copy button
     share_rows = "".join(
-        f"<code class='copy'>{h.server.client_base}"
-        f"/invoice/{html.esc(s['token'])}</code>"
+        f"<input class='copylink' readonly"
+        f" value='{h.server.client_base}"
+        f"/invoice/{html.esc(s['token'])}'>"
         for s in shares)
     online = [p for p in payments
               if p["method"] in ("sim_card", "sim_echeck")]
@@ -585,7 +643,8 @@ def trust_overview(h, conn, user, error=None):
     actions = ("<div class='actions'>"
                "<a href='/billing/accounts/new'>New bank account</a>"
                "<a class='quiet' href='/billing/trust/disburse'>"
-               "Disburse funds</a></div>")
+               "Disburse funds</a>"
+               + _back_to_billing() + "</div>")
     settle_card = ""
     if banks:
         settle_card = (
@@ -635,7 +694,7 @@ def account_ledger(h, conn, user, account_id):
         for p in postings:
             inflow = (p["side"] == "debit")  # banks are debit-normal
             signed = p["amount_cents"] if inflow else -p["amount_cents"]
-            rows.append([html.esc(p["posted_at"]),
+            rows.append([html.esc(fmt_date(p["posted_at"])),
                          html.link(f"/billing/journal/{p['entry_id']}",
                                    f"e{p['entry_id']}"),
                          html.esc(p["kind"].replace("_", " ")),
@@ -710,7 +769,7 @@ def journal_detail(h, conn, user, entry_id):
         if e["payment_id"] else []
     ev_html = ""
     if events:
-        erows = [[html.esc(ev["occurred_on"]),
+        erows = [[html.esc(fmt_date(ev["occurred_on"])),
                   html.esc(ev["event_type"].replace("_", " ")),
                   html.esc(ev["direction"]),
                   html.esc(ev["memo"] or ""),
@@ -722,7 +781,7 @@ def journal_detail(h, conn, user, entry_id):
 
     kvs = "<dl class='kv'>" + "".join(
         f"<dt>{html.esc(k)}</dt><dd>{v}</dd>"
-        for k, v in ([("Posted", html.esc(e["posted_at"])),
+        for k, v in ([("Posted", html.esc(fmt_date(e["posted_at"]))),
                       ("Kind", html.esc(e["kind"].replace("_", " "))),
                       ("Memo", html.esc(e["memo"] or ""))] + links)) \
         + "</dl>"
@@ -741,6 +800,7 @@ def recon_screen(h, conn, user, query):
     if not banks:
         body = (_crumbs(("Billing", "/billing"),
                         ("Reconciliation", None))
+                + f"<div class='actions'>{_back_to_billing()}</div>"
                 + "<div class='card'><h1>Three-way reconciliation</h1>"
                 + html.empty_state(
                     "Nothing to reconcile yet. Once bank accounts"
@@ -784,7 +844,8 @@ def recon_screen(h, conn, user, query):
                 what = l["event_type"].replace("_", " ")
                 if l["memo"]:
                     what += f" -- {l['memo']}"
-                rows.append(f"<tr><td>{html.esc(l['cleared_on'])}</td>"
+                rows.append(f"<tr><td>"
+                            f"{html.esc(fmt_date(l['cleared_on']))}</td>"
                             f"<td>{html.esc(what)}</td>"
                             f"{_amt(sign * l['amount_cents'])}</tr>")
             if not stmt["lines"]:
@@ -799,7 +860,7 @@ def recon_screen(h, conn, user, query):
                 adjusted += sign * i["amount_cents"]
                 word = ("in transit" if sign > 0 else "outstanding")
                 rows.append(
-                    f"<tr><td>{html.esc(i['date'])}</td>"
+                    f"<tr><td>{html.esc(fmt_date(i['date']))}</td>"
                     f"<td>{word} "
                     + html.link(f"/billing/journal/{i['entry_id']}",
                                 f"e{i['entry_id']}")
@@ -816,7 +877,7 @@ def recon_screen(h, conn, user, query):
                 if p["reverses"] or p["kind"] == "reversal":
                     kind += " (system correction)"
                 rows.append(
-                    f"<tr><td>{html.esc(p['date'])}</td>"
+                    f"<tr><td>{html.esc(fmt_date(p['date']))}</td>"
                     f"<td>"
                     + html.link(f"/billing/journal/{p['entry_id']}",
                                 f"e{p['entry_id']}")
@@ -867,7 +928,9 @@ def recon_screen(h, conn, user, query):
     body = (_crumbs(("Billing", "/billing"),
                     ("Reconciliation", None))
             + f"<h1>Three-way reconciliation</h1>"
-            + f"<p class='hint'>Period end {html.esc(period or '--')}"
+            + f"<div class='actions'>{_back_to_billing()}</div>"
+            + f"<p class='hint'>Period end"
+            f" {html.esc(fmt_date(period) if period else '--')}"
             f" -- bank statement (independent, event-derived) against"
             f" the books against client claims. No plug figures:"
             f" every reconciling item carries its cause.</p>"
@@ -888,7 +951,7 @@ def time_index(h, conn, user):
             else:
                 amount = None
             trows.append([
-                html.esc(t["entry_date"]),
+                html.esc(fmt_date(t["entry_date"])),
                 html.esc(t["description"] or ""),
                 html.esc(t["matter_name"] or t["contact_name"] or ""),
                 html.esc(fmt_duration(t["duration_seconds"])),
@@ -909,7 +972,7 @@ def time_index(h, conn, user):
     body = (_crumbs(("Billing", "/billing"), ("Time", None))
             + f"<div class='card'><h1>Time</h1>"
             f"<div class='actions'><a href='/billing/time/new'>"
-            f"Record time</a></div>{table}</div>")
+            f"Record time</a>{_back_to_billing()}</div>{table}</div>")
     _page(h, "Time", body, user)
 
 
@@ -936,7 +999,7 @@ def payment_detail(h, conn, user, payment_id, error=None):
           ("Method", html.esc(method)),
           ("Amount", f"<span class='money'>"
                      f"{fmt_cents(p['amount_cents'])}</span>"),
-          ("Date", html.esc(p["payment_date"])),
+          ("Date", html.esc(fmt_date(p["payment_date"]))),
           ("Applied to", html.esc(assoc["description"]) if assoc
            else "the invoice balance")]
     if p["note"]:
@@ -957,7 +1020,7 @@ def payment_detail(h, conn, user, payment_id, error=None):
                 tags.append(f"replaces e{e['replaces_entry_id']}")
             erows.append([
                 html.link(f"/billing/journal/{e['id']}", f"e{e['id']}"),
-                html.esc(e["posted_at"]),
+                html.esc(fmt_date(e["posted_at"])),
                 html.esc(e["kind"].replace("_", " ")),
                 html.esc(", ".join(tags)),
                 html.esc(e["memo"] or "")])
@@ -977,7 +1040,7 @@ def payment_detail(h, conn, user, payment_id, error=None):
     events = reads.events_of_payment(conn, payment_id)
     ev_card = ""
     if events:
-        evrows = [[html.esc(ev["occurred_on"]),
+        evrows = [[html.esc(fmt_date(ev["occurred_on"])),
                    html.esc(ev["event_type"].replace("_", " ")),
                    html.esc(ev["direction"]),
                    html.esc(ev["memo"] or ""),
@@ -1012,7 +1075,7 @@ def payment_detail(h, conn, user, payment_id, error=None):
                          required=False)
             + _select("Apply to charge", "associated_charge_id",
                       charge_opts, selected=p["associated_charge_id"],
-                      blank="-- whole invoice --",
+                      blank="The whole invoice",
                       hint="Re-associating is a correction like any"
                            " other: recorded, never overwritten.")
             + html.field("Note", "note", required=False)
@@ -1117,7 +1180,7 @@ def invoice_new(h, conn, user, error=None):
         f"<input type='hidden' name='invoice_type' value='bill'>"
         + _select("Client", "contact_id", contact_opts)
         + _select("Matter", "matter_id", matter_opts,
-                  blank="-- no matter --")
+                  blank="No matter (bill the client directly)")
         + html.field("Issue date", "issued_date", ftype="date",
                      value=_today())
         + "<button class='primary'>Create bill</button></form>"
@@ -1138,7 +1201,7 @@ def invoice_new(h, conn, user, error=None):
                       [("client", "The client"),
                        ("matter", "A specific matter")])
             + _select("Matter", "matter_id", matter_opts,
-                      blank="-- client-level funds --",
+                      blank="Client-level funds (no specific matter)",
                       hint="Only needed when holding funds for a"
                            " specific matter.")
             + html.field("Issue date", "issued_date", ftype="date",
@@ -1203,8 +1266,18 @@ def invoice_import(h, conn, uid, user, invoice_id):
                 "pick at least one saved charge or time entry to"
                 " import")
         if saved:
-            billing.import_saved_charges(conn, invoice_id, saved,
-                                         uid)
+            new_ids = billing.import_saved_charges(conn, invoice_id,
+                                                   saved, uid)
+            # imported saved charges carry the bill's issue date --
+            # the same default the manual Add form prefills (gated
+            # item C: the blank Date cell read as missing data).
+            # Existing core APIs only: import returns the charge
+            # ids; update_charge dates them.
+            inv = billing.get_invoice(conn, invoice_id)
+            for cid in new_ids:
+                billing.update_charge(
+                    conn, cid,
+                    charge_date=inv["issued_date"] or _today())
         if entries:
             billing.import_time_entries(conn, invoice_id, entries,
                                         uid)
@@ -1333,7 +1406,8 @@ def time_new(h, conn, user, error=None):
             + html.field("Date worked", "work_date", ftype="date",
                          value=_today())
             + html.field("Time spent", "duration", autofocus=True,
-                         hint="Hours or minutes: 2h, 1.5h, 45m.")
+                         hint="Hours or minutes: 2, 2h, 1.5h, 45m."
+                              " A bare number means hours.")
             + html.field("Hourly rate", "rate", required=False,
                          hint="Dollars per hour, e.g. 250.00."
                               " Leave blank to bill at your default"
@@ -1341,9 +1415,9 @@ def time_new(h, conn, user, error=None):
             + html.field("Description", "description",
                          required=False)
             + _select("Client", "contact_id", _contact_opts(conn),
-                      blank="-- pick a client or a matter --")
+                      blank="No client (use the matter below)")
             + _select("Matter", "matter_id", _matter_opts(conn),
-                      blank="-- no matter --")
+                      blank="No matter")
             + "<button class='primary'>Record time</button>"
               "</form></div>")
     _page(h, "Record time", body, user)
@@ -1351,12 +1425,20 @@ def time_new(h, conn, user, error=None):
 
 def time_create(h, conn, uid, user):
     f = h._form_body()
+    duration = f.get("duration", "").strip()
+    # bare number = hours (gated item D: "2" bounced while "2h"
+    # worked; the billing default unit is the hour). Same boundary
+    # cents_of holds for amounts: normalize here, and anything else
+    # passes through verbatim so the core's own error stays the
+    # teacher (fx-0064 formats are corpus-pinned).
+    if duration.replace(".", "", 1).isdigit():
+        duration += "h"
     try:
         rate = (cents_of(f["rate"]) if f.get("rate", "").strip()
                 else None)
         timekeeping.create_entry(
             conn, uid, f.get("work_date") or _today(),
-            duration=f.get("duration", ""),
+            duration=duration,
             description=f.get("description", "").strip() or None,
             contact_id=int(f["contact_id"]) if f.get("contact_id")
             else None,
@@ -1387,6 +1469,7 @@ def saved_charges(h, conn, user, error=None):
     body = (_crumbs(("Billing", "/billing"),
                     ("Saved charges", None))
             + f"<div class='card'><h1>Saved charges</h1>"
+            + f"<div class='actions'>{_back_to_billing()}</div>"
             + html.error_box(error) + table
             + "<form method='post' action='/billing/charges/saved'>"
             + "<h2 class='formhead'>Save a charge</h2>"
@@ -1442,16 +1525,27 @@ def disburse_form(h, conn, user, error=None):
                       [(b["id"], b["name"]) for b in trusts])
             + _select("Funds held for client", "contact_id",
                       _contact_opts(conn),
-                      blank="-- or pick a matter below --")
+                      blank="No client (pick a matter below)")
             + _select("Funds held for matter", "matter_id",
-                      _matter_opts(conn), blank="-- no matter --")
+                      _matter_opts(conn),
+                      blank="No matter (funds are client-level)")
             + html.field("Amount", "amount",
                          hint="Dollars and cents, e.g. 1,200.00")
             + html.field("Date", "disburse_date", ftype="date",
                          value=_today())
-            + html.field("Pay to", "counterparty",
-                         hint="Who receives the money, e.g."
-                              " SYNTH-USCIS.")
+            # known-payee datalist + free entry (gated item F):
+            # native, zero-JS -- prior counterparties suggest,
+            # anything typed still goes through
+            + "<label>Pay to</label>"
+            + "<p class='hint'>Who receives the money, e.g."
+              " SYNTH-USCIS. Known payees appear as you type; a new"
+              " name is fine.</p>"
+            + "<input name='counterparty' list='known-payees'"
+              " required>"
+            + ("<datalist id='known-payees'>"
+               + "".join(f"<option value='{html.esc(p)}'>"
+                         for p in reads.known_counterparties(conn))
+               + "</datalist>")
             + html.field("Memo", "memo", required=False)
             + "<button class='primary'>Disburse</button>"
               "</form></div>")

@@ -1108,3 +1108,320 @@ pre-walk fixes AND all of s6: coupling machinery, attempt-3
 walk artifacts, verdict record, recon rebuild, gated-items.md,
 Evidence Discipline incident). Server left on 8500 over the
 walked attempt-3 db. state.md is the resume authority.
+
+## 2026-08-07 -- s7: gated item A -- date coupling (MM/DD/YYYY)
+
+James's order: work the unlocked queue top-down, A first. Root
+cause of 4 of attempt 3's 5 date misses: US-locale date inputs
+DISPLAY MM/DD/YYYY while the sheet typed ISO values, and every
+rendered date on the billing screens was raw ISO from the db.
+
+FIX (three coupled layers, data stays ISO end to end):
+1. billing_ui.py: fmt_date() -- strict presentation formatter
+   (ISO in, MM/DD/YYYY out; anything else raises -- fail loud,
+   same boundary as fmt_cents). Applied at all 17 user-facing
+   render sites: invoice list Issued; invoice detail Issued/Due
+   kv, charge rows, payment links, time-entry import labels;
+   account ledger dates; journal detail Posted kv + bank
+   record; recon period hint, statement lines, reconciling
+   items, book postings; time index; payment detail Date kv,
+   journal trail, bank record. Date INPUT value attributes stay
+   ISO (HTML spec; the browser localizes the widget).
+2. demo-walk-protocol.md: every typed and named date in the
+   walk sheet re-expressed MM/DD/YYYY (13 substitutions, same
+   calendar days, no step semantics changed); preamble states
+   the convention; amendment header recorded. One ruling-date
+   citation in the STEP RULE preamble also re-expressed so the
+   invariant is absolute: ZERO ISO dates in the sha-locked
+   sheet section.
+3. drive_sheet.py asserts the claim both ways: the lock check
+   scans the sheet section for ISO strays (exit 2), and a
+   DateScanBrowser scans EVERY billing page the drive fetches
+   for visible ISO dates (value attributes exempt). Step pins
+   updated (payment-date links 08/01/2026 -> 08/02/2026 after
+   correction; s22 asserts the 08/02/2026 time-entry label).
+   POST constants stay ISO -- documented as what a browser
+   submits from a date input, not what the driver types.
+   run_billing_ui_walk.py's two rendered-ISO pins re-pinned to
+   08/01/2026. SHEET LOCK re-synced deliberately:
+   308332708dd1 -> 847e4aaf2364 after step-by-step verify.
+
+Quoted green after fix: drive-sheet 24/24 (date scanner live on
+every fetch); billing-ui walk 17/17 x2 report_sha a506f085
+(report content unchanged -- step details carry no dates);
+labels 82/0; ui-walk 13; spine 107; billing 25; fiduciary
+--seeded 8. Server on 8500 restarted over demo-walk-2026-08-07c
+so the walked books now render MM/DD/YYYY.
+
+FLAGGED, not fixed (frozen core, out of item-A scope): the
+invoice PDF (casework/app/billing.py) still prints ISO dates --
+a bill page reading 08/02/2026 hands James a PDF reading
+2026-08-02. Queued as a note under gated-items item 2's class
+(core rendering); his call whether it rides the pay-page
+break-in. The client pay page renders no dates (checked).
+
+## 2026-08-07 -- s7 cont: BREAK-IN -- invoice PDF (frozen core)
+
+AUTHORIZATION (James, in-session, the gated-items method, F7
+precedent): "make a special edit to fix the invoice or an
+alignment... I'm giving you permission... make sure you record
+it." Named scope: casework/app/billing.py, invoice_pdf function
+ONLY, presentation semantics only. Hard limits restated in the
+authorization reply: spine + anchor suites immutable and rerun
+green; PDF assertions strengthen never weaken; contracts
+untouched; all standing suites quoted; supersessions via
+canonical sha scripts only.
+
+DEFECTS (ground-read before the cut): (1) header dates printed
+raw ISO (the item-A residue flagged same session); (2) charge
+lines were description and amount jammed inline with two
+spaces -- no columns, no charge date, nothing footed: the
+"alignment"; (3) amount_cents / 100 -- FLOAT division touching
+money at the presentation boundary, against the program's own
+integer-cents rule (the suites' float-sweep greps float() and
+REAL columns, so /100 sailed under it).
+
+FIX (presentation only, no schema, no data change): _pdf_date
+(strict ISO -> MM/DD/YYYY, fails loud) and _pdf_cents (divmod
+integer math, parenthesized negatives); header Issued/Due
+through _pdf_date; charges as a Description | Date | Amount
+table -- header row underlined, amounts right-aligned, Balance
+Due right-aligned over a top rule, single cell so the
+"Balance Due: 0.00" assertion string stays contiguous in
+extraction. Column chrome reuses existing fx-0052 translated
+strings (en+es both carry description/date/amount) -- no new
+untranslated labels. Discount rides the amount column.
+Rendered Bill-from-07c PDF eyeballed in-session: columns foot,
+dates MM/DD/YYYY.
+
+Quoted green after the cut: spine verdict GREEN (exit 0 in
+chain); anchor-billing PASS (1.253s) -- the suite that reads
+the PDF back; billing 25 green, checks pass; fiduciary
+--seeded 8 pass; ui-walk 13 pass GREEN; billing-ui walk 17
+pass GREEN x2; drive-sheet 24/24 GREEN; labels 82/0.
+SUPERSESSION: billing-ui walk-report sha a506f085 ->
+de589cbd (the report's PDF byte count changed 1159 -> 1401;
+content-honest change), stable across both runs, quoted from
+report_sha.py only. Server on 8500 restarted so Download PDF
+serves the new layout on the walked db.
+
+Note for James's eyeball: on the 07c books invoice #3 is the
+TRUST REQUEST (his mid-walk extra invoice shifted numbers) --
+the number-shift gated item B exists to kill.
+
+## 2026-08-07 -- s7 cont 2: billing landing cleanup (James's snap)
+
+His snap of the landing on the walked db: the Outstanding tile
+said 0 open invoices while the list below (Outstanding tab,
+empty, all four invoices paid) showed the blank-database copy
+"No invoices here yet" -- one screen, two contradictory claims.
+Second finding on the same snap: the selected tab and the New
+invoice action rendered as near-identical filled chips, two
+rows of same-looking controls. James: fix everything in the
+snap, full cleanup where it makes sense.
+
+FIX (rendering-only, billing_ui.py, unlocked surface):
+1. Tab-aware empty states: blank-db copy only when NO invoices
+   exist; empty Outstanding now reads "Nothing outstanding --
+   every invoice is collected. The Paid tab has the full
+   record."; empty Paid reads "Nothing collected yet -- every
+   invoice is still outstanding."
+2. Tabs carry live counts -- Outstanding (0) | Paid (4) |
+   All (4) -- so an empty tab names where the invoices are.
+   One status query per invoice, reused for tile + tabs +
+   filter (status_of map).
+3. Tabs restyled as underline tabs (selected: bold, dark,
+   2px underline on a hairline rule), visually distinct from
+   the filled action buttons. Sheet's TAB vocabulary
+   ("highlighted one is selected") still holds; no sheet edit,
+   no sha re-sync.
+drive_sheet waypoint needle re-pinned ">Paid<" -> ">Paid ("
+(label-plus-count prefix, tally-proof).
+
+Quoted green: billing-ui walk 17 pass GREEN x2, report_sha
+de589cbd both runs (unchanged -- the report carries no tab
+markup); drive-sheet 24/24 GREEN; labels 82/0; ui-walk 13
+GREEN. Server on 8500 restarted over the walked db.
+
+## 2026-08-07 -- s7 cont 3: Back to billing button (James's snaps)
+
+His ask, from the trust-accounting snap: the crumbs and the top
+menu work, but the four billing sub-areas (Trust accounting,
+Time, Saved charges, Reconciliation) need a big obvious
+"Back to billing" button up top.
+
+FIX (rendering-only, billing_ui.py): _back_to_billing() -- a
+quiet-styled button floated top-right in each screen's action
+row (rows created on Saved charges and Reconciliation, which
+had none; both recon branches covered). Quiet style + right
+float so it never competes with the screen's primary action.
+BILLING_STYLE gains .actions{overflow:auto} and .actions
+a.back{float:right} -- billing-only override, shared html.py
+untouched. drive_sheet STRENGTHENED: "Back to billing" pinned
+on trust accounting (s18), saved charges (s20), and recon
+(s32); the Time index renders it via the same helper.
+
+Quoted green: drive-sheet 24/24 GREEN; billing-ui walk 17
+pass 0 FAIL x2, report_sha de589cbd both; labels 82/0;
+ui-walk 13 GREEN. Server on 8500 restarted over the walked db.
+
+## 2026-08-07 -- s7 cont 4: gated item B + invoice-code design
+
+DESIGN (ratified in conversation, recorded in invoice-codes.md,
+gated as item 10): invoice display codes B0001/T0001 -- type
+letter + 4-digit zero-padded per-type series, scope follows the
+active numbering mode, stored at creation, immutable. Ruled OUT
+of the code, with James driving the reasoning: client (implicit
+in the stored number's scope; initials collide; attribute not
+identity), date (dates are CORRECTABLE in this system -- Part I
+is the proof -- and identifiers may not embed correctable
+facts), hyphen (unquoted-context arithmetic hazard; B0001 is
+one double-clickable token; leading zeros also kill the Excel
+cell-reference collision unpadded B1 would have). His spread-
+sheet concern resolved by the join key: internal id + the CSV
+export columns carry every analysis dimension; the code stays
+dumb. Constraint found first by ground-read: the stored number
+is corpus-pinned (global-invoice-numbering, confirmed) with an
+immutable billing-suite test -- codes must be ADDITIVE. Build
+is a core break-in awaiting its own gate.
+
+ITEM B LANDED (sheet + driver, no product change): the sheet
+never identifies an invoice by absolute number. Preamble rule
+(INVOICE NUMBERS block); steps 10-29 re-worded to TYPE + issue
+date (the consult bill = Bill row issued 08/01/2026; the trust
+request = the Trust Request row; the work bill = Bill row
+issued 08/02/2026); crumb checks pin the prefix Billing / Bill
+#<n> with "any number is correct there" said outright.
+drive_sheet: invoice_row()/enter_invoice() locate rows exactly
+the sheet's way and cross-check against the created ids; crumb
+asserts prefix-only; and a STRAY INVOICE is permanently
+injected after step 21 -- attempt 3's exact failure condition
+-- which every later route must survive. Sheet lock re-synced
+deliberately: 847e4aaf2364 -> efea8538b68e.
+
+Quoted green: drive-sheet 24/24 GREEN (stray live); labels
+82/0; billing-ui walk 17 pass GREEN, report_sha de589cbd
+(unchanged -- no app change this round); ui-walk 13 GREEN.
+No server restart needed.
+
+## 2026-08-07 -- s7 cont 5: gated item C -- imported saved charge date
+
+Root cause (ground-read): billing.import_saved_charges calls
+add_charge without charge_date (NULL -> blank cell); time
+imports pass the entry's date, which is why the time row was
+dated and the saved charge was not.
+
+FIX -- existing core APIs only, zero core change: the import
+returns the new charge ids; the UI handler (invoice_import,
+billing_ui.py) now dates each one via billing.update_charge
+with the bill's issue date -- the SAME default the manual Add
+form prefills (judgment call, flagged: imported saved charges
+inherit the bill's issue date; James can re-rule if service
+date should differ). drive_sheet s22 STRENGTHENED: asserts the
+imported saved charge's full row renders description | type |
+08/02/2026 -- a blank Date cell is now a driver FAIL.
+
+Quoted green: drive-sheet 24/24 GREEN; billing-ui walk 17 pass
+GREEN x2; labels 82/0; ui-walk 13 GREEN. SUPERSESSION:
+report_sha d9074178 (was de589cbd) -- the work bill's PDF grew
+1401 -> 1406 bytes carrying the new date cell; stable x2.
+Server on 8500 restarted.
+
+## 2026-08-07 -- s7 cont 6: gated item D -- bare-number time entry
+
+Core parse_duration is corpus-pinned (fx-0064 formats: 2h, 36m,
+2.8h, 5.5m) -- so the fix is UI-side normalization at the same
+boundary cents_of holds for amounts: in time_create, a bare
+number ("2", "1.5") becomes hours ("2h", "1.5h") before the
+core parser; everything else passes verbatim so the core's own
+error stays the teacher. Form hint now says a bare number means
+hours. run_billing_ui_walk STRENGTHENED: posts a bare "2" at
+100.00/h and asserts the 200.00 entry lands.
+
+Quoted green: billing-ui walk 17 pass GREEN x2, report_sha
+superseded c4555b15 (step detail line changed; stable x2);
+drive-sheet 24/24 GREEN; labels 82/0; ui-walk 13 GREEN.
+
+## 2026-08-07 -- s7 cont 7: gated item E -- blank select options
+
+The seven dash-noise blank options across billing selects now
+say what leaving the field means (agent wording, FLAGGED for
+James's re-rule): time Client "No client (use the matter
+below)"; time Matter "No matter"; bill Matter "No matter (bill
+the client directly)"; trust Matter "Client-level funds (no
+specific matter)"; disburse client "No client (pick a matter
+below)"; disburse matter "No matter (funds are client-level)";
+payment-edit charge "The whole invoice". Sheet lines quoting
+the old options re-pinned (steps 13/19/24, sixth-amendment
+header); driver needles re-pinned; SHEET LOCK re-synced
+efea8538b68e -> 39f124b41e01.
+
+Quoted green: drive-sheet 24/24 GREEN; labels 82/0; billing-ui
+walk 17 pass GREEN x2 report_sha c4555b15 (unchanged); ui-walk
+13 GREEN.
+
+## 2026-08-07 -- s7 cont 8: gated items F + G
+
+F (Pay to known payees): reads.known_counterparties() (distinct
+external_events counterparties, SELECT-only) feeds a native
+<datalist> on the disburse form -- known payees suggest as you
+type, free entry stays. Zero JS.
+
+G (client link copy box): the share link renders in a readonly
+<input class='copylink'> -- click, Ctrl+A, Ctrl+C grabs the
+whole link; the zero-JS stand-in for the requested copy button.
+Sheet step 15 now teaches the box (seventh-amendment note
+below); SHEET LOCK re-synced 39f124b41e01 -> 2c9cac5141af.
+drive s15 STRENGTHENED: asserts the copylink box.
+
+Quoted green: drive-sheet 24/24 GREEN; labels 82/0; billing-ui
+walk 17 pass GREEN x2 report_sha c4555b15 (unchanged); ui-walk
+13 GREEN.
+
+## 2026-08-07 -- s7 cont 9: gated item H -- trust balance on the bill
+
+BREAK-IN (item H's own wording names the PDF; protocol
+followed): casework/app/billing.py, invoice_pdf + the
+INVOICE_STRINGS chrome table only, presentation additions --
+"Client funds held in trust: <sum>" under Balance Due, chrome
+key added in BOTH languages (fx-0052 discipline), rendered only
+when the client has trust sub-ledgers. Bill page (rendering):
+same figure as a kv line via reads.trust_sub_accounts_of_
+contact (SELECT-only; balances summed through
+ledger.account_balance so money math stays in the core).
+
+INCIDENT (Evidence Discipline, recorded honestly): the first
+cut guessed the matter-ownership column as m.contact_id; the
+schema's column is primary_contact_id. anchor-billing FAILED
+LOUD (OperationalError) and billing dropped 3 entries red; one
+ground-read of schema.sql fixed both queries. The suites did
+exactly what fail-loud machinery is for; the lesson (ground
+first, also for column names) was already the s6 METHOD note --
+this is a repeat offense logged against it.
+
+STRENGTHENED: run_billing_ui_walk asserts "Client funds held in
+trust: 800.00" in the extracted PDF text; drive s29 pins
+"Client funds in trust" + 800.00 on the work bill's page.
+
+Quoted green after fix: spine 107; billing 25 GREEN; fiduciary
+--seeded 8; anchor-billing PASS; drive-sheet 24/24 GREEN;
+billing-ui walk 17 GREEN x2; labels 82/0; ui-walk 13 GREEN.
+SUPERSESSION: report_sha c4555b15 -> f3f16120 (PDF grew with
+the trust line), stable x2. Server on 8500 restarted with the
+full E-H batch.
+
+## 2026-08-07 -- s7 cont 10: item I closed; unlocked queue DONE
+
+James ruled both snap labels: (1) "difference in paid versus
+recorded" was his double-check note, not a defect; (2)
+"Collect card already exists" was the sheet's number-pinned
+row-#2 route landing him on the wrong invoice after his +1
+offset -- the defect item B's type+date routing already
+killed, confirmed against the snap (it photographs the sheet's
+step 14, and "recall its Trust 3 since I made 2 invoices" sits
+beside it).
+
+THE UNLOCKED QUEUE A-I IS CLOSED, one session. Remaining on
+gated-items: the locked list (client pay page styling first,
+his axis-(b) driver; held recon pair; invoice codes item 10)
+and then attempt 4.
