@@ -231,13 +231,24 @@ def check_f6(con):
 
 
 def check_f7(con):
-    """LIVE as of P5 (U5.2). Per bank account with external events, run
-    the three-way reconciliation at TWO period ends: mid-lag (the max
+    """LIVE as of P5 (U5.2); STRENGTHENED 2026-08-07 to the real-bank
+    model (James's ruling, s8 close; F7 amendment's only allowed
+    direction). Per bank account with external events, run the
+    three-way reconciliation at TWO period ends: mid-lag (the max
     event date, so clearing lags leave genuine reconciling items) and
-    all-cleared (max date + 10 days, so every item resolves). The
-    identity must hold at both; every item carries a cause; matching
-    must leave nothing unmatched. No events at all reports NO-EVENTS
-    (a fresh empty ledger has no reconciliation to prove)."""
+    all-cleared (max date + 10 days). Asserts:
+      (a) the identity holds at both periods, nothing unmatched;
+      (b) every item's cause is from the closed vocabulary and
+          carries a direction;
+      (c) at the all-cleared period, TIMING items have resolved --
+          only correction/refund items (books-only by design) may
+          persist;
+      (d) bank-record purity: the events linked to a payment are
+          exactly its birth shape (direct 1, trust_transfer 2,
+          sim 0) -- a correction that fabricated or destroyed a bank
+          event is a RED, whatever the reconciliation says.
+    No events at all reports NO-EVENTS (a fresh empty ledger has no
+    reconciliation to prove)."""
     import reconcile
     banks = [r[0] for r in con.execute(
         "SELECT DISTINCT bank_account_id FROM external_events"
@@ -248,17 +259,44 @@ def check_f7(con):
     max_day = con.execute(
         "SELECT MAX(occurred_on) FROM external_events").fetchone()[0]
     later = reconcile.bank_statement._plus_days(max_day, 10)
+    known = {"deposit in transit", "outstanding disbursement",
+             "correction awaiting bank", "refund awaiting bank"}
+    timing = {"deposit in transit", "outstanding disbursement"}
     broken, total_items = [], 0
+    bad_cause = late_timing = 0
     for b in banks:
         for period in (max_day, later):
             r = reconcile.three_way(con, b, period)
             total_items += len(r["items"])
             if not r["identity_holds"]:
                 broken.append((b, period))
-    return (not broken,
+            for i in r["items"]:
+                if i["cause"] not in known \
+                        or i.get("direction") not in ("in", "out"):
+                    bad_cause += 1
+                if period == later and i["cause"] in timing:
+                    late_timing += 1
+    birth_shape = {"direct": 1, "trust_transfer": 2,
+                   "sim_card": 0, "sim_echeck": 0}
+    impure = []
+    for pid, method, n_events in con.execute(
+            """SELECT p.id, p.method, COUNT(e.id)
+               FROM invoice_payments p
+               LEFT JOIN external_events e ON e.payment_id = p.id
+               GROUP BY p.id, p.method ORDER BY p.id"""):
+        if n_events != birth_shape.get(method, -1):
+            impure.append((pid, method, n_events))
+    ok = (not broken and bad_cause == 0 and late_timing == 0
+          and not impure)
+    return (ok,
             "F7 THREE-WAY-RECON: %d accounts x 2 periods, %d reconciling"
-            " items enumerated, %d identity breaks"
-            % (len(banks), total_items, len(broken)))
+            " items enumerated, %d identity breaks; strengthened:"
+            " %d unknown-cause items, %d timing items surviving"
+            " all-cleared, %d payments with fabricated/missing bank"
+            " events%s"
+            % (len(banks), total_items, len(broken), bad_cause,
+               late_timing, len(impure),
+               "" if not impure else " " + repr(impure)))
 
 
 def check_f8(con):

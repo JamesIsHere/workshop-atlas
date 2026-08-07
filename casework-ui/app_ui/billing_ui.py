@@ -267,7 +267,7 @@ def billing_landing(h, conn, user, query):
         for r in shown:
             trows.append([
                 html.link(f"/billing/invoices/{r['id']}",
-                          f"#{r['number']}"),
+                          r["display_code"]),
                 _type_pill(r),
                 html.link(f"/contacts/{r['contact_id']}",
                           r["display_name"]),
@@ -317,7 +317,7 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
     balance = billing.invoice_balance(conn, invoice_id)
     status = billing.invoice_status(conn, invoice_id)
     noun = _noun(inv)
-    title = f"{noun} #{inv['number']}"
+    title = f"{noun} {inv['display_code']}"
     is_trust = inv["invoice_type"] == "trust_request"
 
     kv = [("Client", html.link(f"/contacts/{contact['id']}",
@@ -326,6 +326,10 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
         matter = reads.matter_row(conn, inv["matter_id"])
         kv.append(("Matter", html.link(f"/matters/{matter['id']}",
                                        matter["name"])))
+    # the corpus-pinned stored number stays visible as an attribute;
+    # identity is the display code (invoice-codes.md, built 2026-08-07)
+    kv.append(("Number", html.esc(
+        f"#{inv['number']} ({inv['number_scope']})")))
     kv.append(("Issued", html.esc(fmt_date(inv["issued_date"]))))
     if inv["due_date"]:
         kv.append(("Due", html.esc(fmt_date(inv["due_date"]))))
@@ -341,7 +345,7 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
     if trust_subs:
         held = sum(ledger.account_balance(conn, a)
                    for a in trust_subs)
-        kv.append(("Client funds in trust",
+        kv.append(("Remaining in Trust",
                    f"<span class='money'>{fmt_cents(held)}</span>"))
     kvs = "<dl class='kv'>" + "".join(
         f"<dt>{html.esc(k)}</dt><dd>{v}</dd>" for k, v in kv) + "</dl>"
@@ -855,10 +859,11 @@ def recon_screen(h, conn, user, query):
                               stmt["closing_balance_cents"]))
             adjusted = r["bank_balance_cents"]
             for i in r["items"]:
-                sign = (1 if i["cause"] == "deposit in transit"
-                        else -1)
+                sign = 1 if i["direction"] == "in" else -1
                 adjusted += sign * i["amount_cents"]
-                word = ("in transit" if sign > 0 else "outstanding")
+                word = {"deposit in transit": "in transit",
+                        "outstanding disbursement":
+                            "outstanding"}.get(i["cause"], i["cause"])
                 rows.append(
                     f"<tr><td>{html.esc(fmt_date(i['date']))}</td>"
                     f"<td>{word} "
@@ -995,7 +1000,7 @@ def payment_detail(h, conn, user, payment_id, error=None):
                   if c["id"] == p["associated_charge_id"]), None)
 
     kv = [(_noun(inv), html.link(f"/billing/invoices/{inv['id']}",
-                                 f"{_noun(inv)} #{inv['number']}")),
+                                 f"{_noun(inv)} {inv['display_code']}")),
           ("Method", html.esc(method)),
           ("Amount", f"<span class='money'>"
                      f"{fmt_cents(p['amount_cents'])}</span>"),
@@ -1050,9 +1055,10 @@ def payment_detail(h, conn, user, payment_id, error=None):
         ev_card = ("<div class='card'><h1>Bank record</h1>"
                    + html.table(["Date", "Event", "Direction", "Memo",
                                  "Amount"], evrows)
-                   + "<p class='hint'>Corrections appear on the bank"
-                     " side too: compensating events, never rewritten"
-                     " ones.</p></div>")
+                   + "<p class='hint'>The bank record keeps exactly"
+                     " what the bank saw. Corrections live in the"
+                     " books; the reconciliation explains any"
+                     " difference.</p></div>")
 
     if p["refunded"]:
         action_cards = (
@@ -1099,7 +1105,7 @@ def payment_detail(h, conn, user, payment_id, error=None):
 
     status_pill = _pill("refunded") if p["refunded"] else ""
     body = (_crumbs(("Billing", "/billing"),
-                    (f"{_noun(inv)} #{inv['number']}",
+                    (f"{_noun(inv)} {inv['display_code']}",
                      f"/billing/invoices/{inv['id']}"),
                     (f"Payment {payment_id}", None))
             + html.error_box(error)
@@ -1370,7 +1376,7 @@ def invoice_pdf_download(h, conn, invoice_id):
         out = Path(td) / "invoice.pdf"
         billing.invoice_pdf(conn, invoice_id, str(out))
         content = out.read_bytes()
-    h._send_file(content, f"invoice-{inv['number']}.pdf")
+    h._send_file(content, f"invoice-{inv['display_code']}.pdf")
 
 
 def invoice_share(h, conn, uid, user, invoice_id):

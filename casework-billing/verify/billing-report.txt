@@ -23,7 +23,7 @@ GREEN   invoicing-and-trust-accounting.invoice-translation
 GREEN   invoicing-and-trust-accounting.invoice-access-permissions
 GREEN   invoicing-and-trust-accounting.default-invoice-settings
 GREEN   invoicing-and-trust-accounting.global-invoice-numbering
-CHECK   csv-export invoices: 10 cols x 0 rows (table 0) pass
+CHECK   csv-export invoices: 11 cols x 0 rows (table 0) pass
 CHECK   csv-export payments: 7 cols x 0 rows (table 0) pass
 CHECK   csv-export time_entries: 7 cols x 0 rows (table 0) pass
 CHECK   csv-export trust_ledger: 8 cols x 16 rows (table 16) pass

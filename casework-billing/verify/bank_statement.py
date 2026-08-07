@@ -36,13 +36,15 @@ def statement(conn, bank_account_id, period_end):
     lines, pending = [], []
     for r in conn.execute(
             "SELECT id, event_type, occurred_on, amount_cents, direction,"
-            " counterparty, memo FROM external_events WHERE"
-            " bank_account_id=? ORDER BY occurred_on, id",
+            " counterparty, memo, invoice_id, payment_id FROM"
+            " external_events WHERE bank_account_id=?"
+            " ORDER BY occurred_on, id",
             (bank_account_id,)).fetchall():
         cleared = clear_date(r[1], r[2])
         row = {"event_id": r[0], "event_type": r[1], "occurred_on": r[2],
                "cleared_on": cleared, "amount_cents": r[3],
-               "direction": r[4], "counterparty": r[5], "memo": r[6]}
+               "direction": r[4], "counterparty": r[5], "memo": r[6],
+               "invoice_id": r[7], "payment_id": r[8]}
         if r[2] > period_end:
             continue  # not yet occurred as of the period
         if cleared <= period_end:

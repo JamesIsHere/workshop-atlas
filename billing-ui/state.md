@@ -1,69 +1,63 @@
 # state.md -- billing-ui (session cache, overwritten each wind-down)
 
+## COLD-START POINTER (s9 close, 2026-08-07)
+
+The banking engine is BUILT (James's real-bank ruling, s8 close;
+executed s9, worklog s9 has the full record). Corrections and
+refunds touch books only; the bank record keeps exactly what the
+bank saw; the recon engine matches statement lines to book
+entries and explains every difference as a caused reconciling
+item; F7 is strengthened (bank-record purity, timing resolves
+all-cleared, closed causes); the demo period-end shows a
+cleared / in-transit / outstanding mix stable on any run date.
+ALL suites green, shas superseded and recorded. NOTHING stands
+between here and ATTEMPT 4: fresh db, code-routed sheet, James
+drives, his three-part verdict. That is the next session's whole
+job -- do not start new build work before the walk.
+
 ## Status
 
-P4 OPEN after attempt 3 (verdict FAIL a/b/c, 2026-08-07) -- but
-s7 (2026-08-07, same day) closed the ENTIRE unlocked backlog
-A-I plus two James-authorized core break-ins. The product
-attempt 4 will run on is materially different from attempt 3's:
+P4 OPEN after attempt 3 (verdict FAIL a/b/c, 2026-08-07). Since
+then, same day: s7 closed the unlocked backlog A-I + two core
+break-ins; s8 built the client pay page, trust relabel, invoice
+codes B0001/T0001; s9 built the recon engine (gated item 1,
+CLOSED pending walk verdict). The product attempt 4 runs on is
+materially different from attempt 3's on every axis of the FAIL:
+(a) reconciliation is adequate and correct by construction now;
+(b)/(c) the s7/s8 polish batch.
 
-- A: dates MM/DD/YYYY everywhere user-facing (screens, sheet
-  typed values, PDF); data stays ISO; drive_sheet scans every
-  billing page for ISO strays.
-- Break-in 1 (PDF): invoice_pdf rebuilt -- MM/DD/YYYY, footed
-  Description|Date|Amount columns, integer-cents (float
-  division removed).
-- Landing cleanup (his snap): tab counts Outstanding(0)/
-  Paid(4)/All(4), tab-aware empty states, underline tabs.
-- Back to billing button on Trust accounting / Time / Saved
-  charges / Recon (his snaps).
-- B: sheet identifies invoices by TYPE + issue date, never
-  number; drive locates rows the sheet's way AND permanently
-  injects a stray invoice after step 21 (attempt-3 regression).
-- Invoice display codes DESIGNED + ratified in conversation:
-  B0001/T0001, spec in invoice-codes.md; BUILD is gated-items
-  locked item 10 (core schema break-in, awaits his gate).
-- C: imported saved charges dated with the bill's issue date
-  (existing core APIs only). D: bare "2" = hours (UI-side).
-- E: seven blank select options re-worded to plain guidance
-  (agent wording, FLAGGED for his re-rule).
-- F: known-payee datalist on disburse. G: client link in a
-  readonly copy box; sheet step 15 teaches Ctrl+A/Ctrl+C.
-- H + break-in 2: "Client funds in trust" on invoice pages and
-  the PDF (both languages). INCIDENT: first cut guessed
-  m.contact_id (real: primary_contact_id); suites failed loud;
-  ground-read fixed. Logged as Evidence Discipline repeat.
-- I: both snap labels closed by James (label 1 not a problem;
-  label 2 was the number-shift defect item B killed).
+## Attempt 4 protocol (when James says go)
 
-All suites green at close: spine 107; billing 25; fiduciary
---seeded 8; anchor-billing PASS; drive-sheet 24/24; billing-ui
-walk 17/17 x2; labels 82/0; ui-walk 13.
-
-## Next actions (James's stated order)
-
-1. DRAFT the client-pay-page program-ruling amendment for his
-   ratification (he said "then we draft" at context reset).
-   Scope agreed in conversation: rendering-only in casework/
-   app/server.py client surface -- styles, firm identity, real
-   charge table with integer cents (two float divisions live
-   there now, lines ~145/163), styled pay form, a receipt worth
-   the name. Spine immutable; sheet's quoted client-side labels
-   ("Synthetic payment token", "SYNTHETIC-VISA-DEMO", "Pay",
-   "Payment received") preserved or re-pinned.
-2. Held recon pair (gated item 1): fabricated correction
-   events vs real-bank matching; demo period-end placement.
-3. Invoice-code build gate (item 10, invoice-codes.md).
-4. Attempt 4: fresh db, full walk, his verdict.
+1. Fresh db: serve a NEW data/demo-walk-<date>.db on port 8500
+   (one-address rule; kill the running server first).
+2. James drives demo-walk-protocol.md's 32 steps; agent records
+   marks M0-M6 and the friction log.
+3. Close-out: agent runs check_demo_walk.py on the walked db,
+   quotes output (exit 0 required); James eyeballs PDF + ledger
+   + recon; verdict sheet, all three sub-verdicts up/down.
 
 ## Watch items and caveats
 
-- SHEET LOCK current sha 2c9cac5141af; walk-report canonical
-  sha f3f16120 (superseded a506f085 -> de589cbd -> d9074178 ->
-  c4555b15 -> f3f16120 across s7, each PDF/report growth
-  quoted in worklog). ONLY report_sha.py output counts.
-- Server RUNNING on 8500, walked attempt-3 db (casework-ui/
-  data/demo-walk-2026-08-07c.db), full s7 batch loaded. Login
+- SHEET LOCK current sha f7f821edb1e9 (re-synced s9, seventh
+  sheet amendment: step 24 disburse rides today's prefill, step
+  28 books-only correction wording, step 32 names the mix).
+  Walk-report canonical sha 301b574d UNCHANGED by s9 (history:
+  a506f085 -> de589cbd -> d9074178 -> c4555b15 -> f3f16120 s7 ->
+  c61ea17a s8 -> 301b574d s8 cont 2). ONLY report_sha.py output
+  counts.
+- casework-billing seal supersession s9: fiduciary e6c64593 x2
+  (supersedes fb5bccda), billing c53f262b x2 (supersedes
+  acba95b1; drift is s8's display_code column). Recorded in
+  casework-billing/state.md.
+- Walk dbs other than 07c are PRE-CODE schema (run
+  verify/migrate_invoice_codes.py before serving one) and ALL
+  retained dbs including 07c are PRE-ENGINE (mirror events on
+  their bank records; new matcher still reconciles them HOLDS,
+  but F7 purity would flag them -- attempt 4's fresh db is the
+  first pure one).
+- Server RUNNING on 8500 (client surface 8501), walked 07c db,
+  s9 engine code loaded (restarted this session; 8500 -> 303
+  login, client link /invoice/SYNTH-INV-3-1 -> 200). Login
   demo.driver@synthetic.test / demo-walk-pass, code on screen.
   Restart after ANY app_ui or casework/app change -- stale
   module code serves silently (bitten twice in s7).
@@ -72,8 +66,8 @@ walk 17/17 x2; labels 82/0; ui-walk 13.
   trigger the reciprocal guard (ALL suites).
 - Walk dbs retained (delete=archive): -04, -04b, -07, -07b,
   -07c. Attempt-3 snaps archived in walk-artifacts/.
-- atlas/gated-items.md is current as of s7 close (A-I marked
-  DONE/CLOSED, item 10 added).
+- atlas/gated-items.md current as of s9 (item 1 BUILT/CLOSED
+  pending walk verdict).
 - Anti-stall ledgers: P2 1/2, P3 0/2, F-1 1/2 used. Firm
   question still unasked: flat-fee vs hourly mix.
 
@@ -93,11 +87,10 @@ walk 17/17 x2; labels 82/0; ui-walk 13.
 
 ## Open decisions
 
-- Client-pay-page amendment ratification (next action 1).
-- Held recon pair (gated item 1).
-- Invoice-code build gate (item 10).
+- ATTEMPT 4 go/no-go: James's call, the only thing owed.
 - E-item select wording: James may re-rule any line.
 - Empty-invoice list behavior (gated item 3): unchanged, his
   layer call.
 - Demo-login prefill + no-expiry (gated item 5): queued, not
   blocking.
+- Client portal: gated item 11, deliberately out of scope.

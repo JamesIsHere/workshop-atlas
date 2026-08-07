@@ -46,7 +46,7 @@ INVOICE_STRINGS = {
            "amount": "Amount", "date": "Date", "discount": "Discount",
            "balance_due": "Balance Due", "issued": "Issued",
            "due": "Due", "charges": "Charges",
-           "trust_held": "Client funds held in trust"},
+           "trust_held": "Remaining in Trust"},
     "es": {"invoice": "Factura", "bill": "Factura",
            "trust_request": "Solicitud de fondos de fideicomiso",
            "client": "Cliente", "matter": "Caso",
@@ -54,7 +54,7 @@ INVOICE_STRINGS = {
            "date": "Fecha", "discount": "Descuento",
            "balance_due": "Saldo pendiente", "issued": "Emitida",
            "due": "Vence", "charges": "Cargos",
-           "trust_held": "Fondos del cliente en fideicomiso"},
+           "trust_held": "Restante en fideicomiso"},
 }
 
 SETTINGS_COLUMNS = ("preparer_user_id", "issued_date", "due_date",
@@ -105,6 +105,34 @@ def _next_number(conn, contact_id):
     return n + 1, "client"
 
 
+_CODE_LETTER = {"bill": "B", "trust_request": "T"}
+
+
+def _next_code(conn, invoice_type, contact_id):
+    """Display code (billing-ui invoice-codes.md, build gated in by
+    James 2026-08-07): one letter per type, 4-digit zero-padded,
+    independent gapless series per type. Scope mirrors _next_number's
+    active mode; a flip to global continues from the per-type firm
+    total and never renumbers (fx-0076 mirror). Stored at creation,
+    immutable; deleted invoices keep their code -- a series never
+    reuses."""
+    letter = _CODE_LETTER[invoice_type]
+    if get_setting(conn, "billing.global_numbering", "0") == "1":
+        key = f"billing.code_global_next.{letter}"
+        stored = get_setting(conn, key)
+        total = conn.execute(
+            "SELECT COUNT(*) FROM invoices WHERE invoice_type=?",
+            (invoice_type,)).fetchone()[0]
+        n = int(stored) if stored is not None else total + 1
+        set_setting(conn, key, n + 1)
+        return f"{letter}{n:04d}", "global"
+    n = conn.execute(
+        "SELECT COUNT(*) FROM invoices WHERE contact_id=?"
+        " AND invoice_type=? AND code_scope='client'",
+        (contact_id, invoice_type)).fetchone()[0]
+    return f"{letter}{n + 1:04d}", "client"
+
+
 # --- invoice core -----------------------------------------------------
 
 def create_invoice(conn, invoice_type, contact_id, created_by, issued_date,
@@ -117,20 +145,22 @@ def create_invoice(conn, invoice_type, contact_id, created_by, issued_date,
         raise BillingError("a trust request needs trust_level and a"
                            " destination trust account (fx-0061)")
     number, scope = _next_number(conn, contact_id)
+    display_code, code_scope = _next_code(conn, invoice_type, contact_id)
     due = None
     if get_setting(conn, "billing.auto_due_date", "0") == "1":
         due = _auto_due_date(issued_date)
     cur = conn.execute(
         "INSERT INTO invoices (invoice_type, contact_id, matter_id,"
         " recipient_contact_id, trust_level, trust_account_id, number,"
-        " number_scope, preparer_user_id, issued_date, due_date, footer,"
+        " number_scope, display_code, code_scope,"
+        " preparer_user_id, issued_date, due_date, footer,"
         " color_scheme, language, late_fee_enabled, late_fee_kind,"
         " late_fee_value, late_fee_recurring, late_fee_recur_days,"
         " reminder_enabled, reminder_days, created_by)"
-        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (invoice_type, contact_id, matter_id,
          recipient_contact_id or contact_id, trust_level, trust_account_id,
-         number, scope,
+         number, scope, display_code, code_scope,
          get_setting(conn, "billing.default_preparer"),
          issued_date, due,
          get_setting(conn, "billing.default_footer"),
@@ -342,9 +372,12 @@ def _validate_association(conn, invoice_id, charge_id, amount_cents):
 def _journal_for_payment(conn, inv, method, amount_cents, payment_date,
                          created_by, destination_account_id,
                          source_account_id, source_trust_level, note,
-                         payment_id=None, replaces_entry_id=None):
+                         payment_id=None, replaces_entry_id=None,
+                         witness_bank=True):
     """Dispatch a payment to its ledger recipe; returns the entry id.
-    Sim payments post nothing here -- settlement does (processor.py)."""
+    Sim payments post nothing here -- settlement does (processor.py).
+    witness_bank=False posts books-only (a correction repost: the bank
+    record keeps what the bank saw; real-bank ruling 2026-08-07)."""
     if method == "direct":
         if inv["invoice_type"] == "trust_request":
             dest = destination_account_id or inv["trust_account_id"]
@@ -354,14 +387,16 @@ def _journal_for_payment(conn, inv, method, amount_cents, payment_date,
             return record_trust_deposit(
                 conn, dest, amount_cents, payment_date, created_by,
                 memo=note, invoice_id=inv["id"], payment_id=payment_id,
-                replaces_entry_id=replaces_entry_id, **kwargs)
+                replaces_entry_id=replaces_entry_id,
+                witness_bank=witness_bank, **kwargs)
         if destination_account_id is None:
             raise BillingError("a direct bill payment needs a destination"
                                " account (fx-0070)")
         return record_bill_direct_payment(
             conn, destination_account_id, amount_cents, payment_date,
             created_by, memo=note, invoice_id=inv["id"],
-            payment_id=payment_id, replaces_entry_id=replaces_entry_id)
+            payment_id=payment_id, replaces_entry_id=replaces_entry_id,
+            witness_bank=witness_bank)
     if method == "trust_transfer":
         if inv["invoice_type"] != "bill":
             raise BillingError("trust transfers pay Bills (fx-0066)")
@@ -375,7 +410,8 @@ def _journal_for_payment(conn, inv, method, amount_cents, payment_date,
         return earn_out(conn, source_account_id, destination_account_id,
                         amount_cents, payment_date, created_by, memo=note,
                         invoice_id=inv["id"], payment_id=payment_id,
-                        replaces_entry_id=replaces_entry_id, **kwargs)
+                        replaces_entry_id=replaces_entry_id,
+                        witness_bank=witness_bank, **kwargs)
     raise BillingError(f"unknown payment method: {method}")
 
 
@@ -391,9 +427,9 @@ def record_payment(conn, invoice_id, method, amount_cents, payment_date,
                       "sim_echeck"):
         raise BillingError(f"unknown payment method: {method}")
     # The payment row is created BEFORE the journal posts so external
-    # events carry their payment_id from birth -- correction semantics
-    # (reversal mirrors, refund compensations) need that linkage
-    # (program ruling 2026-08-04). The savepoint keeps a failed post
+    # events carry their payment_id from birth -- the reconciliation
+    # matcher groups bank events and book entries by that linkage
+    # (real-bank ruling 2026-08-07). The savepoint keeps a failed post
     # from leaving an orphan row.
     conn.execute("SAVEPOINT record_payment")
     try:
@@ -421,36 +457,6 @@ def record_payment(conn, invoice_id, method, amount_cents, payment_date,
         raise
     conn.execute("RELEASE record_payment")
     return payment_id
-
-
-def _payment_event_specs(conn, p, inv):
-    """The bank-event shapes of a payment's live recording,
-    reconstructed from the row itself. external_events is append-only
-    (like the journal), so corrections never rewrite events -- they
-    APPEND mirrors built from these specs (program ruling 2026-08-04:
-    the correction story is visible on the bank side exactly as the
-    reversal+repost is visible in the books)."""
-    if p["method"] == "direct":
-        if inv["invoice_type"] == "trust_request":
-            dest = p["destination_account_id"] or inv["trust_account_id"]
-            return [("deposit", dest, "in")]
-        return [("deposit", p["destination_account_id"], "in")]
-    if p["method"] == "trust_transfer":
-        return [("check_cut", p["source_account_id"], "out"),
-                ("deposit", p["destination_account_id"], "in")]
-    return []  # sim payments post at settlement, not here
-
-
-def _append_mirror_events(conn, p, inv, on_date, memo):
-    """One compensating bank event per live event of the payment:
-    opposite direction, dated the correction/refund."""
-    from app import ledger as _ledger
-    for etype, acct, direction in _payment_event_specs(conn, p, inv):
-        _ledger.create_external_event(
-            conn, "check_cut" if direction == "in" else "deposit",
-            acct, on_date, p["amount_cents"],
-            "out" if direction == "in" else "in", memo=memo,
-            invoice_id=p["invoice_id"], payment_id=p["id"])
 
 
 def get_payment(conn, payment_id):
@@ -491,15 +497,17 @@ def edit_payment(conn, payment_id, edited_by, edit_date, amount_cents=None,
     if money_changed and entry is not None:
         reverse_entry(conn, entry, edited_by, edit_date,
                       memo=f"edit payment {payment_id}")
-        # the bank witnesses the correction too: mirror events out,
-        # then the repost appends its replacement events
-        _append_mirror_events(conn, p, inv, edit_date,
-                              f"correction of payment {payment_id}")
+        # BOOKS ONLY (real-bank ruling, James 2026-08-07): the bank
+        # record keeps exactly what the bank saw at the original
+        # recording. The repost posts no bank events; the recon
+        # engine explains any bank-vs-book difference as a
+        # reconciling item instead.
         entry = _journal_for_payment(
             conn, inv, p["method"], new_amount, new_date, edited_by,
             p["destination_account_id"], p["source_account_id"],
             p["source_trust_level"], note if note is not None else p["note"],
-            payment_id=payment_id, replaces_entry_id=p["journal_entry_id"])
+            payment_id=payment_id, replaces_entry_id=p["journal_entry_id"],
+            witness_bank=False)
     conn.execute(
         "UPDATE invoice_payments SET amount_cents=?, payment_date=?,"
         " note=COALESCE(?, note), associated_charge_id=COALESCE(?,"
@@ -516,13 +524,12 @@ def refund_payment(conn, payment_id, refunded_by, refund_date, note=None):
     if p["refunded"]:
         raise BillingError("payment already refunded")
     if p["journal_entry_id"] is not None:
-        inv = get_invoice(conn, p["invoice_id"])
         reverse_entry(conn, p["journal_entry_id"], refunded_by, refund_date,
                       memo=f"refund payment {payment_id}")
-        # a refund is REAL money moving back, so the bank witnesses it
-        # (program ruling 2026-08-04, billing-ui worklog s2 finding 1)
-        _append_mirror_events(conn, p, inv, refund_date,
-                              f"refund of payment {payment_id}")
+        # BOOKS ONLY (real-bank ruling, James 2026-08-07): the refund
+        # is on the books; the bank record keeps what the bank saw.
+        # Until a bank ever witnesses the money going back, the recon
+        # engine carries it as a "refund awaiting bank" item.
     if p["processor_txn_id"] is not None:
         proc.refund(conn, p["processor_txn_id"])
     conn.execute("UPDATE invoice_payments SET refunded=1, refund_note=?"
@@ -599,7 +606,7 @@ def pay_online(conn, invoice_id, token, kind, pay_date,
                 " VALUES (?,?,?,?,?,?,?)",
                 (email, f"Receipt: payment of {amount / 100:,.2f}",
                  f"Payment of {amount / 100:,.2f} received on invoice"
-                 f" #{inv['number']}. SYNTHETIC receipt.",
+                 f" {inv['display_code']}. SYNTHETIC receipt.",
                  "billing_receipt", "invoice_payments", payment, pay_date))
     return payment
 
@@ -645,9 +652,9 @@ def _plan_reminder(conn, plan, inst, stage, now_date):
         conn.execute(
             "INSERT INTO email_outbox (recipient, subject, body, template,"
             " entity_type, entity_id, created_at) VALUES (?,?,?,?,?,?,?)",
-            (email, f"Installment {stage}: invoice #{inv['number']}",
+            (email, f"Installment {stage}: invoice {inv['display_code']}",
              f"Installment of {inst['amount_cents'] / 100:,.2f} due"
-             f" {inst['due_date']} on invoice #{inv['number']}."
+             f" {inst['due_date']} on invoice {inv['display_code']}."
              " SYNTHETIC reminder.",
              "billing_plan_reminder", "plan_installments", inst["id"],
              now_date))
@@ -741,13 +748,13 @@ def send_invoice_share(conn, invoice_id, created_by,
                           reminders_enabled=reminders_enabled,
                           reminder_days=reminder_days,
                           share_date=share_date)
-    body = (f"Invoice #{inv['number']} is available:"
+    body = (f"Invoice {inv['display_code']} is available:"
             f" /invoice/{token} (view, download, pay)."
             + (f" {message}" if message else "") + " SYNTHETIC email.")
     conn.execute(
         "INSERT INTO email_outbox (recipient, subject, body, template,"
         " entity_type, entity_id, created_at) VALUES (?,?,?,?,?,?,?)",
-        (email, f"Invoice #{inv['number']}", body, "billing_share",
+        (email, f"Invoice {inv['display_code']}", body, "billing_share",
          "invoices", invoice_id, inv["created_at"]))
     name = conn.execute("SELECT display_name FROM contacts WHERE id=?",
                         (recipient,)).fetchone()["display_name"]
@@ -775,8 +782,8 @@ def share_reminder_work(conn, now):
         conn.execute(
             "INSERT INTO email_outbox (recipient, subject, body, template,"
             " entity_type, entity_id, created_at) VALUES (?,?,?,?,?,?,?)",
-            (email, f"Reminder: invoice #{inv['number']}",
-             f"Invoice #{inv['number']} has an outstanding balance of"
+            (email, f"Reminder: invoice {inv['display_code']}",
+             f"Invoice {inv['display_code']} has an outstanding balance of"
              f" {invoice_balance(conn, inv['id']) / 100:,.2f}:"
              f" /invoice/{s['token']}. SYNTHETIC reminder.",
              "billing_share_reminder", "invoice_shares", s["id"],
@@ -800,7 +807,7 @@ def bulk_download_invoices(conn, invoice_ids, out_path):
     with zipfile.ZipFile(out_path, "w") as z:
         for iid in invoice_ids:
             inv = get_invoice(conn, iid)
-            z.writestr(f"invoice-{inv['number']}-{iid}.pdf",
+            z.writestr(f"invoice-{inv['display_code']}-{iid}.pdf",
                        _invoice_pdf_bytes(conn, iid))
     return out_path
 
@@ -894,12 +901,13 @@ def export_invoices_csv(conn):
     import io
     buf = io.StringIO()
     w = csv.writer(buf, lineterminator="\n")
-    w.writerow(["id", "type", "number", "contact_id", "matter_id",
-                "issued_date", "due_date", "discount_cents",
+    w.writerow(["id", "type", "number", "display_code", "contact_id",
+                "matter_id", "issued_date", "due_date", "discount_cents",
                 "balance_cents", "status"])
     for r in conn.execute("SELECT * FROM invoices WHERE deleted_at IS"
                           " NULL ORDER BY id"):
         w.writerow([r["id"], r["invoice_type"], r["number"],
+                    r["display_code"],
                     r["contact_id"], r["matter_id"], r["issued_date"],
                     r["due_date"], r["discount_cents"],
                     invoice_balance(conn, r["id"]),
@@ -998,7 +1006,7 @@ def invoice_pdf(conn, invoice_id, out_path):
     pdf.cell(0, 10, firm, new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("helvetica", size=13)
     label = strings[inv["invoice_type"]]
-    pdf.cell(0, 8, f"{label} #{inv['number']}", new_x="LMARGIN",
+    pdf.cell(0, 8, f"{label} {inv['display_code']}", new_x="LMARGIN",
              new_y="NEXT")
     pdf.set_font("helvetica", size=10)
     pdf.cell(0, 6, f"{strings['client']}: {contact['display_name']}",

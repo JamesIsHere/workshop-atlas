@@ -438,7 +438,8 @@ def step_invoice_pdf(w):
     assert "SYNTH I-130 preparation" in text
     assert "Balance Due: 0.00" in text
     # gated item H: the client's remaining trust rides the document
-    assert "Client funds held in trust: 800.00" in text, \
+    # (relabeled "Remaining in Trust" at James's order, 2026-08-07 s8)
+    assert "Remaining in Trust: 800.00" in text, \
         "client trust balance missing from the invoice PDF"
     return f"invoice PDF downloaded ({len(content)} bytes), read back"
 

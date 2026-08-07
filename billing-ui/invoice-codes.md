@@ -1,11 +1,14 @@
 # invoice-codes.md -- gate artifact: invoice display codes
 
 Status: DESIGN RATIFIED in conversation, James + agent,
-2026-08-07 (billing-ui s7). The BUILD is a core break-in
-(schema + creation path in frozen casework/app) and is NOT
-authorized by this document -- it waits on its own gate
-decision, listed in atlas/gated-items.md. This file is the
-design record that gate rules on.
+2026-08-07 (billing-ui s7). BUILD AUTHORIZED AND LANDED
+2026-08-07 s8 (James: "Yes, please add codes"): schema columns
+display_code + code_scope, _next_code in the creation path,
+rendered as the invoice identity everywhere a human reads one;
+walked dbs migrate via billing-ui/verify/migrate_invoice_codes
+.py. Gated item 10 is closed; build record in billing-ui
+worklog s8 cont 2. The design below is as ratified -- the
+build followed it without deviation.
 
 ## The scheme
 

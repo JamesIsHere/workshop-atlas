@@ -94,6 +94,26 @@ session. Delete = archive applies: nothing in spikes/ is destroyed.
   supersede casework-billing's sealed shas -- supersession recorded
   in casework-billing/state.md and billing-ui's worklog, result.md
   histories unedited.
+  AMENDMENT (program ruling 2026-08-07, ratified by James): the
+  client-facing invoice surface in casework/app/server.py (shared
+  invoice view, pay flow, post-payment page) is opened to billing-ui
+  sessions for RENDERING-ONLY work. Scope: page styling and firm
+  identity to match the staff surface; the charge list becomes a
+  footed Description | Date | Amount table, MM/DD/YYYY, integer-cents
+  formatting (both /100 float divisions removed); a styled pay form;
+  a real receipt page after payment (amount, date, method, invoice,
+  remaining balance) plus payments listed on the invoice page --
+  both SELECT-only readers over existing payment facts, reachable
+  under the existing share token. Hard limits: no new business
+  logic and no access-model changes -- the only write path remains
+  billing.pay_online; spine tests immutable; the walk sheet's quoted
+  client-side labels ("Synthetic payment token",
+  "SYNTHETIC-VISA-DEMO", "Pay", "Payment received") preserved or
+  re-pinned with a sheet-lock re-sync; both invoice languages
+  carried; after the work ALL standing suites rerun green and
+  quoted, sha supersessions via report_sha.py only, recorded in
+  billing-ui's worklog. The client portal (gated item 11) is
+  explicitly OUT of this ruling's scope.
 - Each child's own CLAUDE.md + state.md is the authority on its state;
   this file's roster is a signpost, not a second snapshot.
 - The spec corpus records facts about Docketwise with citations -- it is

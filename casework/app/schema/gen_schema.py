@@ -627,6 +627,8 @@ TABLES = [
         ("trust_account_id", "INTEGER REFERENCES ledger_accounts(id)"),
         ("number", "INTEGER NOT NULL"),
         ("number_scope", "TEXT NOT NULL CHECK (number_scope IN ('client','global'))"),
+        ("display_code", "TEXT NOT NULL CHECK (display_code GLOB '[BT][0-9][0-9][0-9][0-9]*')"),
+        ("code_scope", "TEXT NOT NULL CHECK (code_scope IN ('client','global'))"),
         ("preparer_user_id", "INTEGER REFERENCES users(id)"),
         ("issued_date", "TEXT"),
         ("due_date", "TEXT"),

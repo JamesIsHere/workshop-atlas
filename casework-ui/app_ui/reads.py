@@ -162,7 +162,8 @@ def invoice_rows(conn):
     stored -- fx-0070)."""
     return conn.execute(
         "SELECT i.id, i.invoice_type, i.number, i.number_scope,"
-        " i.issued_date, i.due_date, i.matter_id, i.contact_id,"
+        " i.display_code, i.issued_date, i.due_date, i.matter_id,"
+        " i.contact_id,"
         " c.display_name FROM invoices i JOIN contacts c ON"
         " c.id = i.contact_id WHERE i.deleted_at IS NULL"
         " ORDER BY i.id DESC").fetchall()

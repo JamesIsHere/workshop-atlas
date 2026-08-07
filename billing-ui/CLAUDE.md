@@ -19,17 +19,17 @@ contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P4 open -- attempt 3 FAILED verdict a/b/c, but s7  |
-|              | closed the ENTIRE unlocked backlog A-I + two       |
-|              | James-authorized core break-ins (PDF, trust line)  |
-| Last session | 2026-08-07 s7 -- dates MM/DD/YYYY end to end; PDF  |
-|              | rebuilt; landing + back-nav cleanups; sheet routes |
-|              | by type+date w/ stray-invoice regression; invoice  |
-|              | codes B0001/T0001 designed (invoice-codes.md);     |
-|              | items C-I closed; all suites green at close        |
-| Next action  | DRAFT client-pay-page program-ruling amendment for |
-|              | James (his order at context reset); then held      |
-|              | recon pair; invoice-code gate; attempt 4           |
+| Status       | P4 open -- attempt 3 FAILED a/b/c, but s7-s9 have  |
+|              | since closed the backlog, the s8 polish batch, and |
+|              | the recon engine; nothing stands before attempt 4  |
+| Last session | 2026-08-07 s9 -- BANKING ENGINE built per James's  |
+|              | ruling: mirror events dead, corrections books-only,|
+|              | real statement-to-books matcher with caused items, |
+|              | F7 strengthened (bank purity), demo period-end mix |
+|              | placed; all suites green, shas superseded          |
+| Next action  | ATTEMPT 4: fresh db behind port 8500, James drives |
+|              | the 32-step sheet, three-part verdict. See         |
+|              | state.md cold-start pointer + attempt-4 protocol   |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

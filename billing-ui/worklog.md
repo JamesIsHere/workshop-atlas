@@ -1425,3 +1425,291 @@ THE UNLOCKED QUEUE A-I IS CLOSED, one session. Remaining on
 gated-items: the locked list (client pay page styling first,
 his axis-(b) driver; held recon pair; invoice codes item 10)
 and then attempt 4.
+
+## 2026-08-07 -- s8: client pay page amendment ratified + built
+
+Scope talk first: James brainstormed the CLIENT-PORTAL view
+(payment history, bill browsing, export, trust statement,
+retainer replenishment). Ruled: go NARROW now; portal logged as
+gated item 11 (access-model blocker named: clients exist only
+per-invoice via share tokens; a portal is new access-control
+logic in the frozen core, likely its own child).
+
+AMENDMENT ratified (program ruling 2026-08-07, text in
+atlas/CLAUDE.md): casework/app/server.py's shared-invoice
+surface (view/pay/receipt) opened to billing-ui sessions,
+RENDERING-ONLY. Gated item 2 marked unlocked.
+
+Built, all in casework/app/server.py:
+- CLIENT_STYLE chrome mirroring app_ui's stylesheet (duplicated
+  by design -- the core cannot import app_ui); firm-branded
+  header via firm.name setting (default SYNTH Firm).
+- _invoice_get: footed Description|Date|Amount table, MM/DD/
+  YYYY via billing._pdf_date, integer cents via
+  billing._pdf_cents (BOTH /100 float divisions gone -- the
+  lines ~145/163 defect); kv block (client, issued, due);
+  trust-held line, same reader as invoice_pdf (item H); Paid
+  pill at zero balance; payments table on the page; styled pay
+  form -- pinned labels byte-identical; footer + es strings
+  carried (new chrome labels in CLIENT_STRINGS en/es).
+- _invoice_pay: declined page styled (Declined: prefix kept);
+  receipt page with invoice #, date, method, amount, reference
+  (processor txn id), remaining balance, link back.
+
+JUDGMENT CALLS, flagged:
+1. conn.commit() ADDED after pay_online -- every sibling POST
+   handler commits; this one never did (payment sat uncommitted
+   on the shared connection until a firm-side action committed
+   it). Persistence fix, arguably a hair past rendering-only;
+   James may strike it.
+2. Pay-form labels stay English-only on es invoices (pinned
+   demo machinery); new receipt/payments chrome IS bilingual.
+3. Trust-held line added to the client page (not explicitly in
+   the amendment list; same class as item H, same reader as
+   the PDF).
+4. Receipt reference renders the processor txn id (integer).
+
+Verifier STRENGTHENED (drive_sheet.py s16): client page pins
+firm brand, retainer line, footed total, no-trust-line-before-
+funds; receipt pins amount/method/Reference/Remaining balance;
+client fetches ISO-scanned (_client_no_iso); post-pay re-fetch
+pins Payments + Paid pill.
+
+METHOD: Grep output rendered the scan guard as "\billing",
+which reads as a dead backspace escape; Read showed the file
+truly says "/billing". Tool-display output is not file ground
+truth -- ground a defect claim in Read before acting. (No fix
+was needed; retracted before touching the file.)
+
+Suites at close, all run this session: spine 107 green;
+billing 25 GREEN; fiduciary --seeded 8 GREEN; anchor-billing
+PASS; ui-walk 13 GREEN; billing-ui-walk 17 GREEN; drive-sheet
+24/24 GREEN (strengthened s16 included); labels 82/0.
+report_sha: f3f16120 -- UNCHANGED, no supersession (walk
+report byte-identical; client surface is outside it).
+
+Server restarted on the walked 07c db (stale-module rule);
+8500 firm / 8501 client both answering. Live spot-check of
+/invoice/SYNTH-INV-3-1: SYNTH Firm brand, Trust Request #3,
+Paid pill, 5,000.00 charge + payment, trust held 800.00.
+
+## 2026-08-07 -- s8 cont: two snaps -- trust relabel; codes absent
+
+Snaps archived to walk-artifacts/2026-08-07-s8-snaps/ ("no
+clean version of our bill number here ex 000B1", "relabel -
+client funds in trust").
+
+1. RELABEL, James's order: "Client funds in trust" -> "Remaining
+   in Trust". Applied to the staff bill page (billing_ui.py kv),
+   the client page + PDF (billing.py INVOICE_STRINGS trust_held;
+   es -> "Restante en fideicomiso"). Core touch authorized by
+   the order itself, same item-H presentation class. The Trust
+   accounting OVERVIEW tile "Client funds in trust" was left --
+   it is the firm-wide IOLTA client-money total, not a per-
+   client remainder; flagged for his re-rule if he wants one
+   word across both. Verifier pins updated to the new label
+   (run_billing_ui_walk PDF assert; drive_sheet s29 + s16
+   negative). Sheet quotes the label nowhere -- no re-sync.
+2. Bill display codes: his snap is correct -- NO B0001/T0001
+   renders anywhere. That is by design: the format is ratified
+   (invoice-codes.md) but the BUILD is gated item 10 (schema
+   column + per-type counter, core break-in, walk-db migration
+   story). Raised to him as the turn's question.
+
+Suites after the relabel, all rerun: spine 107 green; billing
+25 GREEN; fiduciary 8 GREEN; anchor-billing PASS; ui-walk 13
+GREEN; billing-ui-walk 17 GREEN; drive-sheet 24/24 GREEN;
+labels 82/0. report_sha: c61ea17a SUPERSEDES f3f16120 (the
+walk report's PDF-assert line carries the new label). Server
+restarted; live client page shows "Remaining in Trust".
+
+## 2026-08-07 -- s8 cont 2: gated item 10 BUILT -- invoice codes
+
+James authorized in-session ("Yes, please add codes"). Spec
+followed without deviation: invoice-codes.md.
+
+Core (casework/app):
+- gen_schema.py: invoices gains display_code (GLOB-checked
+  [BT] + 4 digits, growable) and code_scope (client/global);
+  schema.sql + audit triggers regenerated, never hand-edited.
+- billing.py: _next_code beside _next_number -- same scope
+  logic, per-TYPE gapless series, global flip continues from
+  per-type firm totals via billing.code_global_next.<B|T>
+  (fx-0076 mirror); create_invoice stamps both columns.
+  Smoke-proved in-memory: B0001/T0001/B0002 per client;
+  second client starts its own B0001; global flip -> B0004/
+  T0002, nothing renumbered.
+- Renders swapped to the code as identity: PDF header, share/
+  reminder/receipt/installment emails, zip entry names,
+  invoices CSV (new display_code column; suite checks width,
+  not names). Client page title + receipt line (server.py).
+
+app_ui: list INVOICE column, page title (and crumb via it),
+payment-page kv + crumb, PDF download filename; reads.py
+invoice_rows selects the column. JUDGMENT CALL flagged: the
+corpus-pinned stored number stays human-visible as a "Number
+#n (scope)" kv row on the invoice page -- identity is the
+code, the number is an attribute.
+
+Sheet (sixth amendment, in-file history): INVOICE NUMBERS
+preamble -> INVOICE CODES; steps 10-29 name B0001/T0001/B0002;
+crumb examples exact. INCIDENT, caught by the drive: I wrote
+"Trust Request T0001" in the sheet's step-13 crumb; the screen
+noun is "Trust request" (lowercase r) -- drive FAILED 23/24,
+sheet corrected to match the screen. Product casing is
+inconsistent (TYPE pill "Trust Request" vs noun "Trust
+request"); left as-is, one more E-class wording for James.
+Sheet lock re-synced 2c9cac5141af -> 6032f70b79ca ->
+73240eb76cc7 (the middle sha lived only between the two edits).
+
+drive_sheet.py: ROW_RE reads the code link, invoice_row/
+enter_invoice locate BY CODE (type+date locate superseded),
+crumb pins EXACT codes, stray-invoice regression retained --
+the codes shrug it off, which is the whole point.
+
+Migration: verify/migrate_invoice_codes.py (fail-loud: refuses
+a coded db, resumes a torn run assert-matching replayed codes;
+opens via casework db.connect -- first cut used raw sqlite3 and
+the audit triggers failed LOUD on the missing actor functions).
+Walked 07c db migrated: 4 invoices, 2 series, verified gapless
+(B0001/B0002/T0001/B0003 in creation order). Other retained
+walk dbs deliberately NOT migrated (delete=archive; migrate
+before ever serving one).
+
+Suites at close, all rerun this session: spine 107 green;
+billing 25 GREEN; fiduciary --seeded 8 GREEN; anchor-billing
+PASS; ui-walk 13 GREEN; billing-ui-walk 17 GREEN; drive-sheet
+24/24 GREEN; labels 82/0. report_sha: 301b574d SUPERSEDES
+c61ea17a. Server restarted on the migrated 07c db; live client
+page renders "Trust Request T0001".
+
+## 2026-08-07 -- s8 close: codes approved; RECON RULING; clear
+
+James on the s8 batch (codes, relabel, client page): "That all
+looks good." His eyeball closes the item-10 presentation.
+
+RULING (James, closing gated item 1's held sub-decision): "Yes
+we need to do the engine work." REAL-BANK MATCHING replaces
+the synchronized-bank shortcut. Meaning, for the next session:
+
+- Corrections/refunds touch BOOKS ONLY (reversal + repost).
+  _append_mirror_events dies: the bank record keeps exactly
+  what the bank saw, corrections never fabricate bank events.
+- The recon engine (casework-billing/verify: bank_statement.py,
+  reconcile.py) matches statement lines to book entries and
+  explains differences as reconciling items (outstanding /
+  in-transit / timing), instead of relying on mirrored events
+  keeping both sides trivially equal.
+- Fiduciary F7 scenarios rewritten to assert the REAL model --
+  this STRENGTHENS the checks (per the F7 amendment's only
+  allowed direction). Note: the 2026-08-04 F7 amendment's
+  mirror-event design is superseded BY JAMES'S RULING; the
+  amendment's authorization (files, limits) still governs.
+- Then demo period-end placement (sub-decision ii, now plain
+  build work): statement cut so the walk shows cleared items
+  plus an in-transit deposit and an outstanding check.
+- Then attempt 4.
+
+All work is pre-authorized (F7 amendment 2026-08-04); no gate
+stands between here and attempt 4 except his walk verdict.
+Session cleared for context immediately after this entry;
+state.md is the cold-start authority.
+
+## 2026-08-07 -- s9: the banking engine (real-bank matching built)
+
+James's ruled task from s8 close, executed end to end. The
+mirror-event shortcut is dead; the reconciliation now earns its
+HOLDS.
+
+CORE (F7 amendment scope, casework/app):
+- _append_mirror_events and _payment_event_specs DELETED from
+  billing.py. edit_payment and refund_payment touch books only.
+- ledger.py recipes (record_trust_deposit, earn_out,
+  record_bill_direct_payment) gained witness_bank=True; a
+  correction repost passes False and posts NO bank event. The
+  bank record now holds exactly what the bank saw, forever.
+
+ENGINE (casework-billing/verify):
+- bank_statement.py lines/pending now carry invoice_id and
+  payment_id (matching linkage; still event-derived only).
+- reconcile.py rebuilt as a staged matcher: (A) entry linkage
+  n:1 groups (settlement batches, unchanged rule), (B) exact
+  date+direction+amount with payment-linked-then-original
+  preference, (C) pending events -> timing items, (D) payment-
+  family deltas -- remaining book net vs bank net per payment
+  (a reversal joins its reversed entry's family; lineage chains
+  collapse), explained as "correction awaiting bank" (repost
+  present) or "refund awaiting bank" (payment reversal alone).
+  A family netting zero (the walk's date-only edit) matches
+  CLEAN -- no noise item. Every item carries cause, direction,
+  amount, date, entry. Anything unexplained still BREAKS the
+  identity: bank + in-items - out-items = book = claims.
+- check_f7 STRENGTHENED (the amendment's only allowed
+  direction): (a) identity at both periods; (b) closed cause
+  vocabulary + direction on every item; (c) at the all-cleared
+  period timing items must have resolved -- only books-only
+  correction/refund items may persist; (d) BANK-RECORD PURITY:
+  events linked to a payment must be exactly its birth shape
+  (direct 1, trust_transfer 2, sim 0) -- a fabricated or
+  destroyed bank event is RED regardless of the identity.
+
+RENDERING (authorized: recon + payment page):
+- recon items sign by the engine's direction field (the old
+  cause-string guess broke on new causes); correction causes
+  render verbatim in the bridge.
+- payment-page Bank record hint rewritten: "The bank record
+  keeps exactly what the bank saw. Corrections live in the
+  books; the reconciliation explains any difference."
+
+PERIOD-END PLACEMENT (sub-decision ii): the sheet's step 24
+disbursement now rides the form's today prefill (was a typed
+08/04/2026 that has since CLEARED -- the outstanding check
+would have vanished from the demo). At the default period (max
+event date = run date) the SYNTH IOLTA statement shows the
+ruled mix on ANY run date: cleared earn-out check, settlement
+deposit in transit (clears tomorrow), disbursement check
+outstanding. Sheet steps 24/28/32 re-worded (28: bank shows
+what it saw; 32: names the mix); drive s24 posts today(), s32
+ASSERTS the mix (no empty statement pane, in-transit 5,000.00,
+outstanding (1,200.00)). Seventh sheet amendment: sheet-lock
+re-synced 73240eb76cc7 -> f7f821edb1e9.
+
+SUITES (all run this session, quoted):
+- fiduciary --selftest: "calibration scenarios: all behaved";
+  --seeded x2: "8 pass, 0 red, 0 stub; verdict: GREEN", sha
+  e6c64593 x2 (SUPERSEDES fb5bccda; recorded in
+  casework-billing/state.md). F7 line now: "2 accounts x 2
+  periods, 7 reconciling items enumerated, 0 identity breaks;
+  strengthened: 0 unknown-cause items, 0 timing items surviving
+  all-cleared, 0 payments with fabricated/missing bank events".
+  Item arithmetic foots: mid-lag 5 (fee outstanding, correction
+  in 150, refund out 300, 2x settlement in transit) +
+  all-cleared 2 (the books-only pair persists, by design).
+- billing parity x2: "25 green, 0 red" GREEN, sha c53f262b x2
+  (supersedes acba95b1; drift is s8's display_code CSV column,
+  not this session).
+- anchor-billing: PASS 1.250s, recon HOLDS both banks x 2
+  periods.
+- spine: "107 green, 0 red, 0 pending; checks pass".
+- billing-ui walk x2: "17 pass, 0 pending, 0 fail; float-sweep
+  pass; verdict GREEN"; report_sha.py = 301b574d UNCHANGED (the
+  walk verifier's own output is untouched by the engine).
+- drive_sheet: "24/24 groups pass; verdict GREEN" including the
+  strengthened s32 mix assertions.
+- check_sheet_labels: "82 labels checked, 0 not found".
+- ui-walk: "13 pass, 0 pending, 0 fail; sweeps pass; GREEN".
+
+Server RESTARTED on 8500/8501 (new core code), walked 07c db
+still behind the port; 8500 answers 303 (login), client link
+SYNTH-INV-3-1 answers 200. Note: 07c predates the engine (its
+mirror events remain on that db's bank record); the new matcher
+still reconciles it HOLDS because mirrors mirror the books.
+Attempt 4 runs on a FRESH db and will carry the pure model.
+
+METHOD: the ruled scope note in state.md survived /clear intact
+-- a one-line "banking engine" prompt cold-started straight
+into build with zero re-litigating. The state-file contract is
+doing its job at program scale.
+
+Next: attempt 4 -- fresh db, code-routed sheet, his verdict.
+No gate stands before it.

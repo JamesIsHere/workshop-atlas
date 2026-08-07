@@ -31,11 +31,27 @@ once, worked. To fix a locked file NOW instead of dragging it:
    sessions. 2026-08-07 PROGRESS: his specifics landed (no bank
    side visible, horizontal, unsigned amounts); screen REBUILT as
    three vertical footing panes with the statement leg, quoted
-   green, pending his eyeball. STILL OPEN under this item: (i)
-   correction machinery fabricates compensating bank events --
-   keep, or move to real-bank matching in the engine (his held
-   decision); (ii) demo period-end placement so the statement
-   shows a cleared/pending mix, never empty.
+   green, pending his eyeball.
+   RULED 2026-08-07 s8 close (James: "we need to do the engine
+   work"): sub-decision (i) goes to REAL-BANK MATCHING --
+   corrections touch books only, the bank record keeps what the
+   bank saw, the recon engine matches and explains differences
+   as reconciling items; the mirror-event shortcut dies;
+   fiduciary F7 scenarios strengthen to the real model.
+   Sub-decision (ii), demo period-end placement, is now plain
+   build work riding the same job. NEXT SESSION'S TASK -- the
+   last work item before attempt 4. Worklog s8 close has the
+   full scope note.
+   BUILT 2026-08-07 s9: mirror events dead (corrections/refunds
+   books-only, witness_bank=False reposts); recon engine matches
+   for real (linkage -> exact -> pending timing -> payment-family
+   deltas, every item caused + directed); F7 strengthened (bank-
+   record purity, timing resolves all-cleared, closed causes);
+   period-end placed (disbursement rides today, so step 32 shows
+   cleared + in-transit deposit + outstanding check, stable on
+   any run date). All suites green, quoted in billing-ui worklog
+   s9; fiduciary sha e6c64593 supersedes fb5bccda. Item CLOSED
+   pending only attempt 4's walk verdict.
 2. CLIENT-FACING PAY PAGE is bare unstyled HTML beside the
    styled firm surface (attempt-3 snaps).
    Lives: casework/app/server.py -- frozen core.
@@ -52,6 +68,11 @@ once, worked. To fix a locked file NOW instead of dragging it:
    float division is gone). All suites green; billing-ui walk
    sha superseded a506f085 -> de589cbd. The PAY PAGE styling
    itself remains locked -- unlock unchanged.
+   UNLOCKED 2026-08-07: the client-pay-page amendment was
+   ratified by James (program ruling 2026-08-07, atlas/
+   CLAUDE.md) -- rendering-only scope over server.py's client
+   surface; work proceeds in billing-ui. The client PORTAL
+   remains locked as item 11.
 3. EMPTY INVOICE derives status paid and appears on NEITHER
    default list tab (invisible until charged; drive finding 6).
    Lives: status logic casework core (frozen); a rendering-side
@@ -87,9 +108,37 @@ once, worked. To fix a locked file NOW instead of dragging it:
     date, or separator in the code; internal id is the join
     key. Lives: casework/app (schema column + counter,
     gen_schema.py) + rendering + PDF -- frozen core.
-    Unlock: its own break-in authorization (bigger than the
-    PDF cut: schema regen + walk-db migration story). The
-    corpus-pinned stored number is untouched by construction.
+    BUILT + CLOSED 2026-08-07 s8, James's authorization ("Yes,
+    please add codes" after his snap showed no code anywhere):
+    schema columns display_code/code_scope (gen_schema regen),
+    _next_code in the creation path, codes rendered as the
+    invoice identity on list/titles/crumbs/PDF/client page/
+    emails/CSV/zip names; stored number kept as a Number
+    attribute row on the invoice page. Sheet superseded
+    type+date routing with codes (sixth amendment; lock
+    re-synced 73240eb76cc7); drive locates by code, exact-code
+    crumb pins, stray regression retained. Walked 07c db
+    migrated (verify/migrate_invoice_codes.py -- the reusable
+    migration story; other retained walk dbs stay pre-code,
+    migrate on demand before serving). All suites green,
+    worklog s8 cont 2 quotes them.
+
+11. CLIENT PORTAL (client-scoped surface) -- James's client-view
+    brainstorm 2026-08-07: everything-I-paid history linked to
+    bills, full-bill browsing/search, CSV export (opens in
+    Excel), outstanding-bills view with due dates, trust
+    STATEMENT (deposits, applications to bills, refunds,
+    running balance -- the CPA-grade client artifact, stronger
+    than the balance line item H shipped), retainer
+    replenishment (pay INTO trust; new fiduciary logic).
+    Blocked on an access model: today a client exists only
+    per-invoice via share tokens (casework/app/server.py); a
+    portal needs durable client-scoped access -- new
+    access-control logic in the frozen core, arguably its own
+    child. The narrow pay-page amendment (item 2) deliberately
+    excludes all of this (James 2026-08-07: "go narrow now,
+    come back when it becomes an issue").
+    Unlock: gate; likely its own contract.
 
 ## Unlocked build queue (billing-ui's own surface, no gate needed)
 

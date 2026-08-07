@@ -44,6 +44,23 @@ result.md is the authority.
   -- report content identical), fiduciary fb5bccda (supersedes
   af2e242f). Anchor billing re-run PASS 1.284s; spine 107 == green;
   selftest calibration all behaved. result.md stays as history.
+- SUPERSESSION LANDED 2026-08-07 (James's real-bank ruling, s8 close
+  of billing-ui; recorded from a billing-ui session as the F7
+  amendment authorizes): the mirror-event correction model is DEAD.
+  Corrections/refunds now touch books only (_append_mirror_events
+  deleted; correction reposts post with witness_bank=False); the
+  recon engine (bank_statement.py + reconcile.py) matches statement
+  lines to book entries and explains differences as caused
+  reconciling items (timing + correction/refund awaiting bank);
+  check_f7 STRENGTHENED: bank-record purity (per-payment event
+  birth-shape), timing items must resolve at the all-cleared
+  period, closed cause vocabulary. Resealed x2 byte-identical:
+  fiduciary e6c64593 (supersedes fb5bccda; the F7 line is the only
+  change), billing c53f262b (supersedes acba95b1; drift is the s8
+  display_code CSV column only -- today's engine work left parity
+  output untouched). Anchor billing re-run PASS 1.250s; spine 107
+  green; selftest calibration all behaved. result.md stays as
+  history.
 
 ## Open decisions
 

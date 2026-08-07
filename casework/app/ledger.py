@@ -203,19 +203,22 @@ def _post(conn, kind, legs, posted_by, posted_at, memo=None,
 def record_trust_deposit(conn, trust_bank_id, amount_cents, date, posted_by,
                          contact_id=None, matter_id=None, memo=None,
                          invoice_id=None, payment_id=None,
-                         replaces_entry_id=None):
+                         replaces_entry_id=None, witness_bank=True):
+    """witness_bank=False posts the entry BOOKS-ONLY (James's real-bank
+    ruling 2026-08-07): a correction repost changes the books, never the
+    bank record -- the bank keeps exactly what it saw at the original
+    recording, and the reconciliation explains the difference."""
     sub = _resolve_sub(conn, trust_bank_id, contact_id, matter_id)
+    events = [{"event_type": "deposit", "bank_account_id": trust_bank_id,
+               "occurred_on": date, "amount_cents": amount_cents,
+               "direction": "in", "memo": memo}] if witness_bank else []
     return _post(conn, "trust_deposit",
                  [(trust_bank_id, "debit", amount_cents),
                   (sub, "credit", amount_cents)],
                  posted_by, date, memo=memo, invoice_id=invoice_id,
                  payment_id=payment_id,
                  replaces_entry_id=replaces_entry_id,
-                 external_events=[{"event_type": "deposit",
-                                   "bank_account_id": trust_bank_id,
-                                   "occurred_on": date,
-                                   "amount_cents": amount_cents,
-                                   "direction": "in", "memo": memo}])
+                 external_events=events)
 
 
 def disburse(conn, trust_bank_id, amount_cents, date, posted_by,
@@ -238,14 +241,24 @@ def disburse(conn, trust_bank_id, amount_cents, date, posted_by,
 
 def earn_out(conn, trust_bank_id, operating_id, amount_cents, date,
              posted_by, contact_id=None, matter_id=None, memo=None,
-             invoice_id=None, payment_id=None, replaces_entry_id=None):
+             invoice_id=None, payment_id=None, replaces_entry_id=None,
+             witness_bank=True):
     """Pay a bill from trust (fx-0066): the earn-out transfer, one atomic
     4-leg entry -- client claim down, trust down, operating up, fee
-    earned (ledger-design.md section 4)."""
+    earned (ledger-design.md section 4). witness_bank=False posts
+    books-only (correction repost; real-bank ruling 2026-08-07)."""
     if _account_kind(conn, operating_id) != "operating_bank":
         raise LedgerError("earn_out settles into an operating_bank account")
     sub = _resolve_sub(conn, trust_bank_id, contact_id, matter_id)
     fee = ensure_income_account(conn)
+    events = [{"event_type": "check_cut",
+               "bank_account_id": trust_bank_id, "occurred_on": date,
+               "amount_cents": amount_cents, "direction": "out",
+               "counterparty": "firm operating", "memo": memo},
+              {"event_type": "deposit",
+               "bank_account_id": operating_id, "occurred_on": date,
+               "amount_cents": amount_cents, "direction": "in",
+               "memo": memo}] if witness_bank else []
     return _post(conn, "earn_out",
                  [(sub, "debit", amount_cents),
                   (trust_bank_id, "credit", amount_cents),
@@ -254,34 +267,26 @@ def earn_out(conn, trust_bank_id, operating_id, amount_cents, date,
                  posted_by, date, memo=memo, invoice_id=invoice_id,
                  payment_id=payment_id,
                  replaces_entry_id=replaces_entry_id,
-                 external_events=[
-                     {"event_type": "check_cut",
-                      "bank_account_id": trust_bank_id, "occurred_on": date,
-                      "amount_cents": amount_cents, "direction": "out",
-                      "counterparty": "firm operating", "memo": memo},
-                     {"event_type": "deposit",
-                      "bank_account_id": operating_id, "occurred_on": date,
-                      "amount_cents": amount_cents, "direction": "in",
-                      "memo": memo}])
+                 external_events=events)
 
 
 def record_bill_direct_payment(conn, operating_id, amount_cents, date,
                                posted_by, memo=None, invoice_id=None,
-                               payment_id=None, replaces_entry_id=None):
+                               payment_id=None, replaces_entry_id=None,
+                               witness_bank=True):
     if _account_kind(conn, operating_id) != "operating_bank":
         raise LedgerError("direct bill payments land in operating_bank")
     fee = ensure_income_account(conn)
+    events = [{"event_type": "deposit", "bank_account_id": operating_id,
+               "occurred_on": date, "amount_cents": amount_cents,
+               "direction": "in", "memo": memo}] if witness_bank else []
     return _post(conn, "bill_direct_payment",
                  [(operating_id, "debit", amount_cents),
                   (fee, "credit", amount_cents)],
                  posted_by, date, memo=memo, invoice_id=invoice_id,
                  payment_id=payment_id,
                  replaces_entry_id=replaces_entry_id,
-                 external_events=[{"event_type": "deposit",
-                                   "bank_account_id": operating_id,
-                                   "occurred_on": date,
-                                   "amount_cents": amount_cents,
-                                   "direction": "in", "memo": memo}])
+                 external_events=events)
 
 
 def reverse_entry(conn, entry_id, posted_by, date, memo=None):

@@ -6,6 +6,11 @@ required to complete an intake (the mobile-intake mechanical
 proxy): any device with a browser can GET the page and POST
 answers. The firm side stays module-level until a later UI phase.
 
+The shared-invoice surface (view/pay/receipt) is firm-branded and
+styled (program ruling 2026-08-07, ratified by James: rendering-only
+-- SELECT-only readers, the only write path is billing.pay_online).
+Intake and e-sign pages are outside that ruling and keep _page.
+
 Requests serialize on one lock over the app's single connection.
 """
 
@@ -30,6 +35,102 @@ def _page(title, body):
             f"<meta name='viewport' content='width=device-width,"
             f" initial-scale=1'><title>{html.escape(title)}</title>"
             f"</head><body>{body}</body></html>").encode("utf-8")
+
+
+# --- client invoice surface chrome (program ruling 2026-08-07,
+# ratified by James: rendering-only; the intake/e-sign pages above
+# keep _page and are NOT in that ruling's scope) -------------------
+
+# Palette and shapes mirror the staff surface's stylesheet
+# (casework-ui/app_ui/html.py STYLE) so the client page reads as the
+# same product; duplicated by design -- the core cannot import app_ui.
+CLIENT_STYLE = """
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0;
+       background: #f4f5f7; color: #1a1d21; }
+header { background: #1f2a3d; color: #e8ebf0; padding: 0.6rem 1.2rem; }
+header .brand { font-weight: 600; letter-spacing: 0.02em; }
+main { max-width: 46rem; margin: 2rem auto; padding: 0 1.2rem; }
+.card { background: #ffffff; border: 1px solid #d9dde3;
+        border-radius: 6px; padding: 1.5rem 1.8rem;
+        margin-bottom: 1.2rem; }
+h1 { font-size: 1.25rem; margin: 0 0 1rem; }
+h2 { font-size: 1rem; margin: 1.4rem 0 0.4rem; color: #4a5261; }
+label { display: block; margin: 0.8rem 0 0.25rem; font-size: 0.9rem;
+        color: #4a5261; }
+input, select { width: 100%; max-width: 22rem;
+        padding: 0.45rem 0.6rem; border: 1px solid #c3c9d2;
+        border-radius: 4px; font-size: 1rem; }
+button.primary { margin-top: 1.2rem; background: #2456a6;
+        color: #fff; border: none; border-radius: 4px;
+        padding: 0.55rem 1.4rem; font-size: 1rem; cursor: pointer; }
+button.primary:hover { background: #1c468a; }
+.error { background: #fdecec; border: 1px solid #e5b3b3;
+         color: #8a2525; border-radius: 4px; padding: 0.6rem 0.9rem;
+         margin-bottom: 1rem; }
+.hint { color: #6a7383; font-size: 0.85rem; }
+table.data { width: 100%; border-collapse: collapse; margin: 0.8rem 0; }
+table.data th { text-align: left; font-size: 0.8rem; color: #6a7383;
+                text-transform: uppercase; letter-spacing: 0.05em;
+                border-bottom: 2px solid #d9dde3;
+                padding: 0.4rem 0.6rem; }
+table.data td { border-bottom: 1px solid #e7eaee;
+                padding: 0.5rem 0.6rem; }
+table.data th.money, table.data td.money { text-align: right;
+                font-variant-numeric: tabular-nums; }
+table.data tr.total td { border-top: 2px solid #d9dde3;
+                border-bottom: none; font-weight: 600; }
+.pill { display: inline-block; border-radius: 10px;
+        padding: 0.1rem 0.6rem; font-size: 0.8rem; background: #e6f4e6;
+        color: #256325; vertical-align: middle; margin-left: 0.5rem; }
+.kv dt { float: left; clear: left; width: 11rem; color: #6a7383;
+         font-size: 0.9rem; padding: 0.25rem 0; }
+.kv dd { margin-left: 12rem; padding: 0.25rem 0; }
+.actions { margin: 0.8rem 0 0; }
+.actions a { display: inline-block; background: #eef1f5;
+             color: #2456a6; border-radius: 4px; padding: 0.45rem 1rem;
+             text-decoration: none; margin-right: 0.6rem; }
+"""
+
+# Chrome labels billing.INVOICE_STRINGS never needed (fx-0052 covers
+# the invoice template only). The pay form's own labels ("Synthetic
+# payment token", "SYNTHETIC-VISA-DEMO", "Payment method", "Pay") and
+# the en receipt heading "Payment received." are PINNED by the demo
+# walk sheet and its verifiers -- change them only with a sheet
+# re-sync. The pay form stays English-only as before (synthetic demo
+# machinery, not invoice chrome).
+CLIENT_STRINGS = {
+    "en": {"payments": "Payments", "paid": "Paid", "method": "Method",
+           "received": "Payment received.", "reference": "Reference",
+           "remaining": "Remaining balance",
+           "back": "View the invoice"},
+    "es": {"payments": "Pagos", "paid": "Pagada", "method": "Metodo",
+           "received": "Pago recibido.", "reference": "Referencia",
+           "remaining": "Saldo restante",
+           "back": "Ver la factura"},
+}
+
+_METHOD_LABELS = {"sim_card": "card", "sim_echeck": "eCheck",
+                  "trust_transfer": "trust transfer",
+                  "direct": "direct"}
+
+
+def _client_page(title, firm, body):
+    """Firm-branded document for the shared-invoice surface only."""
+    return (f"<!DOCTYPE html><html><head><meta charset='utf-8'>"
+            f"<meta name='viewport' content='width=device-width,"
+            f" initial-scale=1'><title>{html.escape(title)}</title>"
+            f"<style>{CLIENT_STYLE}</style></head><body>"
+            f"<header><span class='brand'>{html.escape(firm)}</span>"
+            f"</header><main>{body}</main></body></html>").encode("utf-8")
+
+
+def _kv(pairs):
+    """Definition list; keys escaped here, values pre-escaped."""
+    return ("<dl class='kv'>" +
+            "".join(f"<dt>{html.escape(k)}</dt><dd>{v}</dd>"
+                    for k, v in pairs) + "</dl>")
 
 
 def _intake_items(conn, inv, lang):
@@ -139,36 +240,114 @@ class Handler(BaseHTTPRequestHandler):
             return self._deny()
         strings = billing.INVOICE_STRINGS.get(inv["language"],
                                               billing.INVOICE_STRINGS["en"])
+        cstr = CLIENT_STRINGS.get(inv["language"], CLIENT_STRINGS["en"])
+        cents, mdy = billing._pdf_cents, billing._pdf_date
+        firm = billing.get_setting(conn, "firm.name", "SYNTH Firm")
+        contact = conn.execute(
+            "SELECT display_name FROM contacts WHERE id=?",
+            (inv["contact_id"],)).fetchone()
         balance = billing.invoice_balance(conn, inv["id"])
+
+        kv = [(strings["client"], html.escape(contact["display_name"]))]
+        if inv["issued_date"]:
+            kv.append((strings["issued"], mdy(inv["issued_date"])))
+        if inv["due_date"]:
+            kv.append((strings["due"], mdy(inv["due_date"])))
+        # the client's remaining trust, same reader as invoice_pdf
+        # (item H, 2026-08-07: fiduciary storytelling; shown only once
+        # the client actually has a trust sub-ledger)
+        subs = [r[0] for r in conn.execute(
+            "SELECT a.id FROM ledger_accounts a"
+            " JOIN ledger_accounts p ON p.id = a.parent_id"
+            " AND p.kind = 'trust_bank'"
+            " LEFT JOIN matters m ON m.id = a.matter_id"
+            " WHERE a.deleted_at IS NULL"
+            " AND (a.contact_id = ? OR m.primary_contact_id = ?)",
+            (inv["contact_id"], inv["contact_id"]))]
+        if subs:
+            held = sum(billing.account_balance(conn, a) for a in subs)
+            kv.append((strings["trust_held"], cents(held)))
+
         rows = "".join(
-            f"<li>{html.escape(c['description'])} "
-            f"{c['amount_cents'] / 100:,.2f}</li>"
+            f"<tr><td>{html.escape(c['description'])}</td>"
+            f"<td>{mdy(c['charge_date'])}</td>"
+            f"<td class='money'>{cents(c['amount_cents'])}</td></tr>"
             for c in billing.invoice_charges(conn, inv["id"]))
+        if inv["discount_cents"]:
+            rows += (f"<tr><td>{html.escape(strings['discount'])}</td>"
+                     f"<td></td><td class='money'>"
+                     f"-{cents(inv['discount_cents'])}</td></tr>")
+        rows += (f"<tr class='total'>"
+                 f"<td>{html.escape(strings['balance_due'])}</td><td></td>"
+                 f"<td class='money'>{cents(balance)}</td></tr>")
+        charges = (f"<h2>{html.escape(strings['charges'])}</h2>"
+                   f"<table class='data'><thead><tr>"
+                   f"<th>{html.escape(strings['description'])}</th>"
+                   f"<th>{html.escape(strings['date'])}</th>"
+                   f"<th class='money'>{html.escape(strings['amount'])}"
+                   f"</th></tr></thead><tbody>{rows}</tbody></table>")
+
+        payments = conn.execute(
+            "SELECT * FROM invoice_payments WHERE invoice_id=?"
+            " AND deleted_at IS NULL ORDER BY id",
+            (inv["id"],)).fetchall()
+        ptable = ""
+        if payments:
+            prows = "".join(
+                f"<tr><td>{mdy(p['payment_date'])}</td>"
+                f"<td>{_METHOD_LABELS.get(p['method'], p['method'])}"
+                f"{' (refunded)' if p['refunded'] else ''}</td>"
+                f"<td class='money'>{cents(p['amount_cents'])}</td></tr>"
+                for p in payments)
+            ptable = (f"<h2>{html.escape(cstr['payments'])}</h2>"
+                      f"<table class='data'><thead><tr>"
+                      f"<th>{html.escape(strings['date'])}</th>"
+                      f"<th>{html.escape(cstr['method'])}</th>"
+                      f"<th class='money'>{html.escape(strings['amount'])}"
+                      f"</th></tr></thead><tbody>{prows}</tbody></table>")
+
         pay = ""
         if balance > 0:
+            # labels pinned by the walk sheet -- see CLIENT_STRINGS note
             pay = (f'<form method="post" action="/invoice/{segs[1]}/pay">'
                    '<label>Synthetic payment token '
                    '<input name="sim_token" '
                    'placeholder="SYNTHETIC-VISA-DEMO" '
                    'autocomplete="off"></label>'
-                   '<p>Use the demo token shown above. This is not a real '
-                   'card number.</p>'
+                   "<p class='hint'>Use the demo token shown above. This"
+                   ' is not a real card number.</p>'
                    '<label>Payment method <select name="kind">'
                    '<option value="card">card</option>'
                    '<option value="echeck">echeck</option></select>'
                    '</label>'
-                   '<button type="submit">Pay</button></form>')
-        body = (f"<h1>{strings[inv['invoice_type']]} #{inv['number']}</h1>"
-                f"<ul>{rows}</ul>"
-                f"<p>{strings['balance_due']}: {balance / 100:,.2f}</p>"
-                f'<p><a href="/invoice/{segs[1]}/pdf">PDF</a></p>{pay}')
-        return self._send(200, _page("Invoice", body))
+                   "<button class='primary' type='submit'>Pay</button>"
+                   '</form>')
+        paid = (f"<span class='pill'>{html.escape(cstr['paid'])}</span>"
+                if balance <= 0 else "")
+        footer = (f"<p class='hint'>{html.escape(inv['footer'])}</p>"
+                  if inv["footer"] else "")
+        title = f"{strings[inv['invoice_type']]} {inv['display_code']}"
+        body = (f"<div class='card'>"
+                f"<h1>{html.escape(title)}{paid}</h1>"
+                f"{_kv(kv)}{charges}{ptable}"
+                f"<div class='actions'>"
+                f"<a href='/invoice/{segs[1]}/pdf'>PDF</a></div>"
+                f"{pay}{footer}</div>")
+        return self._send(200, _client_page(title, firm, body))
 
     def _invoice_pay(self, conn, token):
         from app import billing
         share = billing.share_by_token(conn, token)
         if share is None:
             return self._deny(404, "This link is no longer available.")
+        inv = billing.get_invoice(conn, share["invoice_id"])
+        strings = billing.INVOICE_STRINGS.get(inv["language"],
+                                              billing.INVOICE_STRINGS["en"])
+        cstr = CLIENT_STRINGS.get(inv["language"], CLIENT_STRINGS["en"])
+        cents, mdy = billing._pdf_cents, billing._pdf_date
+        firm = billing.get_setting(conn, "firm.name", "SYNTH Firm")
+        back = (f"<div class='actions'><a href='/invoice/{token}'>"
+                f"{html.escape(cstr['back'])}</a></div>")
         form = self._form_body()
         sim_token = form.get("sim_token", [""])[0].strip()
         kind = form.get("kind", ["card"])[0]
@@ -180,14 +359,33 @@ class Handler(BaseHTTPRequestHandler):
                     raise proc.ProcessorError(
                         "enter a synthetic payment token beginning with"
                         " SYNTHETIC-")
-                billing.pay_online(conn, share["invoice_id"], sim_token,
-                                   kind, _now()[:10])
+                pid = billing.pay_online(conn, share["invoice_id"],
+                                         sim_token, kind, _now()[:10])
             except (proc.ProcessorError, billing.BillingError) as ex:
-                return self._send(200, _page("Payment",
-                                             f"<p>Declined: "
-                                             f"{html.escape(str(ex))}</p>"))
-            return self._send(200, _page("Payment",
-                                         "<p>Payment received.</p>"))
+                body = (f"<div class='card'><div class='error'>Declined: "
+                        f"{html.escape(str(ex))}</div>{back}</div>")
+                return self._send(200, _client_page("Payment", firm, body))
+            # Every sibling POST handler commits its write; this one
+            # never did -- the payment sat uncommitted on the shared
+            # connection until some firm-side action committed it.
+            # FLAGGED as a judgment call in the worklog (2026-08-07).
+            conn.commit()
+            p = billing.get_payment(conn, pid)
+            remaining = billing.invoice_balance(conn, inv["id"])
+            kv = [(strings[inv["invoice_type"]],
+                   html.escape(inv["display_code"])),
+                  (strings["date"], mdy(p["payment_date"])),
+                  (cstr["method"],
+                   _METHOD_LABELS.get(p["method"], p["method"])),
+                  (strings["amount"], cents(p["amount_cents"])),
+                  (cstr["reference"],
+                   html.escape(str(p["processor_txn_id"] or
+                                   f"payment {pid}"))),
+                  (cstr["remaining"], cents(remaining))]
+            body = (f"<div class='card'>"
+                    f"<h1>{html.escape(cstr['received'])}</h1>"
+                    f"{_kv(kv)}{back}</div>")
+            return self._send(200, _client_page("Payment", firm, body))
         finally:
             conn.actor.set("system", None)
 

@@ -32,12 +32,13 @@ Also locked in, the attempt-2 regression set:
   constants in this file's POSTs are exactly what a browser
   submits when the driver types the sheet's MM/DD/YYYY into a
   US-locale date box -- the submitted form, not the typed form;
-- INVOICE IDENTIFICATION (gated item B, 2026-08-07): the sheet
-  names invoices by TYPE + issue date, never absolute number
-  (attempt 3: one stray invoice shifted every pinned #N). The
-  driver locates list rows exactly the sheet's way (invoice_row)
-  and cross-checks the find against the id the walk created;
-  crumb checks pin only the "Billing / Bill #" prefix;
+- INVOICE IDENTIFICATION (item B 2026-08-07, superseded same day
+  by the item-10 BUILD): the sheet names invoices by their stored
+  display code (B0001/T0001, invoice-codes.md) -- stamped at
+  creation, never shifted by a stray invoice (attempt 3's defect,
+  twice cured). The driver locates list rows exactly the sheet's
+  way (invoice_row, by code), cross-checks the find against the
+  id the walk created, and crumb checks pin EXACT codes;
 - the trust request is still UNPAID when the client link is
   created (attempt 2 recorded a firm-side deposit first, emptying
   Part F of anything to settle);
@@ -64,7 +65,7 @@ from run_billing_ui_walk import Browser, ui_server  # noqa: E402
 REPORT = HERE / "drive-sheet-report.txt"
 SHEET = HERE / "demo-walk-protocol.md"
 
-EXPECTED_SHEET_SHA = "2c9cac5141af"
+EXPECTED_SHEET_SHA = "f7f821edb1e9"
 
 CODE_RE = re.compile(r"class='code-display'>(\d{6})<")
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -137,32 +138,31 @@ TRUST = BILLING + [("Trust accounting", "/billing/trust")]
 NEW_INVOICE = BILLING + [("New invoice", "/billing/invoices/new")]
 
 
-# the invoice list's row shape (billing_landing): number link, type
-# pill, client link, issued date. The locator reads it the way the
-# sheet tells the driver to -- TYPE column plus issue date.
+# the invoice list's row shape (billing_landing): display-code link,
+# type pill, client link, issued date. The locator reads it the way
+# the sheet tells the driver to -- by the stored display code
+# (gated item 10 BUILD, 2026-08-07; supersedes the item-B type+date
+# locate, which one screen redesign away from ambiguity).
 ROW_RE = re.compile(
-    r"<tr><td><a href='/billing/invoices/(\d+)'>#\d+</a></td>"
+    r"<tr><td><a href='/billing/invoices/(\d+)'>([BT]\d{4,})</a></td>"
     r"<td><span class='pill [a-z]+'>(Bill|Trust Request)</span></td>"
     r"<td><a href='/contacts/\d+'>[^<]+</a></td>"
     r"<td>(\d{2}/\d{2}/\d{4})</td>")
 
 
-def invoice_row(page, itype, issued=None):
-    """Locate an invoice the sheet's way (gated item B, 2026-08-07):
-    by the TYPE column, plus the issue date where the sheet gives
-    one -- NEVER by absolute number, which one stray invoice shifts
-    (attempt 3's +1 offset). Exactly one row must match."""
-    hits = [m for m in ROW_RE.finditer(page)
-            if m.group(2) == itype
-            and (issued is None or m.group(3) == issued)]
-    assert len(hits) == 1, \
-        f"{itype} issued {issued or 'any'}: {len(hits)} rows match"
+def invoice_row(page, code):
+    """Locate an invoice the sheet's way (item 10, 2026-08-07): by
+    its stored display code, which no stray invoice can shift --
+    codes are stamped at creation and never reused. Exactly one row
+    must match."""
+    hits = [m for m in ROW_RE.finditer(page) if m.group(2) == code]
+    assert len(hits) == 1, f"code {code}: {len(hits)} rows match"
     return int(hits[0].group(1))
 
 
-def enter_invoice(d, itype, issued=None, tab=None, expect=None):
+def enter_invoice(d, code, tab=None, expect=None):
     """From scratch to an invoice page by the sheet's route: address
-    bar -> Billing (-> tab) -> locate the row by type and date ->
+    bar -> Billing (-> tab) -> locate the row by display code ->
     follow its link. expect cross-checks the located id against the
     one the walk created."""
     hops = list(BILLING)
@@ -171,7 +171,7 @@ def enter_invoice(d, itype, issued=None, tab=None, expect=None):
         # its count so the waypoint survives any invoice tally
         hops.append((f">{tab.capitalize()} (", f"/billing?tab={tab}"))
     page = enter(d, *hops)
-    iid = invoice_row(page, itype, issued)
+    iid = invoice_row(page, code)
     if expect is not None:
         assert iid == expect, \
             f"sheet route found invoice {iid}, walk created {expect}"
@@ -260,12 +260,12 @@ def s10_new_bill(d):
     d.consult_inv = int(m.group(1))
     # the sheet pins only the crumb PREFIX -- the app assigns the
     # number and the sheet says any number is correct there
-    _see(page, "Billing</a> / Bill #")
+    _see(page, "Billing</a> / Bill B0001")
     return "consult bill via menu route; issue-date prefill holds"
 
 
 def s11_add_charge(d):
-    iid, page = enter_invoice(d, "Bill", "08/01/2026", tab="all",
+    iid, page = enter_invoice(d, "B0001", tab="all",
                               expect=d.consult_inv)
     _see(page, "Add a charge", "Description", "Amount", "Type", "Date")
     assert "value='2026-08-01'" in page, \
@@ -278,7 +278,7 @@ def s11_add_charge(d):
 
 
 def s12_pay_direct(d):
-    iid, page = enter_invoice(d, "Bill", "08/01/2026", tab="all",
+    iid, page = enter_invoice(d, "B0001", tab="all",
                               expect=d.consult_inv)
     _see(page, "Collect $500.00",
          "Record a direct payment (check, cash, wire)", "Deposit to")
@@ -306,13 +306,13 @@ def s13_new_trust_request(d):
     m = re.search(r"/billing/invoices/(\d+)$", url)
     assert m, url
     d.trust_inv = int(m.group(1))
-    _see(page, "Billing</a> / Trust request #")
+    _see(page, "Billing</a> / Trust request T0001")
     return "trust request via menu route; crumb prefix holds"
 
 
 def s14_retainer_charge(d):
-    # the sheet finds the trust request by TYPE alone
-    iid, page = enter_invoice(d, "Trust Request", tab="all",
+    # the sheet finds the trust request by its code
+    iid, page = enter_invoice(d, "T0001", tab="all",
                               expect=d.trust_inv)
     _s, _u, page = d.b.post(f"/billing/invoices/{iid}/charges", {
         "charge_type": "service",
@@ -326,7 +326,7 @@ def s14_retainer_charge(d):
 
 
 def s15_client_link(d):
-    iid, page = enter_invoice(d, "Trust Request", tab="all",
+    iid, page = enter_invoice(d, "T0001", tab="all",
                               expect=d.trust_inv)
     _see(page, "Create client link")
     _see(page, "Outstanding")  # regression: NOT paid before the client pays
@@ -343,6 +343,15 @@ def s15_client_link(d):
     return "link created in the copy box; request still Outstanding"
 
 
+def _client_no_iso(page):
+    """Date coupling (item A) extended to the client surface
+    (2026-08-07 amendment): what Vera sees is MM/DD/YYYY too."""
+    visible = VALUE_ATTR.sub("value=''", page)
+    m = ISO_DATE.search(visible)
+    assert m is None, (f"ISO date {m.group()} rendered visibly on the"
+                       f" client surface")
+
+
 def s16_vera_pays(d):
     d.client = Browser("")
     import urllib.request, urllib.parse  # noqa: E401
@@ -351,6 +360,14 @@ def s16_vera_pays(d):
     assert status == 200
     _see(page, "Synthetic payment token", "SYNTHETIC-VISA-DEMO",
          ">Pay</button>")
+    # 2026-08-07 amendment (rendering-only): firm-branded page, footed
+    # charge table with the retainer line, trust line only when funds
+    # are actually held (none yet at this step)
+    _see(page, "SYNTH Firm", "SYNTH retainer request", "5,000.00",
+         "Balance Due", "class='total'")
+    assert "Remaining in Trust" not in page, \
+        "trust line shown before any funds are held"
+    _client_no_iso(page)
     status, _u, page = d.client._open(urllib.request.Request(
         d.pay_link + "/pay",
         data=urllib.parse.urlencode(
@@ -358,11 +375,22 @@ def s16_vera_pays(d):
         ).encode(), method="POST",
         headers={"Content-Type": "application/x-www-form-urlencoded"}))
     assert status == 200 and "Payment received" in page, page[:200]
-    return "Vera paid in her own cookie jar; Payment received"
+    # the receipt worth the name: amount, method, reference, remaining
+    _see(page, "5,000.00", ">card<", "Reference", "Remaining balance",
+         "0.00")
+    _client_no_iso(page)
+    # the invoice page now records the payment for the client
+    status, _u, page = d.client._open(
+        urllib.request.Request(d.pay_link))
+    assert status == 200
+    _see(page, "Payments", ">card<", "5,000.00", ">Paid</span>")
+    _client_no_iso(page)
+    return ("Vera paid in her own cookie jar; styled receipt +"
+            " payment history on her page")
 
 
 def s17_checkpoint_card(d):
-    _iid, page = enter_invoice(d, "Trust Request", tab="paid",
+    _iid, page = enter_invoice(d, "T0001", tab="paid",
                                expect=d.trust_inv)
     _see(page, "Paid", "card (online, simulated processor)")
     return "CHECKPOINT holds: payment line reads card, not direct"
@@ -414,7 +442,7 @@ def s21_bill_three(d):
     m = re.search(r"/billing/invoices/(\d+)$", url)
     assert m, url
     d.work_inv = int(m.group(1))
-    _see(page, "Billing</a> / Bill #")
+    _see(page, "Billing</a> / Bill B0002")
     # ITEM-B REGRESSION (attempt 3's failure condition, injected on
     # purpose): a stray invoice -- issued today, never charged --
     # once shifted every downstream #N the sheet pinned. From here
@@ -425,7 +453,7 @@ def s21_bill_three(d):
 
 
 def s22_import(d):
-    iid, page = enter_invoice(d, "Bill", "08/02/2026", tab="all",
+    iid, page = enter_invoice(d, "B0002", tab="all",
                               expect=d.work_inv)
     _see(page, "Import saved charges and time", "Import selected",
          "08/02/2026")  # the sheet names the time entry by this date
@@ -443,7 +471,7 @@ def s22_import(d):
 
 
 def s23_earn_out(d):
-    iid, page = enter_invoice(d, "Bill", "08/02/2026", tab="all",
+    iid, page = enter_invoice(d, "B0002", tab="all",
                               expect=d.work_inv)
     _see(page, "Collect $3,000.00", "Pay from client trust (earn-out)",
          "From trust account", "Trust funds held for")
@@ -471,9 +499,11 @@ def s24_disburse(d):
          "Disburse")
     assert f"value='{today()}'" in page, \
         "sheet claims the disburse date starts on today"
+    # sheet (real-bank ruling 2026-08-07): the date stays at today's
+    # prefill, so the check is still outstanding at step 32's period
     d.b.post("/billing/trust/disburse", {
         "account_id": str(d.iolta), "amount": "1200.00",
-        "disburse_date": "2026-08-04",
+        "disburse_date": today(),
         "contact_id": str(d.contact_id),
         "counterparty": "SYNTH-USCIS",
         "memo": "SYNTH I-130 filing fee"})
@@ -485,7 +515,7 @@ def s24_disburse(d):
 # --- Part I: the correction --------------------------------------------
 
 def s25_26_find_payment(d):
-    _iid, page = enter_invoice(d, "Bill", "08/01/2026", tab="paid",
+    _iid, page = enter_invoice(d, "B0001", tab="paid",
                                expect=d.consult_inv)
     m = re.search(r"href='/billing/payments/(\d+)'>08/01/2026<", page)
     assert m, "payment date 08/01/2026 is not a link on the consult bill"
@@ -503,7 +533,7 @@ def s27_28_correct(d):
     assert "reverses" in page and "replaces" in page, \
         "correction trail does not show reverses/replaces tags"
     # re-enter from scratch (If lost route) and confirm it persists
-    _iid, page = enter_invoice(d, "Bill", "08/01/2026", tab="paid",
+    _iid, page = enter_invoice(d, "B0001", tab="paid",
                                expect=d.consult_inv)
     m = re.search(r"href='/billing/payments/(\d+)'>08/02/2026<", page)
     assert m, "corrected date 08/02/2026 is not the link now"
@@ -513,10 +543,11 @@ def s27_28_correct(d):
 # --- Part J: the books -------------------------------------------------
 
 def s29_pdf(d):
-    iid, page = enter_invoice(d, "Bill", "08/02/2026", tab="paid",
+    iid, page = enter_invoice(d, "B0002", tab="paid",
                               expect=d.work_inv)
     # gated item H: the client's remaining trust shows on the bill
-    _see(page, "Download PDF", "Client funds in trust", "800.00")
+    # (relabeled "Remaining in Trust" at James's order, 2026-08-07 s8)
+    _see(page, "Download PDF", "Remaining in Trust", "800.00")
     content = d.b.get_bytes(f"/billing/invoices/{iid}/pdf")
     assert content[:5] == b"%PDF-", content[:16]
     return f"PDF downloads ({len(content)} bytes)"
@@ -545,7 +576,18 @@ def s32_recon(d):
     assert "holds" in page.lower(), "identity verdict missing"
     assert page.count("Adjusted bank") == 2,         "both accounts should carry the vertical bank bridge"
     assert page.count("Client claims total") == 1,         "claims column belongs to the trust card only"
-    return "three-pane recon: statement leg, footed columns, ties"
+    # period-end mix (real-bank ruling 2026-08-07): the statement
+    # must show all three line kinds the sheet points at -- cleared
+    # activity, the settlement deposit in transit, the outstanding
+    # disbursement check
+    assert "no cleared activity this period" not in page, \
+        "a statement pane has no cleared lines -- the mix is gone"
+    assert ">in transit " in page and "5,000.00" in page, \
+        "the settlement deposit is not shown in transit"
+    assert ">outstanding " in page and "(1,200.00)" in page, \
+        "the disbursement check is not shown outstanding"
+    return ("three-pane recon: statement leg, footed columns, ties;"
+            " cleared/in-transit/outstanding mix on the period")
 
 
 STEPS = [
@@ -564,7 +606,7 @@ STEPS = [
     ("step 18     settlement", s18_settlement),
     ("step 19     record time", s19_record_time),
     ("step 20     saved charge", s20_saved_charge),
-    ("step 21     bill #3", s21_bill_three),
+    ("step 21     work bill B0002", s21_bill_three),
     ("step 22     import", s22_import),
     ("step 23     earn-out", s23_earn_out),
     ("step 24     disburse", s24_disburse),

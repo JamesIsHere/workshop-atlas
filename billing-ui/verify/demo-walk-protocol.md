@@ -121,6 +121,20 @@ options re-pinned to the new wording. Wording is an agent
 judgment call, flagged for James's re-rule. No data values or
 step semantics changed.
 
+AMENDED 2026-08-07 sixth time (gated item 10 BUILD, authorized
+by James: "Yes, please add codes"): the product-level cure
+landed -- every invoice now carries a stored display code
+(B0001/T0001, spec in ../invoice-codes.md), stamped at creation
+and rendered as the invoice's identity on the list, page
+titles, crumbs, and the PDF. The sheet's type+date
+identification (fourth amendment) is superseded: steps 10-29
+now name invoices by their code (consult bill B0001, trust
+request T0001, work bill B0002 -- deterministic on a fresh db),
+and the preamble's INVOICE NUMBERS block became INVOICE CODES.
+Crumb checks pin exact codes now; the stray-invoice regression
+stays and proves codes cannot shift. Data values and step
+semantics unchanged; no steps renumbered.
+
 Contract hooks (goal.md): James drives the full billing lifecycle
 entirely through screens on a FRESH database -- no terminal, no
 SQL, no dev tools mid-walk. The fiduciary suite must run green
@@ -179,7 +193,7 @@ they are this sheet's names for shapes you will see:
 - TILE: a small box with a big dollar number (balances).
 - CRUMB LINE: the small gray line at the top of Billing pages,
   just under the menu, naming the page you are on. Example of
-  one: Billing / Bill #1. The Billing front page has no crumb
+  one: Billing / Bill B0001. The Billing front page has no crumb
   line -- its big Billing heading is the marker.
   Feeling lost? Read the crumb line first, then the menu --
   the Billing entry in the top menu stays underlined on every
@@ -189,14 +203,17 @@ There is no button named Collect anywhere. Collect is the TITLE
 of a card that appears on a bill or trust request once money is
 owed. The ways of getting paid are folds inside that card.
 
-INVOICE NUMBERS. The app numbers invoices on its own (#1, #2,
-...). This sheet NEVER identifies an invoice by that number: it
-names the TYPE -- Bill or Trust Request, read from the TYPE
-column of the invoice list -- and the ISSUE DATE. If an extra
-invoice gets created by accident, the numbers move; the types
-and dates do not. Where a step says "crumb line reads Billing /
-Bill #<n>", the <n> is whatever number the app assigned -- any
-number is correct there.
+INVOICE CODES. The app stamps every invoice with a permanent
+code the moment it is created: B for bills, T for trust
+requests, each numbered on its own (B0001, T0001, B0002...).
+The code is the invoice's name everywhere -- the INVOICE column
+of the list, the page title, the crumb line, the PDF. This
+sheet identifies every invoice by that code. Codes never
+change and are never reused: if an extra invoice gets created
+by accident it takes the NEXT code and every code this sheet
+names still points where it did. (The app also keeps a plain
+per-client number, shown as Number on the invoice's page --
+this sheet never uses it.)
 
 STOP RULE: do not guess or substitute labels. If a named heading,
 button, field, or expected result is missing, stop the walk at
@@ -290,13 +307,12 @@ account -- the simplest money path, no trust involved.
     - "Issue date" = 08/01/2026 (the box starts on today's
       date -- change it)
     End: click "Create bill" -> the new bill's page; its crumb
-    line reads Billing / Bill #<n>. This is the CONSULT bill --
-    the app picks the number, and any number is fine.
+    line reads Billing / Bill B0001. This is the CONSULT bill.
 11. The consult bill's page, the "Add a charge" form in the
-    Charges card (If lost: menu "Billing" -> tab "All" -> the
-    Bill row issued 08/01/2026; click its link in the INVOICE
-    column. Use All: a bill with no charges yet is on neither
-    the Outstanding nor the Paid tab)
+    Charges card (If lost: menu "Billing" -> tab "All" -> row
+    B0001; click its link in the INVOICE column. Use All: a
+    bill with no charges yet is on neither the Outstanding nor
+    the Paid tab)
     - "Description" = SYNTH consultation
     - "Amount" = 500.00
     - "Type" = Service
@@ -305,8 +321,8 @@ account -- the simplest money path, no trust involved.
     End: click "Add charge". The page reloads and a new card
     appears, titled Collect $500.00. No money has moved yet.
 12. The consult bill's page, the Collect $500.00 card (If
-    lost: menu "Billing" -> tab "All" -> the Bill row issued
-    08/01/2026; the card sits below the Charges card)
+    lost: menu "Billing" -> tab "All" -> row B0001; the card
+    sits below the Charges card)
     - click the fold line "Record a direct payment (check,
       cash, wire)" to expand it
     - "Amount" = leave at 500.00
@@ -334,11 +350,10 @@ processor until Part F settles it.
     - "Issue date" = 08/01/2026 (starts on today -- change it)
     End: click "Create trust request" -> the new trust
     request's page; its crumb line reads Billing / Trust
-    request #<n>.
+    request T0001.
 14. The trust request's page, the "Add a charge" form in the
-    Charges card (If lost: menu "Billing" -> tab "All" -> the
-    Trust Request row -- the TYPE column names it; click its
-    link in the INVOICE column)
+    Charges card (If lost: menu "Billing" -> tab "All" -> row
+    T0001; click its link in the INVOICE column)
     - "Description" = SYNTH retainer request
     - "Amount" = 5000.00
     - "Type" = Service
@@ -350,7 +365,7 @@ processor until Part F settles it.
     firm records no payment.
 15. The trust request's page, inside the open fold "Send the
     request to the client" (If lost: menu "Billing" -> tab
-    "All" -> the Trust Request row -> the Collect card)
+    "All" -> row T0001 -> the Collect card)
     End: click "Create client link". A web address appears in
     a boxed field, ending in /invoice/<token>. Click inside
     the box, press Ctrl+A then Ctrl+C to copy the whole link,
@@ -365,8 +380,7 @@ processor until Part F settles it.
     received." If it says anything else -- Declined, or
     already paid -- STOP and record it.
 17. The trust request's page, back in the firm window (If
-    lost: menu "Billing" -> tab "Paid" -> the Trust Request
-    row)
+    lost: menu "Billing" -> tab "Paid" -> row T0001)
     End: refresh the page.
     Observe: a Paid pill, and the payment line reads card
     (online, simulated processor). CHECKPOINT: if the payment
@@ -416,11 +430,10 @@ both on a new bill, and pay that bill FROM Vera's trust money
     - "Matter" = Vera Synthetic I-130
     - "Issue date" = 08/02/2026 (starts on today -- change it)
     End: click "Create bill" -> the new bill's page; its crumb
-    line reads Billing / Bill #<n>. This is the WORK bill.
+    line reads Billing / Bill B0002. This is the WORK bill.
 22. The work bill's page, the Charges card (If lost: menu
-    "Billing" -> tab "All" -> the Bill row issued 08/02/2026.
-    Use All: a bill with no charges yet is on neither default
-    tab)
+    "Billing" -> tab "All" -> row B0002. Use All: a bill with
+    no charges yet is on neither default tab)
     - click the fold line "Import saved charges and time"
     - tick BOTH boxes: the 2,500.00 saved charge and the
       08/02/2026 time entry (500.00)
@@ -428,8 +441,7 @@ both on a new bill, and pay that bill FROM Vera's trust money
     Observe: both rows land in the Charges table and the page
     says Balance due: $3,000.00.
 23. The work bill's page, the Collect $3,000.00 card (If lost:
-    menu "Billing" -> tab "All" -> the Bill row issued
-    08/02/2026)
+    menu "Billing" -> tab "All" -> row B0002)
     - click the fold line "Pay from client trust (earn-out)"
     - "Amount" = leave at 3,000.00
     - "Date" = 08/03/2026 (starts on today -- change it)
@@ -454,7 +466,9 @@ trust, leaving her 800.00.
     - leave "Funds held for matter" at No matter (funds are
       client-level)
     - "Amount" = 1200.00
-    - "Date" = 08/04/2026 (starts on today -- change it)
+    - "Date" = leave at today (the check goes out NOW, so the
+      bank will not have cleared it yet -- step 32 shows it as
+      an outstanding check on the reconciliation)
     - "Pay to" = SYNTH-USCIS
     - "Memo" = SYNTH I-130 filing fee
     End: click "Disburse". Her remaining funds: 800.00.
@@ -467,14 +481,12 @@ themselves by ADDING entries -- never by rewriting history.
 
 25. The invoice list (Go: menu "Billing", then click the tab
     "Paid" -- the list opens on Outstanding, where paid bills
-    are NOT). Paid bills all show balance 0.00, so find the
-    consult bill by TYPE and DATE, never by number: the Bill
-    row issued 08/01/2026.
+    are NOT). The consult bill is row B0001.
     End: click its link in the INVOICE column -> the consult
     bill's page.
 26. The consult bill's page, the Payments table -- the
     payment's date 08/01/2026 is a link (If lost: menu
-    "Billing" -> tab "Paid" -> the Bill row issued 08/01/2026)
+    "Billing" -> tab "Paid" -> row B0001)
     End: click the date link -> the payment's own page.
 27. The payment's page, the "Correct this payment" card (If
     lost: repeat step 26's route)
@@ -484,8 +496,10 @@ themselves by ADDING entries -- never by rewriting history.
 28. The payment's page, after the save (you are still on it)
     Observe: in "Journal trail" the original entry stays,
     joined by entries tagged "reverses e<n>" / "replaces
-    e<n>"; the "Bank record" card shows the correction as
-    compensating events. Nothing is ever silently rewritten.
+    e<n>"; the "Bank record" card still shows only what the
+    bank actually saw -- a correction lives in the books, and
+    the reconciliation explains any difference between books
+    and bank. Nothing is ever silently rewritten.
 
 Part J -- the books, end to end
 
@@ -494,7 +508,7 @@ trust ledger, one journal entry, and the reconciliation
 identity tying bank to books to client claims.
 
 29. The work bill's page (Go: menu "Billing" -> tab "Paid" ->
-    the Bill row issued 08/02/2026)
+    row B0002)
     End: click "Download PDF" (top card) and open the file.
 30. Trust accounting (Go: menu "Billing" -> "Trust
     accounting")
@@ -510,12 +524,16 @@ identity tying bank to books to client claims.
     outstanding items, footing to Adjusted bank), Books (the
     ledger entries footing to Books balance), and -- on the
     SYNTH IOLTA card only -- Client claims (whose money the
-    trust holds). Outflows are in parentheses. The tie line
-    under the columns reads adjusted bank = books, and adds
-    = client claims on the trust card; the operating card has
-    no client-claims column because it holds no client funds.
-    System-made correction entries are labeled (system
-    correction).
+    trust holds). The SYNTH IOLTA statement shows a real
+    period-end mix: cleared activity (the earn-out check),
+    the retainer settlement deposit still in transit (the
+    bank clears it tomorrow), and today's disbursement check
+    still outstanding. Outflows are in parentheses. The tie
+    line under the columns reads adjusted bank = books, and
+    adds = client claims on the trust card; the operating
+    card has no client-claims column because it holds no
+    client funds. System-made correction entries are labeled
+    (system correction).
 
 Say "done" out loud.
 
