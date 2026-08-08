@@ -45,11 +45,12 @@ finish ("not beautiful").
   edits this session). Walk-report canonical sha 301b574d
   UNCHANGED (history in worklog s8-s9). ONLY report_sha.py
   output counts.
-- Server RUNNING on 8500 (client 8501), PID 71992, over the
-  walked data/demo-walk-2026-08-08.db -- the first pure-model
-  walk db (s9 engine, no mirror events). Restart after ANY
-  app_ui or casework/app change -- stale module code serves
-  silently (bitten twice in s7).
+- Server DOWN (taken down at James's order, s10 close). To
+  serve the walked db: python billing-ui/serve.py --db
+  billing-ui/data/demo-walk-2026-08-08.db -- the first
+  pure-model walk db (s9 engine, no mirror events). Restart
+  after ANY app_ui or casework/app change -- stale module code
+  serves silently (bitten twice in s7).
 - Retained walk dbs (delete=archive): -04, -04b, -07, -07b,
   -07c, -08. All pre--08 dbs are PRE-ENGINE (mirror events on
   their bank records) and pre-07c ones are PRE-CODE (run
