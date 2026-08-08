@@ -96,6 +96,18 @@ table.rec td.amt { text-align: right; white-space: nowrap;
 table.rec tr.foot td { border-top: 2px solid #d9dde3;
                        border-bottom: none; font-weight: 600; }
 table.rec td.none { color: #6a7383; font-style: italic; }
+.tile .go { margin-top: 0.55rem; }
+.tile .go a { display: inline-block; background: #eef1f5;
+              color: #2456a6; border-radius: 4px;
+              padding: 0.25rem 0.7rem; margin-right: 0.4rem;
+              text-decoration: none; font-size: 0.85rem; }
+.tile .go a:hover { background: #e0e6ee; }
+.attend { border-left: 3px solid #8a5b12; background: #fdf3e0;
+          padding: 0.7rem 1rem; margin: 0.6rem 0; }
+.attend a { color: #2456a6; }
+.allties { font-size: 1.05rem; color: #256325; margin: 0.6rem 0; }
+p.inflight { color: #6a7383; font-size: 0.9rem; margin: 0.5rem 0 0; }
+p.periodline { color: #6a7383; font-size: 0.9rem; margin: 0 0 1rem; }
 """
 
 
@@ -941,6 +953,238 @@ def recon_screen(h, conn, user, query):
             f" every reconciling item carries its cause.</p>"
             + "".join(sections))
     _page(h, "Reconciliation", body, user)
+
+
+# --- home screen (item-12 design gate, status-page.md RATIFIED
+# 2026-08-08; James's gate decision: the firm status page IS the
+# dashboard at "/"). Rendering only: verdicts come from the same
+# reconcile engine the recon screen renders; money figures from
+# ledger/billing module calls; SQL stays in reads.py. ---
+
+# R5 thresholds: sane defaults now, firm settings later (flagged
+# in status-page.md, not debated). Days before an uncleared check
+# or an unbilled time entry becomes a NEEDS ATTENTION line.
+STALE_CHECK_DAYS = 30
+UNBILLED_NAG_DAYS = 30
+
+
+def _days_old(iso, today_iso):
+    a = datetime.strptime(iso, "%Y-%m-%d")
+    b = datetime.strptime(today_iso, "%Y-%m-%d")
+    return (b - a).days
+
+
+def dashboard_screen(h, conn, user):
+    today = _today()
+    banks = ledger.list_bank_accounts(conn)
+    period = reads.max_event_date(conn) if banks else None
+
+    # Money row: balances by kind, recon verdict per bank at the
+    # default period (the recon screen's own default).
+    trust_total = op_total = 0
+    trust_banks, op_banks = [], []
+    verdicts = {}          # bank id -> holds (True/False)
+    recon_items = []       # (bank, item) across banks
+    for b in banks:
+        bal = ledger.account_balance(conn, b["id"])
+        if b["kind"] == "trust_bank":
+            trust_total += bal
+            trust_banks.append(b)
+        else:
+            op_total += bal
+            op_banks.append(b)
+        if period is not None:
+            r = reconcile.three_way(conn, b["id"], period)
+            verdicts[b["id"]] = (r["identity_holds"]
+                                 and not r["unmatched_statement_lines"]
+                                 and not r["unmatched_book_postings"])
+            recon_items.extend((b, i) for i in r["items"])
+
+    def _chip(bank_list):
+        if not bank_list or period is None:
+            return ""
+        holds = all(verdicts[b["id"]] for b in bank_list)
+        return (_pill("holds", "HOLDS") if holds
+                else _pill("broken", "BROKEN"))
+
+    def _ledger_href(bank_list):
+        return (f"/billing/trust/{bank_list[0]['id']}"
+                if len(bank_list) == 1 else "/billing/trust")
+
+    def _tile(label, value, chip, go):
+        return (f"<div class='tile'><div class='label'>{label}"
+                f"</div><div class='value'>{value} {chip}</div>"
+                f"<div class='go'>{go}</div></div>")
+
+    # Client funds held: trust sub-accounts with money in them.
+    holders = set()
+    for tb in trust_banks:
+        for s in reads.sub_accounts_of(conn, tb["id"]):
+            if ledger.account_balance(conn, s["id"]) > 0:
+                holders.add(s["id"])
+    n = len(holders)
+    tiles = "<div class='tiles'>" + _tile(
+        "Trust (IOLTA)", dollars(trust_total), _chip(trust_banks),
+        (f"<a href='{_ledger_href(trust_banks)}'>Ledger</a>"
+         "<a href='/billing/recon'>Reconcile</a>") if trust_banks
+        else html.link("/billing/accounts/new", "Add account")) + _tile(
+        "Operating", dollars(op_total), _chip(op_banks),
+        (f"<a href='{_ledger_href(op_banks)}'>Ledger</a>"
+         "<a href='/billing/recon'>Reconcile</a>") if op_banks
+        else html.link("/billing/accounts/new", "Add account")) + _tile(
+        "Client funds held", dollars(trust_total),
+        f"<span class='sub'>{n} client{'s' if n != 1 else ''}</span>",
+        "<a href='/billing/recon'>By client</a>") + "</div>"
+
+    # NEEDS ATTENTION (R5, strict): recon breaks, past-due bills,
+    # stale checks, aged unbilled time. Empty most days by design.
+    attend = []
+    for b in banks:
+        if period is not None and not verdicts[b["id"]]:
+            attend.append(
+                "Reconciliation BREAK on "
+                + html.link("/billing/recon", b["name"]))
+    inv_rows = reads.invoice_rows(conn)
+    open_bills, open_sum = [], 0
+    for r in inv_rows:
+        if billing.invoice_status(conn, r["id"]) != "outstanding":
+            continue
+        open_bills.append(r)
+        open_sum += billing.invoice_balance(conn, r["id"])
+        if r["due_date"] and r["due_date"] < today:
+            code = r["display_code"] or f"#{r['number']}"
+            attend.append(
+                html.link(f"/billing/invoices/{r['id']}", code)
+                + f" past due (due {fmt_date(r['due_date'])})")
+    transit = outstanding_checks = 0
+    for b, i in recon_items:
+        if i["cause"] == "deposit in transit":
+            transit += 1
+        elif i["cause"] == "outstanding disbursement":
+            outstanding_checks += 1
+            age = _days_old(i["date"], today)
+            if age > STALE_CHECK_DAYS:
+                attend.append(
+                    "Check outstanding "
+                    f"{age} days ({fmt_cents(i['amount_cents'])}) -- "
+                    + html.link(f"/billing/journal/{i['entry_id']}",
+                                f"e{i['entry_id']}"))
+    unbilled = reads.unbilled_time_entries(conn)
+    unbilled_secs = sum(t["duration_seconds"] for t in unbilled)
+    unbilled_cents = sum(
+        (t["duration_seconds"] * t["rate_cents_per_hour"] + 1800)
+        // 3600 for t in unbilled if t["rate_cents_per_hour"])
+    for t in unbilled:
+        if _days_old(t["entry_date"], today) > UNBILLED_NAG_DAYS:
+            attend.append(
+                html.link("/billing/time",
+                          f"Unbilled time from"
+                          f" {fmt_date(t['entry_date'])}")
+                + f" ({fmt_duration(t['duration_seconds'])})")
+    if attend:
+        attention = "".join(f"<p class='attend'>{a}</p>"
+                            for a in attend)
+    elif banks:
+        attention = ("<p class='allties'>Nothing needs you."
+                     " Everything ties.</p>")
+    else:
+        attention = html.empty_state(
+            "No bank accounts yet. Billing starts when the first"
+            " account exists.")
+
+    # IN FLIGHT (R5): routine movement, counts only, one quiet line.
+    flight = []
+    if transit:
+        flight.append(html.link(
+            "/billing/recon",
+            f"{transit} deposit{'s' if transit != 1 else ''}"
+            " in transit"))
+    if outstanding_checks:
+        flight.append(html.link(
+            "/billing/recon",
+            f"{outstanding_checks} check"
+            f"{'s' if outstanding_checks != 1 else ''} outstanding"))
+    if open_bills:
+        flight.append(html.link(
+            "/billing",
+            f"{len(open_bills)} bill"
+            f"{'s' if len(open_bills) != 1 else ''} open")
+            + f" ({fmt_cents(open_sum)})")
+    if unbilled:
+        flight.append(html.link(
+            "/billing/time",
+            f"{fmt_duration(unbilled_secs)} unbilled")
+            + (f" ({fmt_cents(unbilled_cents)})"
+               if unbilled_cents else ""))
+    inflight = (f"<p class='inflight'>In flight: "
+                + ", ".join(flight) + "</p>") if flight else ""
+
+    # RECENT ACTIVITY (R6): money events only, with actors.
+    acts = reads.recent_money_entries(conn)
+    if acts:
+        rows = []
+        for e in acts:
+            what = e["kind"].replace("_", " ")
+            if e["display_code"]:
+                what += " " + html.link(
+                    f"/billing/invoices/{e['invoice_id']}",
+                    e["display_code"])
+            actor = {"user": e["actor_name"] or "user",
+                     "contact": "client",
+                     "system": "system"}.get(e["actor_type"] or "", "")
+            rows.append([
+                html.esc(fmt_date(e["posted_at"])), what,
+                f"<span class='money'>"
+                + html.link(f"/billing/journal/{e['id']}",
+                            fmt_cents(e["amount_cents"] or 0))
+                + "</span>",
+                html.esc(actor)])
+        activity = html.table(["Date", "What", "Amount", "By"], rows)
+    else:
+        activity = html.empty_state("No money movement yet.")
+
+    # PRACTICE (R7): the old dashboard absorbed verbatim -- same
+    # actions, same six count-links (frozen walk reachability).
+    c = reads.counts(conn)
+    tallies = ", ".join(
+        html.link(href, f"{c[key]} {label}")
+        for key, label, href in (("contacts", "clients", "/contacts"),
+                                 ("matters", "matters", "/matters"),
+                                 ("events", "events", "/calendar"),
+                                 ("files", "files", "/files"),
+                                 ("tasks", "tasks", "/tasks"),
+                                 ("notes", "notes", "/notes")))
+    practice = (
+        "<div class='card'><h2 class='formhead'"
+        " style='border-top:none;margin-top:0'>Practice</h2>"
+        "<div class='actions'>"
+        "<a href='/contacts/new'>New client</a>"
+        "<a href='/matters/new'>New matter</a>"
+        "<a class='quiet' href='/calendar'>Calendar</a></div>"
+        f"<p class='hint'>{tallies}.</p></div>")
+
+    if period is not None:
+        month = datetime.strptime(period, "%Y-%m-%d").strftime("%B %Y")
+        all_hold = all(verdicts.values())
+        periodline = (f"<p class='periodline'>Period {month} -- "
+                      + (f"ties as of {fmt_date(period)}" if all_hold
+                         else "reconciliation needs attention")
+                      + "</p>")
+    else:
+        periodline = ("<p class='periodline'>No bank activity"
+                      " yet.</p>")
+
+    body = ("<h1>Dashboard</h1>" + periodline + tiles
+            + "<div class='card'><h2 class='formhead'"
+            " style='border-top:none;margin-top:0'>Needs attention"
+            f"</h2>{attention}{inflight}</div>"
+            + "<div class='card'><h2 class='formhead'"
+            " style='border-top:none;margin-top:0'>Recent activity"
+            f"</h2>{activity}</div>" + practice)
+    styled = f"<style>{BILLING_STYLE}</style>" + body
+    h._send_page(200, html.page("Dashboard", styled,
+                                user_name=user["name"],
+                                active_href="/"))
 
 
 def time_index(h, conn, user):

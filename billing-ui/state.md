@@ -1,73 +1,67 @@
 # state.md -- billing-ui (session cache, overwritten each wind-down)
 
-## COLD-START POINTER (s9 close, 2026-08-07)
+## COLD-START POINTER (s10 close, 2026-08-08)
 
-The banking engine is BUILT (James's real-bank ruling, s8 close;
-executed s9, worklog s9 has the full record). Corrections and
-refunds touch books only; the bank record keeps exactly what the
-bank saw; the recon engine matches statement lines to book
-entries and explains every difference as a caused reconciling
-item; F7 is strengthened (bank-record purity, timing resolves
-all-cleared, closed causes); the demo period-end shows a
-cleared / in-transit / outstanding mix stable on any run date.
-ALL suites green, shas superseded and recorded. NOTHING stands
-between here and ATTEMPT 4: fresh db, code-routed sheet, James
-drives, his three-part verdict. That is the next session's whole
-job -- do not start new build work before the walk.
+ATTEMPT 4 RAN AND WAS RULED: FAIL on (b) nothing-embarrassing
+and (c) bookable; (a) fiduciary-story-lands PASSED. The named
+defect -- no status surface, no visible flow -- became gated
+item 12; the DESIGN GATE for the home page ran the same
+session (7 rulings, billing-ui/status-page.md RATIFIED, sheet
+signed) and the HOME PAGE IS BUILT: the firm status page now
+IS the dashboard at "/" (money tiles + verdict chips, strict
+needs-attention over an in-flight line, money activity with
+actors, practice row absorbed; nav Dashboard entry + brand
+link home -- gated item 4 CLOSED). All suites green, sha
+28a19170 supersedes 301b574d, full record worklog s10.
+Pending: James's eyeball of the live page. Still open in item
+12: object 2 (flow markers), object 3 (client summary),
+period-close act, finish pass -- each needs its own design
+pass before build.
 
 ## Status
 
-P4 OPEN after attempt 3 (verdict FAIL a/b/c, 2026-08-07). Since
-then, same day: s7 closed the unlocked backlog A-I + two core
-break-ins; s8 built the client pay page, trust relabel, invoice
-codes B0001/T0001; s9 built the recon engine (gated item 1,
-CLOSED pending walk verdict). The product attempt 4 runs on is
-materially different from attempt 3's on every axis of the FAIL:
-(a) reconciliation is adequate and correct by construction now;
-(b)/(c) the s7/s8 polish batch.
+P4 OPEN after attempt 4 (verdict FAIL b/c, (a) PASS,
+2026-08-08). Full record: worklog s10; sealed sheet:
+walk-artifacts/2026-08-08-attempt4/verdict.md (48 step-named
+snaps beside it). Friction log carries 5 entries; the two
+verdict drivers are the status/flow gap (item 12) and general
+finish ("not beautiful").
 
-## Attempt 4 protocol (when James says go)
+## Attempt 5 preconditions (not yet a protocol)
 
-1. Fresh db: serve a NEW data/demo-walk-<date>.db on port 8500
-   (one-address rule; kill the running server first).
-2. James drives demo-walk-protocol.md's 32 steps; agent records
-   marks M0-M6 and the friction log.
-3. Close-out: agent runs check_demo_walk.py on the walked db,
-   quotes output (exit 0 required); James eyeballs PDF + ledger
-   + recon; verdict sheet, all three sub-verdicts up/down.
+1. Gated item 12 designed with James and built: summary layer
+   (client / matter / billing), flow made visible, hidden state
+   brought forward.
+2. Finish pass against "not beautiful" (his eyes are the bar).
+3. Step-29 ledger-link visibility fix (friction entry 1).
+4. Then the standard attempt protocol: fresh dated db behind
+   8500, sheet drive, three-part verdict. Sheet may need
+   amendment if new surfaces change routes -- sheet-lock
+   re-sync rules apply.
 
 ## Watch items and caveats
 
-- SHEET LOCK current sha f7f821edb1e9 (re-synced s9, seventh
-  sheet amendment: step 24 disburse rides today's prefill, step
-  28 books-only correction wording, step 32 names the mix).
-  Walk-report canonical sha 301b574d UNCHANGED by s9 (history:
-  a506f085 -> de589cbd -> d9074178 -> c4555b15 -> f3f16120 s7 ->
-  c61ea17a s8 -> 301b574d s8 cont 2). ONLY report_sha.py output
-  counts.
-- casework-billing seal supersession s9: fiduciary e6c64593 x2
-  (supersedes fb5bccda), billing c53f262b x2 (supersedes
-  acba95b1; drift is s8's display_code column). Recorded in
-  casework-billing/state.md.
-- Walk dbs other than 07c are PRE-CODE schema (run
-  verify/migrate_invoice_codes.py before serving one) and ALL
-  retained dbs including 07c are PRE-ENGINE (mirror events on
-  their bank records; new matcher still reconciles them HOLDS,
-  but F7 purity would flag them -- attempt 4's fresh db is the
-  first pure one).
-- Server RUNNING on 8500 (client surface 8501), walked 07c db,
-  s9 engine code loaded (restarted this session; 8500 -> 303
-  login, client link /invoice/SYNTH-INV-3-1 -> 200). Login
-  demo.driver@synthetic.test / demo-walk-pass, code on screen.
-  Restart after ANY app_ui or casework/app change -- stale
-  module code serves silently (bitten twice in s7).
+- SHEET LOCK f7f821edb1e9 UNCHANGED by s10 (no code, no sheet
+  edits this session). Walk-report canonical sha 301b574d
+  UNCHANGED (history in worklog s8-s9). ONLY report_sha.py
+  output counts.
+- Server RUNNING on 8500 (client 8501), PID 71992, over the
+  walked data/demo-walk-2026-08-08.db -- the first pure-model
+  walk db (s9 engine, no mirror events). Restart after ANY
+  app_ui or casework/app change -- stale module code serves
+  silently (bitten twice in s7).
+- Retained walk dbs (delete=archive): -04, -04b, -07, -07b,
+  -07c, -08. All pre--08 dbs are PRE-ENGINE (mirror events on
+  their bank records) and pre-07c ones are PRE-CODE (run
+  verify/migrate_invoice_codes.py before serving).
+- s10 incident, minor: seed_demo.py takes no args -- a --help
+  attempt re-seeded data/demo-billing.db (generated file,
+  harmless, fiduciary GREEN quoted in worklog s10).
 - billing + fiduciary + anchor-billing run from
   ../casework-billing/; spine from ../casework/; core touches
   trigger the reciprocal guard (ALL suites).
-- Walk dbs retained (delete=archive): -04, -04b, -07, -07b,
-  -07c. Attempt-3 snaps archived in walk-artifacts/.
-- atlas/gated-items.md current as of s9 (item 1 BUILT/CLOSED
-  pending walk verdict).
+- atlas/gated-items.md current as of s10 (item 12 added; item 1
+  stays CLOSED -- the walk verdict confirmed the recon axis).
 - Anti-stall ledgers: P2 1/2, P3 0/2, F-1 1/2 used. Firm
   question still unasked: flat-fee vs hourly mix.
 
@@ -87,7 +81,11 @@ materially different from attempt 3's on every axis of the FAIL:
 
 ## Open decisions
 
-- ATTEMPT 4 go/no-go: James's call, the only thing owed.
+- STATUS/FLOW SURFACE design (gated item 12): the next
+  conversation. What the surface is, then which child builds
+  it. James's gate.
+- Step-29 ledger-link visibility: small fix, likely rides the
+  item-12 work; not yet authorized.
 - E-item select wording: James may re-rule any line.
 - Empty-invoice list behavior (gated item 3): unchanged, his
   layer call.

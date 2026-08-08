@@ -19,17 +19,16 @@ contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P4 open -- attempt 3 FAILED a/b/c, but s7-s9 have  |
-|              | since closed the backlog, the s8 polish batch, and |
-|              | the recon engine; nothing stands before attempt 4  |
-| Last session | 2026-08-07 s9 -- BANKING ENGINE built per James's  |
-|              | ruling: mirror events dead, corrections books-only,|
-|              | real statement-to-books matcher with caused items, |
-|              | F7 strengthened (bank purity), demo period-end mix |
-|              | placed; all suites green, shas superseded          |
-| Next action  | ATTEMPT 4: fresh db behind port 8500, James drives |
-|              | the 32-step sheet, three-part verdict. See         |
-|              | state.md cold-start pointer + attempt-4 protocol   |
+| Status       | P4 open -- attempt 4 ran 2026-08-08: verdict FAIL  |
+|              | on (b) polish and (c) bookable; (a) fiduciary      |
+|              | story PASSED. Named defect: no status/flow surface |
+| Last session | 2026-08-08 s10 -- attempt 4 walked by James (48    |
+|              | snaps archived), close-out checker exit 0,         |
+|              | fiduciary GREEN on walked db; verdict sealed;      |
+|              | gated item 12 (status/flow surface) recorded       |
+| Next action  | DESIGN GATE with James on the status/flow surface  |
+|              | (gated item 12) before any build. See state.md     |
+|              | cold-start pointer + attempt-5 preconditions       |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

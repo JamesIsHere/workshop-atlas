@@ -468,6 +468,45 @@ def step_reconciliation(w):
     return "three-way reconciliation screen renders; identity holds"
 
 
+def step_home_status(w):
+    """Item-12 home screen (status-page.md, ratified 2026-08-08):
+    the dashboard at / is the firm status page. Asserts the ratified
+    elements on the walked state: chip verdicts (R3), the two-level
+    attention design (R5), money-only activity with actors (R6),
+    and the absorbed practice row (R7 + frozen-walk reachability)."""
+    need(w.disbursed, "disbursement")
+    _s, url, page = w.browser.get("/")
+    assert url.endswith("/") and "Dashboard" in page, url
+    # money row: balances + HOLDS chips + promoted links (R3)
+    assert "$800.00" in page, "trust balance tile missing"
+    assert "$3,349.70" in page, "operating balance tile missing"
+    assert page.count("HOLDS") >= 2, "verdict chips missing"
+    assert "Client funds held" in page, "client funds tile missing"
+    assert f"/billing/trust/{w.iolta}" in page, "ledger link missing"
+    assert "/billing/recon" in page, "reconcile link missing"
+    # attention (R5): walk state is clean -> thesis empty state over
+    # a quiet in-flight line carrying the period-end mix
+    assert "Nothing needs you. Everything ties." in page, \
+        "strict attention queue not empty on a clean walk"
+    assert "deposit in transit" in page, "in-flight transit missing"
+    assert "check" in page and "outstanding" in page, \
+        "in-flight outstanding check missing"
+    # activity (R6): money events with actor attribution
+    assert "disbursement" in page, "activity missing disbursement"
+    assert "client" in page, "activity missing client actor"
+    # practice row (R7): old dashboard absorbed verbatim
+    for frag in ("New client", "New matter", "/contacts",
+                 "/matters", "/calendar", "/tasks", "/notes",
+                 "/files"):
+        assert frag in page, f"practice row missing {frag}"
+    # period line
+    assert "Period " in page and "ties as of" in page, \
+        "period line missing"
+    return ("home status page: chips hold, attention empty +"
+            " in-flight mix, money activity with actors, practice"
+            " row absorbed")
+
+
 def step_tier3_fence(w):
     leaks = []
     for path in TIER3_PATHS:
@@ -526,6 +565,7 @@ STEPS = [
     ("invoice PDF", step_invoice_pdf),
     ("ledger drill-down", step_ledger_drilldown),
     ("reconciliation screen", step_reconciliation),
+    ("home status page", step_home_status),
     ("tier-3 fence", step_tier3_fence),
     ("billing audit chain", step_billing_audit_chain),
     ("fiduciary on walked db", step_fiduciary_on_walked),

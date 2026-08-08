@@ -84,6 +84,10 @@ once, worked. To fix a locked file NOW instead of dragging it:
    Lives: casework-ui/app_ui/html.py shared chrome.
    Unlock: small gate; the 2026-08-07 nav-marker ratification is
    the precedent (additive, inert elsewhere).
+   CLOSED 2026-08-08 s10 riding the item-12 home-page build
+   (authorized by ruling R2): nav gains a Dashboard entry
+   (first position) and the brand word links home for authed
+   users. All suites green, quoted in billing-ui worklog s10.
 5. DEMO-LOGIN PREFILL + no-expiry sessions on synthetic dbs
    (kills the login-memory wall for parked demos; queued s4).
    Lives: casework-ui login screen.
@@ -139,6 +143,43 @@ once, worked. To fix a locked file NOW instead of dragging it:
     excludes all of this (James 2026-08-07: "go narrow now,
     come back when it becomes an issue").
     Unlock: gate; likely its own contract.
+
+12. STATUS/FLOW SURFACE -- attempt-4 verdict driver (2026-08-08,
+    FAIL b/c with (a) PASS; billing-ui worklog s10). No overall
+    status page and no visible flow: James wants a summary layer
+    (project/client summary, matter summary, billing summary "or
+    a flow") and hidden state brought forward so the user can
+    follow the order (add client -> matter -> bill -> which type
+    / which account -> collect vs disburse). His framing: "The
+    UI does not bring out the structure of the actual code in a
+    way that the user can logically follow and reinforce a
+    narrative." Information-architecture class, not polish --
+    adjacent to but much bigger than item 4 (no route to
+    dashboard).
+    Lives: casework-ui/app_ui shared chrome + new summary
+    screens; existing casework-ui screens/walk steps are gate
+    territory per the in-place-extension ruling.
+    Unlock: DESIGN GATE with James before any build -- what the
+    surface is comes first, which child builds it second.
+    DESIGN GATE OPENED 2026-08-08 s10 (live; rulings recorded
+    in billing-ui worklog s10 cont as they land). Ruling 1:
+    recon is a standing condition; humans own exceptions +
+    period close only. Ruling 2: the status page IS the home
+    screen at "/" (James's gate decision under the in-place
+    amendment's carve-out; existing-screen edits authorized,
+    scope + hard limits in the worklog). Item 4 rides this
+    work and dies with it.
+    HOME-PAGE DESIGN RATIFIED 2026-08-08 s10: seven rulings
+    sealed in billing-ui/status-page.md (sheet signed). Build
+    authorized under ruling 2's scope. Still open within item
+    12: flow markers on object screens (object 2), the client/
+    matter summary layer (object 3), the period-close act, and
+    the attempt-5 finish pass.
+    HOME PAGE BUILT 2026-08-08 s10 (same session): dashboard_
+    screen per the ratified sheet; billing-ui walk grew a
+    home-status step (18 steps); ALL suites green, sha
+    28a19170 supersedes 301b574d; record in billing-ui worklog
+    s10. Pending James's eyeball on the live page.
 
 ## Unlocked build queue (billing-ui's own surface, no gate needed)
 

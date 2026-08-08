@@ -16,6 +16,7 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0;
 header { background: #1f2a3d; color: #e8ebf0; padding: 0.6rem 1.2rem;
          display: flex; align-items: baseline; gap: 1.5rem; }
 header .brand { font-weight: 600; letter-spacing: 0.02em; }
+header a.brand { color: #e8ebf0; text-decoration: none; }
 nav a { color: #b9c4d4; text-decoration: none; margin-right: 1rem; }
 nav a:hover { color: #ffffff; }
 nav a.active { color: #ffffff; font-weight: 600;
@@ -71,7 +72,8 @@ select { padding: 0.45rem 0.5rem; border: 1px solid #c3c9d2;
                 margin: 0.4rem 0 0.6rem; color: #1f2a3d; }
 """
 
-NAV_ITEMS = [("Clients", "/contacts"), ("Matters", "/matters"),
+NAV_ITEMS = [("Dashboard", "/"),  # item-12 R2; kills gated item 4
+             ("Clients", "/contacts"), ("Matters", "/matters"),
              ("Billing", "/billing"),  # approved 2026-08-04 (gate 0)
              ("Calendar", "/calendar"), ("Files", "/files"),
              ("Tasks", "/tasks"), ("Notes", "/notes"),
@@ -85,7 +87,10 @@ def page(title, body, user_name=None, active_href=None):
     menu gives no way to confirm where you are)."""
     nav = ""
     who = ""
+    brand = "<span class='brand'>casework</span>"
     if user_name is not None:
+        # brand is a link home for authed users (gated item 4)
+        brand = "<a class='brand' href='/'>casework</a>"
         links = "".join(
             f"<a class='active' href='{href}'>{esc(label)}</a>"
             if href == active_href else
@@ -99,7 +104,7 @@ def page(title, body, user_name=None, active_href=None):
             f"<meta name='viewport' content='width=device-width,"
             f" initial-scale=1'><title>{esc(title)} -- casework</title>"
             f"<style>{STYLE}</style></head><body>"
-            f"<header><span class='brand'>casework</span>{nav}{who}</header>"
+            f"<header>{brand}{nav}{who}</header>"
             f"<main>{body}</main></body></html>").encode("utf-8")
 
 

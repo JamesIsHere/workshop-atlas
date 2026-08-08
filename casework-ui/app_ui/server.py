@@ -378,26 +378,11 @@ class Handler(BaseHTTPRequestHandler):
     # --- authenticated pages ---
 
     def _dashboard(self, conn, user):
-        c = reads.counts(conn)
-        tallies = ", ".join(
-            html.link(href, f"{c[key]} {label}")
-            for key, label, href in (("contacts", "clients", "/contacts"),
-                                     ("matters", "matters", "/matters"),
-                                     ("events", "events", "/calendar"),
-                                     ("files", "files", "/files"),
-                                     ("tasks", "tasks", "/tasks"),
-                                     ("notes", "notes", "/notes")))
-        body = (f"<div class='card'><h1>Dashboard</h1>"
-                f"<p>Logged in as {html.esc(user['name'])}"
-                f" ({html.esc(user['email'])}).</p>"
-                f"<div class='actions'>"
-                f"<a href='/contacts/new'>New client</a>"
-                f"<a href='/matters/new'>New matter</a>"
-                f"<a class='quiet' href='/calendar'>Calendar</a></div>"
-                f"<p class='hint'>{tallies}.</p>"
-                f"</div>")
-        self._send_page(200, html.page("Dashboard", body,
-                                       user_name=user["name"]))
+        # item-12 design gate (status-page.md, ratified 2026-08-08):
+        # the home screen is the firm status page; the old counts +
+        # actions card survives as its Practice section.
+        from app_ui import billing_ui
+        return billing_ui.dashboard_screen(self, conn, user)
 
     def _not_found(self, user):
         body = ("<div class='card'><h1>Not found</h1>"

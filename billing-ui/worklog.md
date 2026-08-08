@@ -1713,3 +1713,198 @@ doing its job at program scale.
 
 Next: attempt 4 -- fresh db, code-routed sheet, his verdict.
 No gate stands before it.
+
+## 2026-08-08 -- s10: ATTEMPT 4 RUN (James driving); verdict
+## FAIL b/c, (a) PASS -- the failure moved up a layer
+
+Pre-flight per protocol setup rules (all agent-executed):
+- No server was listening (machine restarted since s9); launched
+  serve.py fresh -> data/demo-walk-2026-08-08.db created, PID
+  71992 on 8500 + 8501, / answers 303 -> /setup (fresh-db shape
+  confirmed by probe). First db carrying the pure s9 bank model.
+- Oracles quoted GREEN before handover: billing-ui walk "17 pass,
+  0 pending, 0 fail; float-sweep pass; verdict GREEN";
+  drive_sheet "24/24 groups pass; verdict GREEN".
+- Incident (minor, logged for evidence discipline): agent ran
+  seed_demo.py with --help expecting usage; the script takes no
+  args and re-seeded data/demo-billing.db (generated file,
+  regenerated -- harmless; fiduciary on it quoted GREEN in the
+  same output).
+
+THE WALK: James drove all 32 steps solo, 05:44 -> 06:07 local,
+recording 48 step-named snaps instead of chat marks. Snaps moved
+from Desktop/snaps to walk-artifacts/2026-08-08-attempt4/ (his
+order; snaps folder emptied). Marks derived from snap mtimes:
+M0 05:44:02, M1 05:44:28, M2 05:53:52, M3 05:55:05, M4 05:59:23,
+M5 06:04:46, M6 06:07:47; elapsed M1->M6 23:19 vs 20:00 soft
+budget (friction entry, not a fail). One friction note rode a
+snap filename: step-29 ledger links under the dollar tiles are
+low-visibility, "always miss them".
+
+CLOSE-OUT (untimed): check_demo_walk.py on the walked db -- all
+12 receipt lines PASS (accounts, client+matter, consult paid,
+retainer via processor, settlement 500000/15030c, time entry
+7200s@25000c, bill 3 earn-out, disbursement SYNTH-USCIS 120000c,
+client funds 80000c, correction trail 1 reversal + 1 repost,
+audit actors, fiduciary in place "8 pass, 0 red, 0 stub; verdict:
+GREEN"); "check-demo-walk: PASS"; EXIT CODE: 0. Step-32 snap
+shows both accounts HOLDS, every reconciling item caused,
+adjusted bank = books = claims 800.00 footed on screen.
+
+VERDICT (James, sealed in walk-artifacts/2026-08-08-attempt4/
+verdict.md): (a) PASS -- "I think it's just the product around
+it"; the ledger / correction trail / recon trio made the case,
+recon traversed "easily". (b) FAIL -- "it's not beautiful".
+(c) FAIL -- "I'd be hesitant to show a demo". Overall FAIL b/c.
+The attempt-3 axes HELD: reconciliation correctness (s9 engine)
+and the s7/s8 polish batch survived his eyes.
+
+THE NAMED DEFECT (new class -- information architecture, not
+polish, not correctness): no overall status surface and no
+visible flow. His specifics, quoted in the friction log: no
+project / client / matter / billing summary layer ("I don't feel
+like I have an overall status"); hidden state must be brought
+forward so the user can follow the order (add client -> matter
+-> bill -> which type / which account -> collect vs disburse);
+"The UI does not bring out the structure of the actual code in
+a way that the user can logically follow and reinforce a
+narrative." Recorded as gated item 12 (STATUS/FLOW SURFACE) --
+adjacent to but much bigger than item 4 (no route to dashboard).
+Design gate with James BEFORE any build.
+
+His calibration hedge ("I don't practice development... I don't
+know what needs to be good enough") was answered on the record:
+sub-verdict (c) is deliberately his own willingness to book the
+firm meeting -- hesitance is the answer; no dev-team calibration
+required. His E&Y migration-friction lens is the right
+instrument: the demo audience is a firm in system-change pain,
+and a surface needing nativeness fails exactly that audience.
+
+METHOD: the three-sub-verdict design proved itself this attempt.
+James: "functionally... it passed everything. We don't really
+have a test that it could have passed" -- exactly; the machine
+suites clear correctness so the human verdict measures the only
+untestable axis (does the story LAND). (a)'s narrow scope (three
+screens, not app-wide flow) let him rule PASS on the fiduciary
+trio while the app-wide gap went to b/c -- the verdict sheet
+localized the defect instead of smearing it. Also: snap-mtime
+marks worked fine; chat marks were never needed.
+
+METHOD: failure-class progression across attempts is the story
+of P4: attempt 3 failed on correctness + polish; attempt 4
+failed on orientation. Each attempt converts vague discomfort
+into a named, buildable defect one layer up.
+
+Server left RUNNING on 8500/8501 over the walked
+demo-walk-2026-08-08.db. Retained walk dbs now: -04, -04b, -07,
+-07b, -07c, -08. Sheet lock f7f821edb1e9 UNCHANGED; walk-report
+canonical sha 301b574d UNCHANGED (no code touched this session).
+
+Next: design conversation on the status/flow surface (gated
+item 12) -- James's gate, his call on when.
+
+## 2026-08-08 -- s10 cont: ITEM-12 DESIGN CONVERSATION (live;
+## rulings recorded as they land)
+
+RULING 1 (James, accepted in his words -- "I accept the
+reframe"): reconciliation in this product is a STANDING
+CONDITION the system maintains (recomputed on view, statement
+leg independent, every difference caused), NOT a task a person
+performs. Humans own exactly two things: EXCEPTIONS (ruling on
+what the rec surfaces) and PERIOD CLOSE (the judgment act "this
+period is done, locked" -- does not exist in the product yet).
+Consequences: the status surface is a controller's standing
+view (where the money is, what ties, what's unruled, what
+period we're in), not a task list; permissions, when they
+come, attach at "who rules on exceptions" and "who closes a
+period"; ledger events already carry actors, so attribution
+predates roles. Viewer persona settled en route: the managing
+attorney wearing the controller hat (trust ownership is
+non-delegable under bar rules; operating is delegable
+controller territory; in the target firm size both hats sit
+on one head).
+
+RULING 2 (James, gate decision per the in-place amendment's
+carve-out -- "You have permission because the home screen is
+right. That's where we need to get"): the firm status page IS
+the home screen at "/", replacing the current dashboard
+content; authorization extends to modifying existing
+casework-ui screens/chrome where the home-screen change needs
+it, workaround-if-needed explicitly offered by James.
+Feasibility grounded THIS session (run_ui_walk.py read): the
+frozen suite pins only (i) post-login URL "/" with the string
+"Dashboard" in the page and (ii) click-reachability of all
+screens from the landing page (BFS over hrefs). Both are
+satisfiable by construction: the new home keeps the Dashboard
+name and carries at least the old dashboard's outbound links
+(New client, New matter, Calendar, six count-links -- current
+_dashboard read at casework-ui/app_ui/server.py:380-400).
+Hard limits restated (break-in method): run_ui_walk.py and all
+standing suites stay green and get quoted; casework-ui/goal.md
+never edited; rendering only, SELECT-only readers, no business
+logic; sheet-lock re-sync rules apply if walk routes change.
+Side effect: gated item 4 (no route to dashboard) dies
+naturally -- the home gains a nav route as part of this work.
+
+RULINGS 3-7 (element red-pen, one per turn; full record in
+billing-ui/status-page.md, RATIFIED 2026-08-08): R3 verdict
+chips on tiles, tie-out one click away; R4 client-funds tile
+links to the recon claims pane until object 3 exists; R5
+two-level attention (strict NEEDS ATTENTION over a quiet IN
+FLIGHT count line; thresholds are flagged defaults); R6 recent
+activity is money events only; R7 header/practice-row/order
+approved as sketched. Sheet SIGNED -- the item-12 design gate
+is CLOSED for the home page; objects 2 and 3, period-close
+act, and the finish pass remain open.
+
+METHOD: mid-red-pen incident -- a ruling request arrived
+wrapped in its full analysis (alarm-fatigue theory, threshold
+policy, demo staging at once); James: "This feels like 10
+different thoughts in one thing. What are you asking me?" The
+stripped A/B re-ask got an instant ruling. Standing lesson
+saved to auto-memory (decision-prompts-stay-terse): ruling
+requests carry choice + options + one-line why; analysis only
+on request.
+
+HOME PAGE BUILT (same session, James: "please build"):
+- reads.py: recent_money_entries (journal + posting amount +
+  invoice code + audit actor; SELECT-only).
+- billing_ui.py: dashboard_screen -- money row (kind-summed
+  tiles, HOLDS/BROKEN chips from reconcile.three_way at the
+  recon screen's own default period, promoted Ledger/Reconcile
+  button-links per R3, client-funds tile -> recon claims pane
+  per R4); strict NEEDS ATTENTION over quiet IN FLIGHT line
+  (R5; thresholds STALE_CHECK_DAYS=30, UNBILLED_NAG_DAYS=30 as
+  flagged defaults); thesis empty state "Nothing needs you.
+  Everything ties."; money-only activity table with actors
+  (R6); practice card absorbing the old dashboard verbatim
+  (R7); period line. Unbilled value uses the time_index
+  rounding idiom ((secs*rate+1800)//3600) -- integer math.
+- html.py: NAV_ITEMS gains ("Dashboard", "/") first; brand is
+  a link home for authed users (gated item 4 CLOSED).
+- server.py: _dashboard delegates to billing_ui.dashboard_screen.
+- Verifier: new step_home_status (after recon step) asserts
+  chips, tiles, attention/in-flight, activity actors, practice
+  frags, period line -> billing-ui walk is now 18 steps.
+Judgment calls flagged: activity amounts render unsigned (the
+kind word carries direction); no-bank empty state wording;
+attention severity styling (amber left-border).
+
+SUITES (all run this session, quoted):
+- billing-ui walk: "18 pass, 0 pending, 0 fail; float-sweep
+  pass; verdict GREEN". report_sha.py = 28a19170 SUPERSEDES
+  301b574d (new step line; history: ... c61ea17a -> 301b574d
+  -> 28a19170).
+- ui-walk (frozen): "13 pass, 0 pending, 0 fail; sweeps pass;
+  verdict GREEN".
+- drive-sheet: "24/24 groups pass; verdict GREEN" (sheet
+  UNCHANGED; lock f7f821edb1e9 stands).
+- check_sheet_labels: "82 labels checked, 0 not found".
+- spine: "107 green, 0 red, 0 pending; checks pass".
+- billing: "25 green, 0 red, 0 pending, 0 parked; checks pass;
+  verdict: GREEN".
+- fiduciary --seeded: "8 pass, 0 red, 0 stub; verdict: GREEN".
+- anchor-billing: "PASS (1.261s of 900s budget)".
+Server RESTARTED on 8500/8501 over the walked 08-08 db (old
+PID 71992 killed; / -> 303, /login -> 200 probed). James's
+eyeball of the live page is the remaining acceptance.

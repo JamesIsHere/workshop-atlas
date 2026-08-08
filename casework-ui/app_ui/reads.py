@@ -308,6 +308,28 @@ def known_counterparties(conn):
         " ORDER BY counterparty")]
 
 
+def recent_money_entries(conn, limit=8):
+    """The home page's activity feed (status-page.md R6: money
+    events only). Journal entries newest first, with the entry's
+    posting amount, the invoice's display code when one is
+    attached, and the acting party from the audit log (actor
+    attribution predates roles -- item-12 ruling R1)."""
+    return conn.execute(
+        "SELECT e.id, e.kind, e.memo, e.posted_at, e.invoice_id,"
+        " i.display_code,"
+        " (SELECT MAX(p.amount_cents) FROM journal_postings p"
+        "  WHERE p.entry_id = e.id) AS amount_cents,"
+        " a.actor_type, u.name AS actor_name"
+        " FROM journal_entries e"
+        " LEFT JOIN invoices i ON i.id = e.invoice_id"
+        " LEFT JOIN audit_log a ON a.entity_type='journal_entries'"
+        "  AND a.entity_id = e.id AND a.action='insert'"
+        " LEFT JOIN users u ON a.actor_type='user'"
+        "  AND u.id = a.actor_id"
+        " ORDER BY e.posted_at DESC, e.id DESC LIMIT ?",
+        (limit,)).fetchall()
+
+
 def trust_sub_accounts_of_contact(conn, contact_id):
     """Trust sub-ledger account ids belonging to a contact: their
     client-level funds plus funds held for their matters (gated
