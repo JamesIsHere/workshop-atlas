@@ -175,6 +175,22 @@ def invoice_payments_of(conn, invoice_id):
         " deleted_at IS NULL ORDER BY id", (invoice_id,)).fetchall()
 
 
+def settling_payments(conn):
+    """Online payments the processor still holds (flow markers,
+    s11): the client has paid, the money is not yet at the bank.
+    journal_entry_id is set only at settlement (processor.settle),
+    so null-with-a-processor-txn IS the settling fact -- the same
+    test invoice_detail's status line has always used."""
+    return conn.execute(
+        "SELECT p.id, p.invoice_id, p.amount_cents, p.payment_date,"
+        " p.method, i.display_code"
+        " FROM invoice_payments p JOIN invoices i ON"
+        " i.id = p.invoice_id"
+        " WHERE p.deleted_at IS NULL AND p.refunded = 0"
+        " AND p.processor_txn_id IS NOT NULL"
+        " AND p.journal_entry_id IS NULL ORDER BY p.id").fetchall()
+
+
 def sub_accounts_of(conn, bank_id):
     """Client/matter sub-accounts under a trust bank, with the
     owning entity's name."""

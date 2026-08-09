@@ -19,16 +19,18 @@ contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P4 open -- attempt 4 ran 2026-08-08: verdict FAIL  |
-|              | on (b) polish and (c) bookable; (a) fiduciary      |
-|              | story PASSED. Named defect: no status/flow surface |
-| Last session | 2026-08-08 s10 -- attempt 4 walked by James (48    |
-|              | snaps archived), close-out checker exit 0,         |
-|              | fiduciary GREEN on walked db; verdict sealed;      |
-|              | gated item 12 (status/flow surface) recorded       |
-| Next action  | DESIGN GATE with James on the status/flow surface  |
-|              | (gated item 12) before any build. See state.md     |
-|              | cold-start pointer + attempt-5 preconditions       |
+| Status       | P4 open after attempt 4 (FAIL b/c, (a) PASS).      |
+|              | Item-12 objects 1-3 BUILT and James-seen: home     |
+|              | page, flow markers (dollars-in-buckets), client    |
+|              | Money band + footed payments drill                 |
+| Last session | 2026-08-09 s11 -- audience + build-order rulings;  |
+|              | flow markers designed and built; client summary    |
+|              | designed and built; footed drill added on James's  |
+|              | live catch; walk 19 steps, ALL suites green, sha   |
+|              | c59b8e9d; sheet lock unchanged                     |
+| Next action  | PERIOD-CLOSE ACT design pass with James (carries   |
+|              | maker-checker + deferred rankings), then the       |
+|              | finish pass. See state.md cold-start pointer       |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

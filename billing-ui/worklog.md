@@ -1908,3 +1908,289 @@ SUITES (all run this session, quoted):
 Server RESTARTED on 8500/8501 over the walked 08-08 db (old
 PID 71992 killed; / -> 303, /login -> 200 probed). James's
 eyeball of the live page is the remaining acceptance.
+
+## 2026-08-09 -- s11: home-page eyeball DONE; audience + build-order
+## rulings (design conversation, no build)
+
+Server incident first: James hit 8500 and saw first-run setup.
+Ground truth: a serve.py started 16:30 with NO --db had created
+demo-walk-2026-08-09.db (fresh, empty) and held the port; a second
+instance on the correct 08-08 walk db double-bound alongside it
+(Windows allows it; requests land unpredictably). Stale PID 74736
+killed; single listener verified; /login 200 with the login form
+quoted. The empty -09 db retained (delete=archive). Login
+confusion resolved from the walk sheet: demo.driver@synthetic.test
+/ demo-walk-pass (his own Part-A account), MFA code on the demo
+mailbox screen.
+
+EYEBALL LANDED: James viewed the s10 home page live (snap
+2026-08-09 164020). His read, unprompted: this is the head of
+finance's page; the CEO/founding attorney consumes it secondhand,
+narrated, e.g. at a weekly/monthly meeting; further screens would
+serve the performance views (who is way behind, who keeps the firm
+in cash, is billing up to date).
+
+RULING (audience, item-12 context): the dashboard's owner is the
+FINANCE SEAT. Lead attorney/CEO reads it only via that seat. Agent
+refinement accepted: the page as built does the CONTROLS job
+(daily: does it tie); the PERFORMANCE job (periodic, comparative:
+AR aging, client concentration, WIP/unbilled) is distinct, does
+not exist yet, and maps onto the open item-12 queue -- client
+summary (object 3) seeds the per-client views; the period-close
+act is the formal monthly meeting. No scope added.
+
+RULING (build order, roles): screens are built OWNER-SEES-ALL for
+now; every screen gets an AUDIENCE TAG at its design pass
+(dashboard: finance seat -- first tag); multi-user enforcement is
+a FUTURE CONTRACT that inherits the tags (permission substrate
+tables already exist in the casework schema, verified in the
+walked db this session). Read surfaces restrict late (overlay);
+write flows get the segregation-of-duties question AT DESIGN TIME
+-- flagged now for the period-close act (maker-checker or single
+actor is a design question, not an assumption).
+
+METHOD: the audience question ("who would look at this page?")
+came from James cold off the live product, not from the design
+deck -- the eyeball produced a ratifiable ruling the sheet pass
+did not surface. Product-first gates keep earning their cost.
+
+No code, no sheet, no suite runs this session (design only).
+Sheet lock f7f821edb1e9 and walk sha 28a19170 stand.
+
+## 2026-08-09 -- s11 cont: FLOW MARKERS design pass (item-12
+## object 2) -- scope + vocabulary RULED
+
+Grounding ran before any question: eight money-in-motion states
+enumerated from the walked db schema + reconcile.py causes +
+invoice_status source (all quoted this session). Inventory table
+in chat; all eight facts already exist in the data layer --
+object 2 is pure visibility.
+
+RULING (scope): WIDE -- full revenue lifecycle, all eight states,
+not just the bank window. Rationale accepted: the attempt-4
+defect was the practice's flow (invisible sent-invoice, silent
+settlement), and the client-summary object needs the lifecycle
+vocabulary anyway. Build STAGES by demo relevance -- payment
+plans (0 rows in every walk db) carry the vocabulary but earn no
+build until a walk exercises them.
+
+DESIGN TURN (James's find): the first five-word draft labeled
+OBJECTS and broke on partials ("could be partially billed...
+awaiting could have paid a partial") plus a word collision
+(Scheduled reads as calendar work). Reframe ratified: markers
+label DOLLARS, not objects -- every dollar in exactly one bucket
+at any moment; objects may straddle; totals foot.
+
+RULING (vocabulary, signed): four buckets + rest --
+  Unbilled    earned, on no invoice (state 7; fee-side)
+  Outstanding on an invoice, unpaid (states 5,6,8; inherits the
+              app's existing invoice-status word; checks move OUT
+              of "outstanding" -> one word one meaning)
+  Settling    client paid, processor holds (state 4)
+  Clearing    booked, bank unconfirmed (states 1,2,3; both
+              directions; all trust in-motion money lives here)
+  at rest     landed + reconciled; carries NO marker
+Scheduled is DISSOLVED to an annotation on Outstanding ("on
+plan, next due ..."). Principle: bucket = position; annotations
+carry story (age, sent date, plan promise, check #, expected
+settle). Derived free: Unbilled + Outstanding + Settling = the
+inbound pipeline, a sum over quotable facts, never stored.
+Client-funds tile is a stock, untouched by flow.
+
+Audience tag (per s11 build-order ruling): flow markers serve
+the FINANCE/COLLECTIONS seat; rendered inline on shared screens.
+
+RULING (placement, signed): three layers, no new screens --
+L1 dashboard pipeline line (AMENDS home-gate R5: the quiet
+in-flight line renders DOLLARS by bucket instead of counts;
+two-level attention structure unchanged; each amount links to
+its backing list and foots to it); L2 amount splits on object
+pages (invoice balance split by bucket incl. partials; matter
+page unbilled line; recon screen untouched); L3 row chips on
+existing lists (invoice rows, ledger rows, payment rows;
+at-rest rows carry NO chip). Staging: plan annotations render
+only when plan rows exist. Chip styling / wording / thresholds
+are flagged judgment calls. James: "I agree. Proceed." -> BUILD
+authorized this session.
+
+FLOW MARKERS BUILT (same session, James: "I agree. Proceed."):
+- reads.py: settling_payments (processor-held online payments;
+  journal_entry_id-null test, same authority as the invoice
+  page's status line; SELECT-only).
+- billing_ui.py L1: dashboard "In flight" counts line replaced
+  by the "On the way:" pipeline dollar line (unbilled /
+  outstanding / settling / clearing; empty buckets absent;
+  rate-less unbilled time shows hours, never a fabricated zero).
+  Links: time index, billing outstanding tab, recon; a single
+  settling payment links to its own page.
+- billing_ui.py L2: invoice header gains the dollars-in-buckets
+  split (collected / settling / outstanding + overdue-or-sent
+  annotation), rendered only when money straddles buckets;
+  foots by construction to charges - discount (same identity as
+  billing.invoice_balance). Payment rows + payment detail carry
+  a Settling pill while the processor holds the money.
+- billing_ui.py L3: billing-list outstanding pills carry
+  overdue-Nd / sent-date chipnotes; bank-ledger rows the bank
+  has not confirmed carry a Clearing chip (same reconcile
+  engine, recon default period; at-rest rows unmarked).
+- server.py (_matter_detail): one unbilled-time hint line when
+  the matter has time on no invoice (placement L2 as signed;
+  frozen ui-walk stayed green -- gate satisfied by suite).
+- CSS: .pill.settling, .pill.clearing, span.chipnote, p.split.
+Judgment calls flagged: settling has no backing list screen
+(single payment links to its page, plural renders unlinked);
+overdue beats sent when both apply; chip colors reuse existing
+pill families (settling=refunded purple, clearing=trust blue).
+
+Verifier: step_settlement now asserts the settling moment at
+three surfaces (pipeline line 5,000.00 settling; invoice row
+chip; payment detail chip) before extinguishing it; ledger
+drilldown asserts Clearing chips; home step asserts the
+pipeline line with THIS walk's own end figures (200.00 unbilled
+-- the bare-number entry is never imported; 5,150.30 clearing
+-- the disbursement bank event IS recorded) and that empty
+buckets render no segment. First assertion draft copied the
+08-08 walked db's end state (6,350.30) -- the two walks differ
+there; caught by the suite, fixed to the verifier's own truth.
+
+SUITES (all run this session, quoted):
+- billing-ui walk: "18 pass, 0 pending, 0 fail; float-sweep
+  pass; verdict GREEN". report_sha.py = e6ae695b SUPERSEDES
+  28a19170 (history: ... 301b574d -> 28a19170 -> e6ae695b).
+- ui-walk (frozen): "13 pass, 0 pending, 0 fail; sweeps pass;
+  verdict GREEN".
+- drive-sheet: "24/24 groups pass; verdict GREEN"; sheet lock
+  f7f821edb1e9 UNCHANGED (no pinned label touched).
+- check_sheet_labels: "82 labels checked, 0 not found".
+- spine: "107 green, 0 red, 0 pending; checks pass".
+- billing: "25 green, 0 red, 0 pending, 0 parked; checks pass;
+  verdict: GREEN".
+- fiduciary --seeded: "8 pass, 0 red, 0 stub; verdict: GREEN".
+- anchor-billing: "PASS (1.266s of 900s budget)".
+
+## 2026-08-09 -- s11 cont 2: CLIENT SUMMARY design pass (item-12
+## object 3) -- placement RULED
+
+Grounding: contact page today is casework-only (profile facts,
+matters, one action; _contact_detail quoted). Every per-client
+money fact already exists behind proven readers (trust subs,
+invoice balances + due dates, unbilled by contact, settling,
+posted payments) -- object 3 is assembly, not machinery.
+
+RULING (placement, signed): Option A with C's deferral -- a
+MONEY BAND on the existing client page. One client, one page
+(a separate billing-side client page recreates the split-brain
+interaction cost; rejected). Touching the frozen casework-ui
+contact screen is the gate decision and this signature makes
+it, matter-page precedent applies (additive band; frozen
+ui-walk must stay green at the suite). The band is the
+AUDIENCE BOUNDARY (finance-seat content on a shared page;
+droppable per-role later without redesign). Firm-wide rankings
+(way behind / keeps-us-in-cash) are NOT this object: they are
+rollups across client summaries, queued for the period-close
+design pass. James: "I agree. A with C's deferral built in."
+
+RULING (band contents, signed): three headline figures (Held in
+trust -> recon claims pane per R4; Outstanding; Collected to
+date = lifetime posted payments, the keeps-us-in-cash seed);
+a client-scoped pipeline line in the dashboard grammar
+(unbilled / outstanding+overdue / settling); their invoice
+table with the billing-list chips. CLEARING deliberately
+omitted from the client band -- bank-side fact, weak client
+attribution; it lives on bank surfaces. James: "Yes this looks
+good. Continue." -> BUILD authorized.
+
+CLIENT MONEY BAND BUILT (same session):
+- billing_ui.py: client_money_band -- headline figures (Held in
+  trust -> recon per R4; Outstanding; Collected to date =
+  posted non-refunded payments, settling excluded so buckets
+  never double-count), client-scoped pipeline line (unbilled
+  scopes by contact OR the client's matters; outstanding
+  carries worst-overdue; settling links to a lone payment's
+  page), invoice table with billing-list chips. Returns ""
+  until the client has any money story; carries its own
+  BILLING_STYLE block (contact page renders outside billing's
+  _page).
+- server.py (_contact_detail): band inserted between profile
+  and Matters cards; rendering only.
+Judgment calls flagged: empty-band suppression (casework-pure
+page until money exists); headline zeros always render once
+the band exists (zeros are information); band styling rides
+the existing card/pill families.
+
+Verifier: new step_client_money (after home status; 19 steps
+now) asserts the three figures on the walk's Vera (800.00 held
+/ 0.00 outstanding / 8,500.00 collected), the client-scoped
+200.00 unbilled (the bare-number entry rides her matter), the
+three invoice codes, and that clearing does NOT leak into the
+band (ruled omission enforced by suite).
+
+SUITES (all rerun this session, quoted):
+- billing-ui walk: "19 pass, 0 pending, 0 fail; float-sweep
+  pass; verdict GREEN". report_sha.py = 5ba384cc SUPERSEDES
+  e6ae695b (history: ... 28a19170 -> e6ae695b -> 5ba384cc).
+- ui-walk (frozen): "13 pass, 0 pending, 0 fail; sweeps pass;
+  verdict GREEN" (contact-page band additive; gate satisfied).
+- drive-sheet: "24/24 groups pass; verdict GREEN"; lock
+  f7f821edb1e9 UNCHANGED. check_sheet_labels: "82 labels
+  checked, 0 not found".
+- spine: "entries: 111  green: 107  red: 0  pending: 0
+  parked: 4".
+- billing: "25 green, 0 red, 0 pending, 0 parked; checks pass;
+  verdict: GREEN".
+- fiduciary --seeded: "8 pass, 0 red, 0 stub; verdict: GREEN".
+- anchor-billing: "PASS (1.281s of 900s budget)".
+Server restarted on 8500 over the 08-08 walked db; Vera's live
+band quoted in-session (800.00 / 0.00 / 8,500.00, three
+invoices listed). Item-12 remaining after this: period-close
+act design pass, then the finish pass; step-29 ledger-link fix
+still queued.
+
+## 2026-08-09 -- s11 cont 3: footed payments drill (James's catch
+## on the live band)
+
+James, off the live page: "why no link to drill on the $ value
+for Collected to date". Verdict accepted as a defect -- the
+figure had no backing list anywhere (payments render only
+per-invoice); the same gap flagged for the dashboard settling
+segment had slipped through UNFLAGGED here. Options offered
+(A build the footed listing / B accept two-click drill);
+RULING: A.
+
+BUILT: client_payments screen at /billing/clients/<id>/payments
+(new route; tier-3 fence unaffected -- path not reserved).
+Every payment on the client's invoices, date-ordered, each row
+linking payment + invoice; foot "Collected to date: $X" equals
+the band headline by construction (settling and refunded rows
+chipped and excluded from the foot, each called out in a hint
+under it when present). Band: Collected figure now links to
+the listing; the band's settling segment links there too
+(retiring that flagged judgment call band-side; the DASHBOARD
+settling segment's no-list gap still stands flagged).
+
+Verifier: step_client_money extended -- asserts the linked
+figure, drills the listing, asserts the foot ties to the
+headline and all three method words render; chip-absence
+asserted on rendered spans, not raw words (the style block
+itself names the pill classes -- first draft tripped on it).
+
+Incidents, both caught by suites: (1) frozen ui-walk no-logic
+lint flagged the WORD "SELECT" in the new function's docstring
+(comments count as SQL-outside-reads.py); reworded, lint has
+zero tolerance and that is correct. (2) band assertion needed
+re-pinning to the now-linked figure.
+
+SUITES (rerun after fixes, quoted): billing-ui walk "19 pass,
+0 pending, 0 fail; float-sweep pass; verdict GREEN";
+ui-walk (frozen) "13 pass, 0 pending, 0 fail; sweeps pass;
+verdict GREEN"; earlier this round and unaffected by the
+docstring-only fix: spine "entries: 111  green: 107  red: 0
+pending: 0  parked: 4", billing "25 green ... verdict: GREEN",
+fiduciary "8 pass ... verdict: GREEN", anchor-billing "PASS
+(1.301s of 900s budget)", drive-sheet "24/24 groups pass;
+verdict GREEN", labels "82 checked, 0 not found"; sheet lock
+f7f821edb1e9 unchanged. report_sha.py = c59b8e9d SUPERSEDES
+5ba384cc (history: ... e6ae695b -> 5ba384cc -> c59b8e9d).
+Server restarted; live listing quoted: three payments
+(500 direct / 3,000 earn-out / 5,000 card) footing to
+$8,500.00 = the band headline.

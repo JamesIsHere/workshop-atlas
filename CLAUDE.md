@@ -44,10 +44,10 @@ Method observations belong in child worklogs with a `METHOD:` prefix.
 | casework-billing| COMPLETE 2026-08-03 --    | casework-billing/goal.md    |
 |                 | all verifiers green,      | (ratified 2026-08-03);      |
 |                 | result.md on disk         | result.md is the authority  |
-| billing-ui      | ACTIVE -- P4 attempt 4    | billing-ui/goal.md          |
-|                 | FAIL b/c 2026-08-08, (a)  | (ratified 2026-08-04)       |
-|                 | PASS; item-12 status/flow |                             |
-|                 | design gate is next       |                             |
+| billing-ui      | ACTIVE -- P4 open; item-  | billing-ui/goal.md          |
+|                 | 12 objects 1-3 built (s11 | (ratified 2026-08-04)       |
+|                 | 2026-08-09); period-close |                             |
+|                 | design pass is next       |                             |
 
 ## Spikes
 

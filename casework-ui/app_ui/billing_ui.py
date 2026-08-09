@@ -49,6 +49,12 @@ span.money { display: block; text-align: right;
 .pill.holds { background: #e6f4e6; color: #256325; }
 .pill.broken { background: #fdecec; color: #8a2525; }
 .pill.refunded { background: #f3e9f7; color: #6b3a86; }
+.pill.settling { background: #f3e9f7; color: #6b3a86; }
+.pill.clearing { background: #e8eefb; color: #24519e; }
+span.chipnote { color: #8a5b12; font-size: 0.8rem;
+                white-space: nowrap; }
+p.split { color: #6a7383; font-size: 0.95rem; margin: 0.5rem 0 0;
+          font-variant-numeric: tabular-nums; }
 .actions { overflow: auto; }
 input.copylink { font-family: Consolas, monospace; font-size: 0.9rem;
                  background: #f0f2f5; border: 1px dashed #b9c0cb;
@@ -275,8 +281,24 @@ def billing_landing(h, conn, user, query):
     shown = [r for r in rows
              if tab == "all" or status_of[r["id"]] == tab]
     if shown:
+        today = _today()
         trows = []
         for r in shown:
+            # flow annotation (s11 L3): the outstanding pill carries
+            # its age -- overdue beats sent when both apply
+            status_cell = _status_pill(conn, r["id"])
+            if status_of[r["id"]] == "outstanding":
+                if r["due_date"] and r["due_date"] < today:
+                    status_cell += (
+                        " <span class='chipnote'>overdue"
+                        f" {_days_old(r['due_date'], today)}d</span>")
+                else:
+                    sent = reads.invoice_shares_of(conn, r["id"])
+                    if sent:
+                        status_cell += (
+                            " <span class='chipnote'>sent"
+                            f" {fmt_date(sent[0]['created_at'][:10])}"
+                            "</span>")
             trows.append([
                 html.link(f"/billing/invoices/{r['id']}",
                           r["display_code"]),
@@ -284,7 +306,7 @@ def billing_landing(h, conn, user, query):
                 html.link(f"/contacts/{r['contact_id']}",
                           r["display_name"]),
                 html.esc(fmt_date(r["issued_date"])),
-                _status_pill(conn, r["id"]),
+                status_cell,
                 f"<span class='money'>"
                 f"{fmt_cents(billing.invoice_balance(conn, r['id']))}"
                 f"</span>",
@@ -316,6 +338,165 @@ def billing_landing(h, conn, user, query):
     body = (f"<h1>Billing</h1>{tiles}"
             f"<div class='card'>{nav}{tabs}{table}</div>")
     _page(h, "Billing", body, user)
+
+
+def client_money_band(conn, contact_id):
+    """The client page's Money card (item-12 object 3; placement A
+    ruled s11: one client, one page; the band is the audience
+    boundary). Three headline figures, the client-scoped pipeline
+    line in the dashboard grammar, and their invoice table.
+    Clearing is deliberately absent -- bank-side fact, ruled out of
+    the client band. Returns "" until the client has any money
+    story (the page stays casework-pure). Carries its own style
+    block: the contact page renders outside _page's billing CSS."""
+    invs = [r for r in reads.invoice_rows(conn)
+            if r["contact_id"] == contact_id]
+    trust_subs = reads.trust_sub_accounts_of_contact(conn, contact_id)
+    matter_ids = {m["id"] for m in
+                  reads.contact_matters(conn, contact_id)}
+    unb = [t for t in reads.unbilled_time_entries(conn)
+           if t["contact_id"] == contact_id
+           or t["matter_id"] in matter_ids]
+    if not invs and not trust_subs and not unb:
+        return ""
+
+    today = _today()
+    held = sum(ledger.account_balance(conn, a) for a in trust_subs)
+    out_sum = collected = settling_cents = 0
+    worst_overdue = 0
+    trows = []
+    for r in invs:
+        bal = billing.invoice_balance(conn, r["id"])
+        status = billing.invoice_status(conn, r["id"])
+        status_cell = _status_pill(conn, r["id"])
+        if status == "outstanding":
+            out_sum += bal
+            if r["due_date"] and r["due_date"] < today:
+                age = _days_old(r["due_date"], today)
+                worst_overdue = max(worst_overdue, age)
+                status_cell += (f" <span class='chipnote'>overdue"
+                                f" {age}d</span>")
+            else:
+                sent = reads.invoice_shares_of(conn, r["id"])
+                if sent:
+                    status_cell += (
+                        " <span class='chipnote'>sent"
+                        f" {fmt_date(sent[0]['created_at'][:10])}"
+                        "</span>")
+        for p in reads.invoice_payments_of(conn, r["id"]):
+            if p["refunded"]:
+                continue
+            if (p["processor_txn_id"] is not None
+                    and p["journal_entry_id"] is None):
+                settling_cents += p["amount_cents"]
+            else:
+                collected += p["amount_cents"]
+        trows.append([
+            html.link(f"/billing/invoices/{r['id']}",
+                      r["display_code"]),
+            _type_pill(r),
+            html.esc(fmt_date(r["issued_date"])),
+            status_cell,
+            f"<span class='money'>{fmt_cents(bal)}</span>"])
+    itable = (html.table(["Invoice", "Type", "Issued", "Status",
+                          "Balance"], trows) if trows
+              else "<p class='hint'>No invoices yet.</p>")
+
+    pay_list = f"/billing/clients/{contact_id}/payments"
+    heads = (f"Held in trust: "
+             + html.link("/billing/recon", dollars(held))
+             + f" &middot; Outstanding: {dollars(out_sum)}"
+             + f" &middot; Collected to date: "
+             + html.link(pay_list, dollars(collected)))
+
+    unb_cents = sum(
+        (t["duration_seconds"] * t["rate_cents_per_hour"] + 1800)
+        // 3600 for t in unb if t["rate_cents_per_hour"])
+    flight = []
+    if unb:
+        label = (fmt_cents(unb_cents) if unb_cents
+                 else fmt_duration(sum(t["duration_seconds"]
+                                       for t in unb)))
+        flight.append(html.link("/billing/time",
+                                f"{label} unbilled"))
+    if out_sum:
+        note = (f" -- overdue {worst_overdue}d" if worst_overdue
+                else "")
+        flight.append(f"{fmt_cents(out_sum)} outstanding{note}")
+    if settling_cents:
+        flight.append(html.link(
+            pay_list, f"{fmt_cents(settling_cents)} settling"))
+    inflight = (f"<p class='inflight'>On the way: "
+                + " &middot; ".join(flight) + "</p>") if flight else ""
+
+    return (f"<style>{BILLING_STYLE}</style>"
+            f"<div class='card'><h1>Money</h1>"
+            f"<p class='split'>{heads}</p>{inflight}{itable}</div>")
+
+
+def client_payments(h, conn, user, contact_id):
+    """The footed drill behind the client band's Collected figure
+    (s11, James's catch: a stated total must tie to a listing).
+    Every payment for this client on one page; the foot equals the
+    band's Collected-to-date exactly -- settling and refunded rows
+    are chipped and excluded from the foot, each called out below
+    it when present. Reader-only; also the landing for the band's
+    settling segment."""
+    contact = reads.contact_row(conn, contact_id)
+    if contact is None:
+        raise _nf()
+    invs = [r for r in reads.invoice_rows(conn)
+            if r["contact_id"] == contact_id]
+    dated, collected, settling, refunded = [], 0, 0, 0
+    for r in invs:
+        for p in reads.invoice_payments_of(conn, r["id"]):
+            method = {"sim_card": "card (online)",
+                      "sim_echeck": "eCheck (online)",
+                      "trust_transfer": "trust transfer (earn-out)",
+                      "direct": "direct"}.get(p["method"], p["method"])
+            chip = ""
+            if p["refunded"]:
+                chip = _pill("refunded")
+                refunded += p["amount_cents"]
+            elif (p["processor_txn_id"] is not None
+                    and p["journal_entry_id"] is None):
+                chip = _pill("settling", "Settling")
+                settling += p["amount_cents"]
+            else:
+                collected += p["amount_cents"]
+            dated.append((p["payment_date"], p["id"], [
+                html.link(f"/billing/payments/{p['id']}",
+                          fmt_date(p["payment_date"])),
+                html.link(f"/billing/invoices/{r['id']}",
+                          r["display_code"]),
+                html.esc(method), chip,
+                f"<span class='money'>{fmt_cents(p['amount_cents'])}"
+                f"</span>"]))
+    dated.sort(key=lambda t: (t[0], t[1]))
+    if dated:
+        table = html.table(["Date", "Invoice", "Method", "",
+                            "Amount"], [row for _, _, row in dated])
+    else:
+        table = html.empty_state(
+            "No payments from this client yet. Every payment on any"
+            " of their invoices will appear here.")
+    foot = (f"<p class='due'><strong>Collected to date:"
+            f" {dollars(collected)}</strong></p>")
+    notes = ""
+    if settling:
+        notes += (f"<p class='hint'>{dollars(settling)} more is"
+                  " settling -- paid by the client, not yet at the"
+                  " bank; it joins the total at settlement.</p>")
+    if refunded:
+        notes += (f"<p class='hint'>{dollars(refunded)} refunded --"
+                  " listed above, not in the total.</p>")
+    name = contact["display_name"]
+    body = (_crumbs(("Billing", "/billing"),
+                    (name, f"/contacts/{contact_id}"),
+                    ("Payments", None))
+            + f"<div class='card'><h1>Payments -- {html.esc(name)}"
+            + f"</h1>{table}{foot}{notes}</div>")
+    _page(h, f"Payments -- {name}", body, user)
 
 
 def invoice_detail(h, conn, user, invoice_id, error=None):
@@ -373,6 +554,13 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
     else:
         ctable = ""  # state A renders the add form, not filler
 
+    def _is_settling(p):
+        # the processor holds it: authorized, not yet posted to the
+        # books (journal_entry_id lands at settlement)
+        return (p["processor_txn_id"] is not None
+                and p["journal_entry_id"] is None
+                and not p["refunded"])
+
     if payments:
         prows = []
         for p in payments:
@@ -381,12 +569,13 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
                       "direct": "direct"}.get(p["method"], p["method"])
             note = (" (online, simulated processor)"
                     if p["method"] in ("sim_card", "sim_echeck") else "")
-            refund_pill = (_pill("refunded") if p["refunded"]
-                           else "")
+            pills = ((_pill("refunded") if p["refunded"] else "")
+                     + (_pill("settling", "Settling")
+                        if _is_settling(p) else ""))
             prows.append([html.link(f"/billing/payments/{p['id']}",
                                     fmt_date(p["payment_date"])),
                           html.esc(method + note),
-                          refund_pill,
+                          pills,
                           f"<span class='money'>"
                           f"{fmt_cents(p['amount_cents'])}</span>"])
         ptable = html.table(["Date", "Method", "", "Amount"], prows)
@@ -570,6 +759,35 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
     due_line = (f"<p class='due'><strong>Balance due:"
                 f" {dollars(balance)}</strong></p>"
                 if balance > 0 else "")
+
+    # Dollars-in-buckets split (flow markers, s11 L2): where every
+    # dollar of this invoice is right now. Rendered only when the
+    # money straddles buckets -- a fully-collected or untouched
+    # invoice already tells its story in one line.
+    # same authority as the core: balance = charges - discount -
+    # non-refunded payments, so collected derives to exactly the
+    # posted payments and the three buckets foot to the invoice
+    total_cents = (sum(c["amount_cents"] for c in charges)
+                   - inv["discount_cents"])
+    settling_cents = sum(p["amount_cents"] for p in payments
+                         if _is_settling(p))
+    collected_cents = total_cents - balance - settling_cents
+    split_bits = []
+    if collected_cents > 0:
+        split_bits.append(f"{fmt_cents(collected_cents)} collected")
+    if settling_cents:
+        split_bits.append(f"{fmt_cents(settling_cents)} settling")
+    if balance > 0:
+        today = _today()
+        note = ""
+        if inv["due_date"] and inv["due_date"] < today:
+            note = (" -- overdue"
+                    f" {_days_old(inv['due_date'], today)} days")
+        elif shares:
+            note = f" -- sent {fmt_date(shares[0]['created_at'][:10])}"
+        split_bits.append(f"{fmt_cents(balance)} outstanding{note}")
+    split_line = ("<p class='split'>" + " &middot; ".join(split_bits)
+                  + "</p>") if len(split_bits) > 1 else ""
     pdf_link = (f"<div class='actions'>"
                 f"<a class='quiet' href='/billing/invoices/"
                 f"{invoice_id}/pdf'>Download PDF</a></div>"
@@ -581,7 +799,7 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
                    else "")
     header = (f"<div class='card'><h1>{html.esc(title)} "
               + ("".join((_type_pill(inv), " ", status_pill)))
-              + f"</h1>{kvs}{due_line}{pdf_link}</div>")
+              + f"</h1>{kvs}{due_line}{split_line}{pdf_link}</div>")
 
     # One page, three lives (walk finding F-1): building shows the
     # add form and nothing else; awaiting money leads with Collect;
@@ -704,16 +922,27 @@ def account_ledger(h, conn, user, account_id):
     else:
         subs_html = ""
 
+    # flow markers (s11 L3): rows the bank has not confirmed carry a
+    # Clearing chip -- same reconcile engine, recon screen's default
+    # period; at-rest rows stay unmarked
+    period = reads.max_event_date(conn)
+    clearing_ids = set()
+    if period is not None:
+        clearing_ids = {i["entry_id"] for i in reconcile.three_way(
+            conn, account_id, period)["items"]}
+
     postings = reads.account_entries(conn, account_id)
     if postings:
         rows = []
         for p in postings:
             inflow = (p["side"] == "debit")  # banks are debit-normal
             signed = p["amount_cents"] if inflow else -p["amount_cents"]
+            chip = (" " + _pill("clearing", "Clearing")
+                    if p["entry_id"] in clearing_ids else "")
             rows.append([html.esc(fmt_date(p["posted_at"])),
                          html.link(f"/billing/journal/{p['entry_id']}",
                                    f"e{p['entry_id']}"),
-                         html.esc(p["kind"].replace("_", " ")),
+                         html.esc(p["kind"].replace("_", " ")) + chip,
                          html.esc(p["memo"] or ""),
                          f"<span class='money'>{fmt_cents(signed)}"
                          f"</span>"])
@@ -1056,12 +1285,8 @@ def dashboard_screen(h, conn, user):
             attend.append(
                 html.link(f"/billing/invoices/{r['id']}", code)
                 + f" past due (due {fmt_date(r['due_date'])})")
-    transit = outstanding_checks = 0
     for b, i in recon_items:
-        if i["cause"] == "deposit in transit":
-            transit += 1
-        elif i["cause"] == "outstanding disbursement":
-            outstanding_checks += 1
+        if i["cause"] == "outstanding disbursement":
             age = _days_old(i["date"], today)
             if age > STALE_CHECK_DAYS:
                 attend.append(
@@ -1092,32 +1317,38 @@ def dashboard_screen(h, conn, user):
             "No bank accounts yet. Billing starts when the first"
             " account exists.")
 
-    # IN FLIGHT (R5): routine movement, counts only, one quiet line.
+    # ON THE WAY (flow markers, s11 placement ruling L1 -- amends
+    # R5: dollars by bucket instead of counts; same quiet line under
+    # the strict attention queue). Every figure is a sum over rows
+    # reachable behind its link; buckets follow the ratified
+    # vocabulary (unbilled / outstanding / settling / clearing).
+    settling_rows = reads.settling_payments(conn)
+    settling_cents = sum(p["amount_cents"] for p in settling_rows)
+    clearing_cents = sum(i["amount_cents"] for _, i in recon_items)
     flight = []
-    if transit:
-        flight.append(html.link(
-            "/billing/recon",
-            f"{transit} deposit{'s' if transit != 1 else ''}"
-            " in transit"))
-    if outstanding_checks:
-        flight.append(html.link(
-            "/billing/recon",
-            f"{outstanding_checks} check"
-            f"{'s' if outstanding_checks != 1 else ''} outstanding"))
-    if open_bills:
-        flight.append(html.link(
-            "/billing",
-            f"{len(open_bills)} bill"
-            f"{'s' if len(open_bills) != 1 else ''} open")
-            + f" ({fmt_cents(open_sum)})")
     if unbilled:
-        flight.append(html.link(
-            "/billing/time",
-            f"{fmt_duration(unbilled_secs)} unbilled")
-            + (f" ({fmt_cents(unbilled_cents)})"
-               if unbilled_cents else ""))
-    inflight = (f"<p class='inflight'>In flight: "
-                + ", ".join(flight) + "</p>") if flight else ""
+        # rate-less entries have hours but no dollars yet -- show
+        # the truthful figure, never a fabricated zero
+        label = (fmt_cents(unbilled_cents) if unbilled_cents
+                 else fmt_duration(unbilled_secs))
+        flight.append(html.link("/billing/time",
+                                f"{label} unbilled"))
+    if open_bills:
+        flight.append(html.link("/billing?tab=outstanding",
+                                f"{fmt_cents(open_sum)} outstanding"))
+    if settling_cents:
+        # no list screen exists for processor money (judgment call,
+        # flagged): a single settling payment links to its own page
+        one = (settling_rows[0] if len(settling_rows) == 1 else None)
+        text = f"{fmt_cents(settling_cents)} settling"
+        flight.append(html.link(f"/billing/payments/{one['id']}",
+                                text) if one else text)
+    if clearing_cents:
+        flight.append(html.link("/billing/recon",
+                                f"{fmt_cents(clearing_cents)}"
+                                " clearing"))
+    inflight = (f"<p class='inflight'>On the way: "
+                + " &middot; ".join(flight) + "</p>") if flight else ""
 
     # RECENT ACTIVITY (R6): money events only, with actors.
     acts = reads.recent_money_entries(conn)
@@ -1243,11 +1474,16 @@ def payment_detail(h, conn, user, payment_id, error=None):
     assoc = next((c for c in charges
                   if c["id"] == p["associated_charge_id"]), None)
 
+    settling = (p["processor_txn_id"] is not None
+                and p["journal_entry_id"] is None
+                and not p["refunded"])
     kv = [(_noun(inv), html.link(f"/billing/invoices/{inv['id']}",
                                  f"{_noun(inv)} {inv['display_code']}")),
           ("Method", html.esc(method)),
           ("Amount", f"<span class='money'>"
-                     f"{fmt_cents(p['amount_cents'])}</span>"),
+                     f"{fmt_cents(p['amount_cents'])}</span>"
+                     + (" " + _pill("settling", "Settling")
+                        if settling else "")),
           ("Date", html.esc(fmt_date(p["payment_date"]))),
           ("Applied to", html.esc(assoc["description"]) if assoc
            else "the invoice balance")]
@@ -1865,6 +2101,9 @@ def route(h, conn, method, segs, query, now, uid, user):
             return journal_detail(h, conn, user, _id(segs[2]))
         if len(segs) == 3 and segs[:2] == ["billing", "payments"]:
             return payment_detail(h, conn, user, _id(segs[2]))
+        if len(segs) == 4 and segs[:2] == ["billing", "clients"] \
+                and segs[3] == "payments":
+            return client_payments(h, conn, user, _id(segs[2]))
         if segs == ["billing", "recon"]:
             return recon_screen(h, conn, user, query)
         if segs == ["billing", "time"]:

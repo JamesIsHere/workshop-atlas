@@ -180,6 +180,22 @@ once, worked. To fix a locked file NOW instead of dragging it:
     home-status step (18 steps); ALL suites green, sha
     28a19170 supersedes 301b574d; record in billing-ui worklog
     s10. Pending James's eyeball on the live page.
+    EYEBALL LANDED + OBJECTS 2 AND 3 BUILT 2026-08-09 s11:
+    home page eyeballed (audience RULED: finance seat; CEO
+    consumes narrated). Flow markers built wide (dollars-in-
+    buckets vocabulary Unbilled/Outstanding/Settling/Clearing,
+    signed; dashboard pipeline dollar line amends R5; invoice
+    splits; row chips; matter unbilled line). Client summary
+    built (Money band on the contact page, placement A signed;
+    footed payments drill at /billing/clients/<id>/payments --
+    James's live catch). Build-order ruling: audience tags now,
+    role enforcement is a future contract; SoD asked per
+    write-flow at design time. Walk is 19 steps; ALL suites
+    green; sha chain ...28a19170 -> e6ae695b -> 5ba384cc ->
+    c59b8e9d. Record: billing-ui worklog s11. STILL OPEN in
+    item 12: period-close act (carries the maker-checker
+    question + deferred firm-wide rankings), then the
+    attempt-5 finish pass.
 
 ## Unlocked build queue (billing-ui's own surface, no gate needed)
 

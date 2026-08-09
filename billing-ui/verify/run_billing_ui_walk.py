@@ -303,6 +303,20 @@ def step_trust_request_online(w):
 
 def step_settlement(w):
     need(w.trust_request_id, "trust request")
+    # flow markers (s11): between the client's card payment and the
+    # settlement run is the ONLY walk moment settling money exists --
+    # assert the bucket at all three surfaces before extinguishing it
+    _s, _u, page = w.browser.get("/")
+    assert "settling" in page, "dashboard pipeline missing settling"
+    assert "5,000.00 settling" in page, \
+        "settling dollars wrong on the pipeline line"
+    _s, _u, page = w.browser.get(
+        f"/billing/invoices/{w.trust_request_id}")
+    assert "Settling" in page, "payment row missing Settling chip"
+    m = re.search(r"/billing/payments/(\d+)", page)
+    assert m is not None, "payment link missing from invoice"
+    _s, _u, page = w.browser.get(f"/billing/payments/{m.group(1)}")
+    assert "Settling" in page, "payment detail missing Settling chip"
     page = probe(w, "/billing/trust")
     assert "Run settlement" in page, "settlement affordance missing"
     _s, _u, page = w.browser.post("/billing/settle", {})
@@ -451,13 +465,18 @@ def step_ledger_drilldown(w):
     assert "800.00" in page, "sub-ledger balance missing"
     assert "(1,200.00)" in page, \
         "disbursement not parenthesized (accounting negatives)"
+    # flow markers (s11): the in-transit deposit and the uncleared
+    # disbursement check both sit on this ledger -- their rows carry
+    # the Clearing chip; confirmed rows carry none
+    assert "Clearing" in page, "ledger rows missing Clearing chips"
     m = re.search(r"/billing/journal/(\d+)", page)
     assert m is not None, "journal entry link missing from ledger"
     page = probe(w, f"/billing/journal/{m.group(1)}")
     assert "debit" in page.lower() and "credit" in page.lower(), \
         "journal detail does not show double-entry legs"
     return ("ledger drill-down: account -> sub-ledger -> journal"
-            " detail with debit/credit legs; negatives parenthesized")
+            " detail with debit/credit legs; negatives parenthesized;"
+            " unconfirmed rows chipped Clearing")
 
 
 def step_reconciliation(w):
@@ -484,13 +503,23 @@ def step_home_status(w):
     assert "Client funds held" in page, "client funds tile missing"
     assert f"/billing/trust/{w.iolta}" in page, "ledger link missing"
     assert "/billing/recon" in page, "reconcile link missing"
-    # attention (R5): walk state is clean -> thesis empty state over
-    # a quiet in-flight line carrying the period-end mix
+    # attention (R5 as amended s11): walk state is clean -> thesis
+    # empty state over the pipeline dollar line. THIS walk's end
+    # state: the bare-number time entry (200.00) is never imported,
+    # and the disbursement's bank event is recorded, so clearing =
+    # 5,000.00 in-transit deposit + 150.30 uncleared fee check.
+    # Invoices are all collected and nothing is settling -- neither
+    # word may appear as a segment.
     assert "Nothing needs you. Everything ties." in page, \
         "strict attention queue not empty on a clean walk"
-    assert "deposit in transit" in page, "in-flight transit missing"
-    assert "check" in page and "outstanding" in page, \
-        "in-flight outstanding check missing"
+    assert "On the way:" in page, "pipeline line missing"
+    line = re.search(r"On the way:.*?</p>", page).group(0)
+    assert "200.00 unbilled" in line, \
+        f"unbilled dollars wrong on the pipeline line: {line}"
+    assert "5,150.30 clearing" in line, \
+        f"clearing dollars wrong on the pipeline line: {line}"
+    assert "outstanding" not in line and "settling" not in line, \
+        f"empty bucket rendered on the pipeline line: {line}"
     # activity (R6): money events with actor attribution
     assert "disbursement" in page, "activity missing disbursement"
     assert "client" in page, "activity missing client actor"
@@ -505,6 +534,54 @@ def step_home_status(w):
     return ("home status page: chips hold, attention empty +"
             " in-flight mix, money activity with actors, practice"
             " row absorbed")
+
+
+def step_client_money(w):
+    """Item-12 object 3 (client summary, s11 design gate): the
+    client page carries the Money band -- three headline figures,
+    the client-scoped pipeline line, their invoice table. Walk-end
+    truth for Vera: trust 800.00 held; nothing outstanding;
+    collected = 500 consult + 5,000 retainer + 3,000 earn-out =
+    8,500.00; the un-imported bare-number entry (200.00) rides her
+    matter, so it is her unbilled. Clearing must NOT appear -- it
+    was ruled out of the client band."""
+    need(w.disbursed, "disbursement")
+    page = probe(w, f"/contacts/{w.contact_id}")
+    assert ">Money</h1>" in page, "Money band missing"
+    assert "Held in trust: " in page and "$800.00" in page, \
+        "trust held figure missing"
+    assert "Outstanding: $0.00" in page, \
+        "outstanding headline figure missing"
+    assert re.search(r"Collected to date: <a"
+                     r" href='/billing/clients/\d+/payments'>"
+                     r"\$8,500\.00</a>", page), \
+        "collected-to-date figure wrong or not linked to its drill"
+    line = re.search(r"On the way:.*?</p>", page)
+    assert line and "200.00 unbilled" in line.group(0), \
+        f"client-scoped unbilled missing: {line and line.group(0)}"
+    assert "clearing" not in (line.group(0) if line else ""), \
+        "clearing leaked into the client band"
+    for code in ("B0001", "T0001", "B0002"):
+        assert code in page, f"invoice {code} missing from band"
+    # the footed drill (James's catch, s11): the Collected figure
+    # links to the client payments listing whose foot ties exactly
+    assert f"/billing/clients/{w.contact_id}/payments" in page, \
+        "Collected figure does not link to the payments listing"
+    page = probe(w, f"/billing/clients/{w.contact_id}/payments")
+    assert "Collected to date: $8,500.00" in page, \
+        "payments listing foot does not tie to the band headline"
+    for frag in ("card (online)", "trust transfer (earn-out)",
+                 "direct"):
+        assert frag in page, f"payment method {frag} missing"
+    # chips, not raw words -- the style block itself names the pill
+    # classes, so only rendered spans count
+    assert (">Settling</span>" not in page
+            and "'pill refunded'" not in page), \
+        "walk-end listing should have neither settling nor refunds"
+    return ("client Money band: 800.00 held, 0 outstanding,"
+            " 8,500.00 collected, 200.00 unbilled scoped to the"
+            " client; invoices listed; clearing absent as ruled;"
+            " payments listing foots to the headline")
 
 
 def step_tier3_fence(w):
@@ -566,6 +643,7 @@ STEPS = [
     ("ledger drill-down", step_ledger_drilldown),
     ("reconciliation screen", step_reconciliation),
     ("home status page", step_home_status),
+    ("client money band", step_client_money),
     ("tier-3 fence", step_tier3_fence),
     ("billing audit chain", step_billing_audit_chain),
     ("fiduciary on walked db", step_fiduciary_on_walked),

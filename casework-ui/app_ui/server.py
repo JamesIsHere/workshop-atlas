@@ -439,12 +439,18 @@ class Handler(BaseHTTPRequestHandler):
                  for m in reads.contact_matters(conn, cid)]
         mtable = (html.table(["Matter", "Created"], mrows) if mrows
                   else "<p class='hint'>No matters yet.</p>")
+        # Money band (billing-ui s11, item-12 object 3, placement A
+        # signed): rendering only, assembled in billing_ui; empty
+        # string until the client has any money story
+        from app_ui import billing_ui
+        money = billing_ui.client_money_band(conn, cid)
         body = (f"<div class='card'><h1>{html.esc(row['display_name'])}"
                 f"</h1><div class='actions'>"
                 f"<a href='/matters/new?contact={cid}'>New matter for"
                 f" this client</a></div>"
                 f"<dl class='kv'>{kv}</dl></div>"
-                f"<div class='card'><h1>Matters</h1>{mtable}</div>")
+                + money
+                + f"<div class='card'><h1>Matters</h1>{mtable}</div>")
         self._send_page(200, html.page(row["display_name"], body,
                                        user_name=user["name"]))
 
@@ -506,13 +512,31 @@ class Handler(BaseHTTPRequestHandler):
                  for e in reads.matter_events(conn, mid)]
         etable = (html.table(["Deadline / event", "When"], erows)
                   if erows else "<p class='hint'>No deadlines yet.</p>")
+        # flow markers (billing-ui s11, placement L2): one unbilled
+        # line when this matter has time on no invoice -- rendering
+        # only, the sum reuses billing_ui's integer rounding idiom
+        from app_ui import billing_ui
+        unb = [t for t in reads.unbilled_time_entries(conn)
+               if t["matter_id"] == mid]
+        unb_cents = sum(
+            (t["duration_seconds"] * t["rate_cents_per_hour"] + 1800)
+            // 3600 for t in unb if t["rate_cents_per_hour"])
+        unb_line = ""
+        if unb:
+            figure = (billing_ui.fmt_cents(unb_cents) if unb_cents
+                      else billing_ui.fmt_duration(
+                          sum(t["duration_seconds"] for t in unb)))
+            unb_line = (f"<p class='hint'>{figure} unbilled time on"
+                        f" this matter -- "
+                        + html.link("/billing/time", "Time") + "</p>")
         body = (f"<div class='card'><h1>{html.esc(row['name'])}</h1>"
                 f"<dl class='kv'><dt>Client</dt><dd>"
                 + html.link(f"/contacts/{contact['id']}",
                             contact["display_name"])
                 + f"</dd><dt>Description</dt><dd>"
                   f"{html.esc(row['description'] or '-')}</dd></dl>"
-                f"<div class='actions'>"
+                + unb_line
+                + f"<div class='actions'>"
                 f"<a href='/matters/{mid}/forms-new'>New form package"
                 f"</a><a href='/calendar/new?matter={mid}&contact="
                 f"{row['primary_contact_id']}'>New deadline</a></div>"
