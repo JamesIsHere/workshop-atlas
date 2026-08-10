@@ -17,13 +17,14 @@ is the contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P3 NOTES BUILT 2026-08-10, gate PENDING; rail 16   |
-|              | pass/0 fail, sha 157f5ac1 x2; all suites green     |
-| Last session | 2026-08-10 s5 -- timeline-pin step refined         |
-|              | pre-build, notes screens + timelines + categories  |
-|              | home built, 5 RED drives, demo reseeded, 8500 up   |
-| Next action  | P3 gate: James drives notes on 8500; [Q13] new +   |
-|              | [Q1]-[Q11] carried. Then P4 Files. See state.md    |
+| Status       | P3 NOTES PASSED 2026-08-10 (receipt in             |
+|              | verify/gate-receipts/); rail 16 pass/0 fail,       |
+|              | sha d2c65ac8 x2                                    |
+| Last session | 2026-08-10 s5 -- P3 built + gate driven live, 2    |
+|              | fix rounds (detail blue links, note-page export),  |
+|              | PASS signed; attachments parked w/ trigger         |
+| Next action  | P4 Files, staged gates (P4a mechanics, P4b         |
+|              | e-sign). [Q1]-[Q11]+[Q13] carry. See state.md      |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

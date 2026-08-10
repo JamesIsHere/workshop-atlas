@@ -2,22 +2,26 @@
 
 ## Status
 
-P3 NOTES BUILT 2026-08-10 (s5), GATE PENDING -- James has not
-driven it yet. All five notes rail steps green + driven RED
-(timeline-pin step refined pre-build so ordering is observable);
-rail 16 pass / 14 pending / 0 fail, sha 157f5ac1 x2; all four
-standing suites green, quoted in worklog s5. Demo server UP on
-port 8500 over fresh data/demo-tabs.db. P2 receipt:
-verify/gate-receipts/p2-tasks.md.
+P3 NOTES PASSED 2026-08-10 (s5), signed "pass" after a live
+drive with two fix rounds (note-detail blue links r1, note-page
+export + detail-blue extension r2) and a purpose/capability
+exchange answered from corpus + schema. Receipt:
+verify/gate-receipts/p3-notes.md. Rail 16 pass / 14 pending / 0
+fail, sha d2c65ac8 x2; all four standing suites green, quoted in
+the receipt. Demo server UP on port 8500.
 
 ## Next actions
 
-1. P3 GATE: James drives /notes, a matter page's Notes timeline
-   (capture, pin, export), and /settings/note-categories on 8500.
-   New [Q13]: the core's notes PDF prints raw ISO timestamps
-   inside the document. Carried: [Q1]-[Q11].
-2. After the verdict: receipt in verify/gate-receipts/p3-notes.md,
-   then P4 FILES per plan.md (staged P4a mechanics / P4b e-sign).
+1. P4 FILES per plan.md, STAGED (P4a files mechanics gate, P4b
+   e-sign flow gate): refine/extend the four files rail steps,
+   drive RED, build -- upload + custody (source + sha256),
+   matter-centric sections + firm index with filters, rename/
+   preview/print/bulk zip, then the e-sign flow (prep editor,
+   signer, fields, request, live signer link).
+2. [Q1]-[Q11] + [Q13] carry to the P4 gate. PARKED at P3:
+   note attachments (trigger: walk/use shows notes narrating
+   unreachable documents); single-note PDF (core-amendment
+   family).
 
 ## Watch items and caveats
 

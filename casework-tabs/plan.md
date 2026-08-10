@@ -65,7 +65,10 @@ Settings layout at P6 -- avoids P6 blocking P1-P3.
 - U3.1 DONE 2026-08-10 (s5): notes rail refined (timeline-pin
   ordering made observable) + five steps green, 5 RED drives,
   sha 157f5ac1 x2, suites green, demo reseeded, 8500 up.
-- U3.2 P3 gate: hands-on verdict, [Q13] + carried [Q1]-[Q11],
-  receipt in verify/gate-receipts/p3-notes.md.
-- U4.x Files phase queues after the gate (P4a mechanics / P4b
-  e-sign staged gates per plan).
+- U3.2 DONE 2026-08-10 (s5): P3 gate PASSED live -- 2 fix rounds
+  (tab-detail blue links; note-page linkage-scoped export);
+  purpose + capability exchange answered from corpus/schema;
+  sha d2c65ac8 x2; receipt p3-notes.md; attachments + single-note
+  PDF parked w/ triggers; [Q1]-[Q11]+[Q13] carry.
+- U4.x Files phase queues next (four rail steps; staged gates
+  P4a mechanics / P4b e-sign).

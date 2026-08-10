@@ -542,3 +542,20 @@ tab-detail blue extends to task detail AND calendar event detail
 (both gate-passed screens; extension disclosed here for the
 receipt). Sha d2c65ac8 x2 (supersedes 157f5ac1: new assert +
 detail message); ui-walk GREEN; server restarted.
+
+## 2026-08-10 -- s5 close: P3 GATE PASSED
+
+VERDICT: PASS, signed "pass". Receipt with the FULL step table at
+verify/gate-receipts/p3-notes.md. Two live rounds (r1 detail blue
+links, r2 note-page export + task/event detail extension); the
+gate also carried a product-purpose exchange (what notes are FOR)
+and two capability questions answered from corpus + schema reads,
+not memory. Attachments and single-note PDF PARKED with triggers;
+[Q1]-[Q11] + [Q13] carry to P4.
+
+METHOD: third gate, same shape -- the queue untouched, rulings
+born from his driving + snaps. New this gate: the snap channel
+caught TWO defects the rail structurally cannot see (visited
+purple, missing affordance on a page the rail asserts by marker
+not by completeness). Snaps are now a first-class gate oracle
+alongside the hands-on drive.
