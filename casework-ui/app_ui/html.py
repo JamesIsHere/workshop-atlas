@@ -89,10 +89,15 @@ select { padding: 0.45rem 0.5rem; border: 1px solid #c3c9d2;
 .nowrap { white-space: nowrap; }
 .dot { display: inline-block; width: 0.55rem; height: 0.55rem;
        border-radius: 50%; margin-right: 0.3rem; }
+.legend { margin: 0.6rem 0 0; }
+.legend span.item { margin-right: 1.1rem; white-space: nowrap; }
+main.wide { max-width: 92rem; }
 .empty-state { text-align: center; padding: 1.2rem 0 0.6rem; }
+table.month-grid { table-layout: fixed; }
 table.month-grid td { vertical-align: top; height: 5.5rem;
                       width: 14.28%; border: 1px solid #e7eaee;
-                      padding: 0.3rem; font-size: 0.8rem; }
+                      padding: 0.3rem; font-size: 0.8rem;
+                      overflow: hidden; }
 table.month-grid .day { color: #6a7383; font-weight: 600; }
 table.month-grid a { text-decoration: none; display: block;
                      margin-top: 0.15rem; white-space: nowrap;
@@ -107,13 +112,15 @@ NAV_ITEMS = [("Dashboard", "/"),  # item-12 R2; kills gated item 4
              ("Search", "/search"), ("Settings", "/settings")]
 
 
-def page(title, body, user_name=None, active_href=None):
+def page(title, body, user_name=None, active_href=None, wide=False):
     """Full document. Nav renders only for an authenticated user.
     active_href marks one nav item as the current section (walk
     finding 2026-08-07: drivers reorient by the menu; an unmarked
-    menu gives no way to confirm where you are)."""
+    menu gives no way to confirm where you are). wide widens main
+    for grid surfaces (calendar month view, P1 gate feedback)."""
     nav = ""
     who = ""
+    main_cls = " class='wide'" if wide else ""
     brand = "<span class='brand'>casework</span>"
     if user_name is not None:
         # brand is a link home for authed users (gated item 4)
@@ -132,7 +139,8 @@ def page(title, body, user_name=None, active_href=None):
             f" initial-scale=1'><title>{esc(title)} -- casework</title>"
             f"<style>{STYLE}</style></head><body>"
             f"<header>{brand}{nav}{who}</header>"
-            f"<main>{body}</main></body></html>").encode("utf-8")
+            f"<main{main_cls}>{body}</main></body></html>"
+            ).encode("utf-8")
 
 
 def field(label, name, ftype="text", value="", autofocus=False,

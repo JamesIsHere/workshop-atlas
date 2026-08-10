@@ -854,7 +854,8 @@ class Handler(BaseHTTPRequestHandler):
                 f"{toggle}{chips}{inner}</div>")
         self._send_page(200, html.page("Calendar", body,
                                        user_name=user["name"],
-                                       active_href="/calendar"),
+                                       active_href="/calendar",
+                                       wide=(view == "month")),
                         cookies=cookies)
 
     def _cal_month(self, query, shown):
@@ -910,9 +911,12 @@ class Handler(BaseHTTPRequestHandler):
                 cells += (f"<td><span class='day'>{day}</span>"
                           f"{entries}</td>")
             rows += f"<tr>{cells}</tr>"
+        key = ("<p class='hint legend'>Key: " + "".join(
+            f"<span class='item'><span class='dot kind-{k}'></span>"
+            f"{k}</span>" for k in self.CAL_KINDS) + "</p>")
         return (f"<h1>{pycal.month_name[mon]} {year}</h1>{nav}"
                 f"<table class='data month-grid'><thead><tr>{head}"
-                f"</tr></thead><tbody>{rows}</tbody></table>")
+                f"</tr></thead><tbody>{rows}</tbody></table>{key}")
 
     def _event_new(self, conn, user, query):
         mid = query.get("matter", [""])[0]
