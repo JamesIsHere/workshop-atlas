@@ -57,6 +57,9 @@ Settings layout at P6 -- avoids P6 blocking P1-P3.
   vacuous-assert catch) + four steps green, 5 RED drives incl the
   empty-state FAIL arm, sha eb4fc42e x2, suites green, demo
   reseeded (automation linkage content), 8500 up.
-- U2.2 P2 gate: hands-on verdict, [Q9]-[Q11] + carried [Q1]-[Q8]
-  serialized, receipt in verify/gate-receipts/p2-tasks.md.
-- U3.x Notes phase queues after the gate.
+- U2.2 DONE 2026-08-10 (s4): P2 gate PASSED live -- 4 fix rounds
+  (typography, confirm-complete supersedes one-click, RATIFIED
+  reopen_task core amendment + reciprocal-guard rerun, single
+  link); sha ae9bdf90 x2; receipt p2-tasks.md; [Q12] ruled,
+  [Q1]-[Q11] carry.
+- U3.x Notes phase queues next (five rail steps).

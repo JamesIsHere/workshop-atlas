@@ -445,3 +445,20 @@ task detail. Files/notes indexes keep the old two-link cell until
 their own phases rebuild them (scoped discipline, same as the
 typography rulings). Rail 11 pass/0 fail, sha ae9bdf90 unchanged
 (no asserted strings moved); ui-walk GREEN; server restarted.
+
+## 2026-08-10 -- s4 close: P2 GATE PASSED
+
+VERDICT: PASS, signed "PASS!". Receipt with the FULL step table at
+verify/gate-receipts/p2-tasks.md. Four live rounds (r1 typography,
+r2 confirm-complete SUPERSEDING Appendix A's one-click, r3 the
+RATIFIED reopen_task core amendment + reciprocal-guard rerun, r4
+matter-first single link). [Q12] ruled at the gate; [Q1]-[Q11]
+carry to P3 by the same standing-defaults disposition as P1.
+
+METHOD: second gate running the P1 pattern -- the prepared [Q]
+queue again went untouched while the live drive produced four
+rulings, one of them a program-level amendment. Two gates in, the
+queue's role is confirmed as safety net, not agenda. His snaps
+also earned a new role: r4's defect (redundant link pair) was
+visible ONLY in his screenshots -- the rail asserts markup
+presence, not visual redundancy.

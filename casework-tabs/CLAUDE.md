@@ -17,13 +17,14 @@ is the contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P2 TASKS BUILT 2026-08-10, gate PENDING; rail 11   |
-|              | pass/0 fail, sha eb4fc42e x2; all suites green     |
-| Last session | 2026-08-10 s4 -- rail refined (no core due setter; |
-|              | vacuous-assert catch), tasks screens + builder     |
-|              | built, 5 RED drives, demo reseeded, 8500 up        |
-| Next action  | P2 gate: James drives tasks on 8500; [Q9]-[Q11]    |
-|              | new + [Q1]-[Q8] carried. Then P3 Notes. See        |
+| Status       | P2 TASKS PASSED 2026-08-10 (receipt in             |
+|              | verify/gate-receipts/); rail 11 pass/0 fail,       |
+|              | sha ae9bdf90 x2                                    |
+| Last session | 2026-08-10 s4 -- P2 built + gate driven live, 4    |
+|              | fix rounds incl the RATIFIED reopen_task core      |
+|              | amendment (atlas/CLAUDE.md), PASS signed           |
+| Next action  | P3 Notes: refine the five notes rail steps, drive  |
+|              | RED, build. [Q1]-[Q11] carry to the P3 gate. See   |
 |              | state.md                                           |
 
 Keep this table honest at every wind-down. A stale State section is

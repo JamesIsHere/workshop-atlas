@@ -2,52 +2,60 @@
 
 ## Status
 
-P2 TASKS BUILT 2026-08-10 (s4), GATE PENDING -- James has not
-driven it yet. All four tasks rail steps green + driven RED (a
-fifth RED proved the empty-state FAIL arm); rail 11 pass / 19
-pending / 0 fail, sha eb4fc42e x2 (supersedes d1a45962); all four
-standing suites green and quoted in worklog s4. Demo server UP on
-port 8500 over regenerated data/demo-tabs.db (login
-demo.tabs@synthetic.test / demo-tabs-pass).
+P2 TASKS PASSED 2026-08-10 (s4), signed "PASS!" after a live
+drive with four gate-fed fix rounds (typography r1, confirm-
+complete r2, Reopen core amendment r3, single-link r4). Receipt
+with the full step table: verify/gate-receipts/p2-tasks.md. Rail
+11 pass / 19 pending / 0 fail, sha ae9bdf90 x2; all four standing
+suites green and quoted in the receipt. LANDMARK: the frozen
+casework core opened by ratified program amendment for exactly
+one function, tasks.reopen_task (atlas/CLAUDE.md carries the
+amendment text).
 
 ## Next actions
 
-1. P2 GATE: James drives /tasks, /settings/task-lists, and a
-   matter page's Tasks card on 8500. Ruling queue serialized one
-   per turn: [Q9] due-date-at-creation-only (core has no setter),
-   [Q10] automation linkage builder-side only, [Q11] matter-page
-   date format extension, then carried [Q1]-[Q8] (worklog s3).
-2. After the verdict: receipt with the FULL step table in
-   verify/gate-receipts/p2-tasks.md, then P3 NOTES per plan.md.
+1. P3 NOTES per plan.md: extend/refine the five notes rail steps,
+   drive RED, build -- /settings/note-categories home, /notes/quick
+   minimal capture + /notes/new expanded form, matter notes
+   timeline with pins on top, index filter chips (ALL default,
+   pinned first, category + mine), PDF export on matter/contact.
+   Machinery home: categories build HERE, re-home at P6.
+2. [Q1]-[Q11] carry to the P3 gate ([Q12] ruled at P2 = the
+   Reopen amendment). [Q1] alone gates a rail step. [Q9]
+   (due-date editing needs a core amendment, same shape as
+   Reopen) stands until it bites.
 
 ## Watch items and caveats
 
-- Rail refinements this session (worklog s4): /tasks/<id>/due
-  dropped (no core setter -- due rides quick-add), lists step
-  asserts tightened after a vacuous-assert catch (sabotage 4 NOT
-  caught first run; rail now pins "due 30 days before EAD
-  expiry").
-- Matter detail dates went MM/DD/YYYY (existing screen, sibling-
-  defect extension, [Q11]) -- revert is one edit if the gate says
-  no.
+- Demo server UP on port 8500 over data/demo-tabs.db (background
+  task b8wv88mv3 this session). Fresh regen + restart at the P3
+  gate; same port always.
+- Typography (0.85rem td, links firm blue) + matter-first
+  single-link rulings now cover calendar AND tasks surfaces;
+  notes/files tables ADOPT THEM when P3/P4 rebuild those screens;
+  billing-ui's signed tables stay untouched.
+- Complete is check-then-Done everywhere (native required
+  checkbox, zero JS); Reopen is deliberately one-click. Rail pins
+  both; the direct-POST path bypasses client validation by
+  nature, so the guard is pinned as markup.
 - Gate receipts quote the FULL step table (METHOD s3): marker
   regressions demote to PENDING, so the verdict line alone can
   hide a regressed screen.
-- Calendar typography rulings (0.85rem tables, links always blue)
-  stay SCOPED to calendar surfaces; app-wide needs a ruling.
+- Sabotages via Edit-with-known-content ONLY (METHOD s4: a blind
+  str.replace sabotage was a silent no-op and nearly passed as a
+  verified RED).
 - Typed deferral owed: final-walk TIME BUDGET at P7 walk-sheet
   ratification.
 - casework-ui remains ON HOLD (cold runner); its data/ carries
   real-ish PII -- never seed or demo from it.
-- Owed per phase: deliberate RED per new step + the empty-state
-  FAIL arm (P2 arm PROVEN this session; owed again only if a
-  later phase adds a new designed-empty surface).
-- Parked with triggers (unchanged from s3): "+N more" month-cell
+- Owed per phase: deliberate RED per new step. The empty-state
+  FAIL arm was PROVEN at P2; owed again only if a later phase
+  adds a new designed-empty surface pattern.
+- Parked with triggers (unchanged): "+N more" month-cell
   overflow; matter/client in month cell or hover; interleaved
-  notes timeline; calendar sync; role ENFORCEMENT.
+  notes timeline (rendered-artifact gate); calendar sync; role
+  ENFORCEMENT.
 
 ## Open decisions
 
-- [Q1]-[Q11] queued for the P2 gate. None block P3 if James
-  wants to defer them again, but [Q9] and [Q11] shape screens
-  James will keep touching -- push for rulings at this gate.
+- [Q1]-[Q11] queued for the P3 gate. None block the P3 build.
