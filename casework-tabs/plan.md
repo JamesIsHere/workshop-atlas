@@ -62,4 +62,10 @@ Settings layout at P6 -- avoids P6 blocking P1-P3.
   reopen_task core amendment + reciprocal-guard rerun, single
   link); sha ae9bdf90 x2; receipt p2-tasks.md; [Q12] ruled,
   [Q1]-[Q11] carry.
-- U3.x Notes phase queues next (five rail steps).
+- U3.1 DONE 2026-08-10 (s5): notes rail refined (timeline-pin
+  ordering made observable) + five steps green, 5 RED drives,
+  sha 157f5ac1 x2, suites green, demo reseeded, 8500 up.
+- U3.2 P3 gate: hands-on verdict, [Q13] + carried [Q1]-[Q11],
+  receipt in verify/gate-receipts/p3-notes.md.
+- U4.x Files phase queues after the gate (P4a mechanics / P4b
+  e-sign staged gates per plan).

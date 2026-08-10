@@ -2,28 +2,22 @@
 
 ## Status
 
-P2 TASKS PASSED 2026-08-10 (s4), signed "PASS!" after a live
-drive with four gate-fed fix rounds (typography r1, confirm-
-complete r2, Reopen core amendment r3, single-link r4). Receipt
-with the full step table: verify/gate-receipts/p2-tasks.md. Rail
-11 pass / 19 pending / 0 fail, sha ae9bdf90 x2; all four standing
-suites green and quoted in the receipt. LANDMARK: the frozen
-casework core opened by ratified program amendment for exactly
-one function, tasks.reopen_task (atlas/CLAUDE.md carries the
-amendment text).
+P3 NOTES BUILT 2026-08-10 (s5), GATE PENDING -- James has not
+driven it yet. All five notes rail steps green + driven RED
+(timeline-pin step refined pre-build so ordering is observable);
+rail 16 pass / 14 pending / 0 fail, sha 157f5ac1 x2; all four
+standing suites green, quoted in worklog s5. Demo server UP on
+port 8500 over fresh data/demo-tabs.db. P2 receipt:
+verify/gate-receipts/p2-tasks.md.
 
 ## Next actions
 
-1. P3 NOTES per plan.md: extend/refine the five notes rail steps,
-   drive RED, build -- /settings/note-categories home, /notes/quick
-   minimal capture + /notes/new expanded form, matter notes
-   timeline with pins on top, index filter chips (ALL default,
-   pinned first, category + mine), PDF export on matter/contact.
-   Machinery home: categories build HERE, re-home at P6.
-2. [Q1]-[Q11] carry to the P3 gate ([Q12] ruled at P2 = the
-   Reopen amendment). [Q1] alone gates a rail step. [Q9]
-   (due-date editing needs a core amendment, same shape as
-   Reopen) stands until it bites.
+1. P3 GATE: James drives /notes, a matter page's Notes timeline
+   (capture, pin, export), and /settings/note-categories on 8500.
+   New [Q13]: the core's notes PDF prints raw ISO timestamps
+   inside the document. Carried: [Q1]-[Q11].
+2. After the verdict: receipt in verify/gate-receipts/p3-notes.md,
+   then P4 FILES per plan.md (staged P4a mechanics / P4b e-sign).
 
 ## Watch items and caveats
 
