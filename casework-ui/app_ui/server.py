@@ -324,6 +324,11 @@ class Handler(BaseHTTPRequestHandler):
                     and segs[2] == "esign" and segs[3] == "void":
                 return self._file_esign_void(conn, now, uid,
                                              _id(segs[1]))
+            if len(segs) == 4 and segs[0] == "files" \
+                    and segs[2] == "esign" \
+                    and segs[3] == "quick-request":
+                return self._file_esign_quick(conn, now, uid,
+                                              _id(segs[1]))
             if len(segs) == 6 and segs[0] == "files" \
                     and segs[2] == "esign" and segs[3] == "fields" \
                     and segs[5] == "remove":
@@ -1518,11 +1523,38 @@ class Handler(BaseHTTPRequestHandler):
         if ext == ".pdf":
             es = reads.esign_row(conn, fid)
             if es is None:
+                # ONE-CLICK path (gate r8, James: the link sat
+                # invisible at the end of a four-step pipeline):
+                # signer + standard signature field + send in a
+                # single action; the editor stays as the manual
+                # path. The file's own client is preselected.
+                pre = f["contact_id"]
+                if pre is None and f["matter_id"] is not None:
+                    m = reads.matter_row(conn, f["matter_id"])
+                    pre = m["primary_contact_id"] if m else None
+                copts = "".join(
+                    f"<option value='{i}'"
+                    f"{' selected' if i == pre else ''}>"
+                    f"{html.esc(n)}</option>"
+                    for i, n in sorted(cnames.items(),
+                                       key=lambda kv: kv[1]))
                 es_html = (
+                    f"<form method='post' class='upload-row'"
+                    f" action='/files/{fid}/esign/quick-request'>"
+                    f"<div><label>Request a signature from"
+                    f"</label><select name='contact_id' required>"
+                    f"{copts}</select></div>"
+                    f"<button class='primary'>Request signature"
+                    f"</button></form>"
+                    f"<p class='hint'>One click: adds the signer,"
+                    f" places a standard signature field at the"
+                    f" page bottom, emails the request, and shows"
+                    f" the live signing link right here.</p>"
                     f"<form method='post' class='inline'"
                     f" action='/files/{fid}/esign/prepare'>"
-                    f"<button class='primary'>Prepare for"
-                    f" e-signing</button></form>")
+                    f"<button class='small'>Prepare manually"
+                    f" (multiple signers or custom fields)"
+                    f"</button></form>")
             else:
                 es_html = self._esign_status_block(conn, fid, es,
                                                    cnames)
@@ -1741,7 +1773,7 @@ class Handler(BaseHTTPRequestHandler):
                 f"<div><label>X</label><input type='number' name='x'"
                 f" value='100' style='width:5.5rem'></div>"
                 f"<div><label>Y</label><input type='number' name='y'"
-                f" value='600' style='width:5.5rem'></div>"
+                f" value='120' style='width:5.5rem'></div>"
                 f"<button class='small'>Place field</button></form>"
                 f"<p class='hint'>Position is in PDF points from"
                 f" the BOTTOM-LEFT corner; a letter page is 612"
@@ -1818,12 +1850,42 @@ class Handler(BaseHTTPRequestHandler):
         es = self._es_live(conn, fid)
         v = self._form_body().get("contact_id", "")
         if v:
-            try:
-                esign.add_signer(conn, es["id"], contact_id=int(v))
-                conn.commit()
-            except ValueError:
-                pass  # locked file; the editor renders the truth
+            # gate r8: clicking Add twice must not pile up copies
+            # of the same person (James reached 3x one signer)
+            already = any(s["contact_id"] == int(v)
+                          for s in esign.signers_of(conn, es["id"]))
+            if not already:
+                try:
+                    esign.add_signer(conn, es["id"],
+                                     contact_id=int(v))
+                    conn.commit()
+                except ValueError:
+                    pass  # locked file; editor renders the truth
         return self._redirect(f"/files/{fid}/esign")
+
+    def _file_esign_quick(self, conn, now, uid, fid):
+        """ONE action (gate r8): prepare + signer + standard
+        signature field + send, all through the existing core
+        calls the manual path uses. The editor remains for
+        multi-signer or custom-field prep."""
+        try:
+            f = files.get_file(conn, fid)
+        except ValueError:
+            raise _NotFound() from None
+        v = self._form_body().get("contact_id", "")
+        if not v or reads.esign_row(conn, fid) is not None \
+                or not f["name"].lower().endswith(".pdf"):
+            return self._redirect(f"/files/{fid}")
+        try:
+            esid = esign.prepare(conn, fid, now, uid)
+            sid = esign.add_signer(conn, esid, contact_id=int(v))
+            esign.add_field(conn, esid, sid, "signature", 1, 100,
+                            120)
+            esign.request_signatures(conn, esid, now)
+            conn.commit()
+        except ValueError:
+            conn.rollback()  # no half-prepared row survives
+        return self._redirect(f"/files/{fid}")
 
     def _file_esign_field_add(self, conn, fid):
         es = self._es_live(conn, fid)

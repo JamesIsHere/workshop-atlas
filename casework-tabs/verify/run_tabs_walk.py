@@ -781,6 +781,8 @@ def step_files_esign_prepare(w):
     _s, _u, other = w.browser.get(f"/files/{w.file_id}")
     assert f"action='/files/{w.file_id}/esign/prepare'" not in other, \
         "non-PDF detail offers e-sign prepare (core will refuse)"
+    assert f"action='/files/{w.file_id}/esign/quick-request'" \
+        not in other, "non-PDF detail offers one-click request"
     _s, _u, page = w.browser.post(
         f"/files/{w.file2_id}/esign/prepare", {})
     for act in ("esign/signers", "esign/fields"):
@@ -831,6 +833,18 @@ def step_files_esign_prepare(w):
     assert signer["access_token"], "contact signer has no link token"
     w.signer_id = signer["id"]
     w.signer_token = signer["access_token"]
+    # gate r8 (James reached THREE copies of one signer): adding
+    # the same contact again must be a no-op
+    es_id = w.conn.execute(
+        "SELECT id FROM esign_files WHERE file_id=?"
+        " AND deleted_at IS NULL", (w.file2_id,)).fetchone()["id"]
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/signers", {
+            "contact_id": str(w.contact_id)})
+    ndup = w.conn.execute(
+        "SELECT count(*) FROM esign_signers WHERE esign_file_id=?"
+        " AND contact_id=?", (es_id, w.contact_id)).fetchone()[0]
+    assert ndup == 1, f"duplicate signer rows: {ndup}"
     _s, _u, page = w.browser.post(
         f"/files/{w.file2_id}/esign/fields", {
             "signer_id": str(w.signer_id),
@@ -917,9 +931,41 @@ def step_files_esign_prepare(w):
         f"/files/{w.file2_id}/esign/request", {})
     _s, _u, page = w.browser.get(f"/files/{w.file2_id}")
     assert "equested" in page, "redo did not reach requested"
+    # ONE-CLICK path (gate r8, ratified "fix everything you can
+    # now related to this"): void the manual redo, then a single
+    # Request-signature action must reach requested with one
+    # signer, one standard field, and the live link ON the page
+    # it lands on. The sign step rides THIS request -- the
+    # primary human path.
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/void", {})
+    assert f"action='/files/{w.file2_id}/esign/quick-request'" \
+        in page, "PDF detail lacks one-click Request signature"
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/quick-request", {
+            "contact_id": str(w.contact_id)})
+    es_row = w.conn.execute(
+        "SELECT * FROM esign_files WHERE file_id=?"
+        " AND deleted_at IS NULL", (w.file2_id,)).fetchone()
+    assert es_row is not None and es_row["status"] == "requested", \
+        "one click did not reach requested"
+    qsig = w.conn.execute(
+        "SELECT * FROM esign_signers WHERE esign_file_id=?",
+        (es_row["id"],)).fetchall()
+    assert len(qsig) == 1 and qsig[0]["access_token"], \
+        "one-click signer wrong"
+    nf = w.conn.execute(
+        "SELECT count(*) FROM esign_fields WHERE esign_file_id=?",
+        (es_row["id"],)).fetchone()[0]
+    assert nf == 1, f"one click placed {nf} fields"
+    assert "Live signing link" in page, \
+        "live link not on the landing page after one click"
+    w.signer_id = qsig[0]["id"]
+    w.signer_token = qsig[0]["access_token"]
     w.esign_file_id = w.file2_id
-    return ("PDF-only prepare; stray field removed; request sent,"
-            " VOIDED (old link dead), redone to requested")
+    return ("manual prep guarded (dup signer, stray field, empty"
+            " sends); voided w/ dead link; ONE-CLICK request ->"
+            " live link on landing")
 
 
 def step_files_esign_sign(w):

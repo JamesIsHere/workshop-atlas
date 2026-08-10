@@ -851,3 +851,40 @@ new assert failed against the real page before the one-char fix
 Rail 22 pass/0 fail sha 3fcf00d3 x2 -- UNCHANGED from r6 by
 construction (the hint is page content the report never quotes;
 the pin lives in the rail). ui-walk GREEN. 8500 restarted.
+
+P4b gate feedback r8 (James: "Fix everything you can now related
+to this. I'm doing too many tries without you checking."): the
+STOP-PATCHING round. Db forensics showed why he could never
+reach a link: each "Add signer" click added ANOTHER copy of Anya
+(3 on one draft; the signed retainer copy had accumulated 2),
+and the r6 field guard then demanded a field per copy -- the
+guards were correct one by one and the FLOW was wrong. Ruled
+diagnosis (tunnel-vision check): 3 rounds of hints on a 4-step
+pipeline whose product (the link) is invisible until step 4 =
+the shape is the defect. Fixes, all landed and rail-proven
+before handing back:
+- ONE-CLICK "Request signature" on the PDF's page (no live
+  request): select the client (the file's own client
+  preselected), one button -> prepare + signer + standard
+  signature field (page bottom) + send, via the same core calls
+  the manual path uses; lands back ON the page that now shows
+  the live link. ValueError rolls back -- no half-prepared row.
+- duplicate-signer guard: adding a contact already on the
+  request is a no-op.
+- manual editor demoted to "Prepare manually (multiple signers
+  or custom fields)"; its Y default now 120 (matches its own
+  hint).
+Rail: prepare step now drives BOTH paths -- full manual with
+every guard (dup signer pinned: second add stays 1 row), then
+void, then the one-click arm (requested + 1 signer + 1 field +
+"Live signing link" on the landing page); the SIGN step rides
+the one-click request (the primary human path). REDs 11+12: dup
+guard disabled -> FAIL "duplicate signer rows: 2"; quick
+add_field skipped -> FAIL "one click placed 0 fields". Rail 22
+pass/0 fail sha 698eca26 x2 (supersedes 3fcf00d3); ui-walk
+GREEN. 8500 restarted.
+METHOD: guard-stacking on a bad flow shape converges to user
+exhaustion, not usability -- the fix rounds were each locally
+right and globally wrong. The one-decision-per-click design
+(quick path primary, editor advanced) is what the
+interaction-cost thesis demanded from the start.
