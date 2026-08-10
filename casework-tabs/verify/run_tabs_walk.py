@@ -800,6 +800,26 @@ def step_files_esign_prepare(w):
             "signer_id": str(w.signer_id),
             "field_type": "signature", "page": "1",
             "x": "100", "y": "600"})
+    # a misplaced field is removable while draft (P4b gate r2:
+    # James placed a duplicate live; core remove_field is
+    # draft-only and had no button)
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/fields", {
+            "signer_id": str(w.signer_id), "field_type": "date",
+            "page": "1", "x": "300", "y": "600"})
+    stray = w.conn.execute(
+        "SELECT id FROM esign_fields WHERE field_type='date'"
+        " ORDER BY id DESC").fetchone()
+    assert stray is not None, "stray field not placed"
+    assert f"esign/fields/{stray['id']}/remove" in page, \
+        "placed field has no Remove control"
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/fields/{stray['id']}/remove",
+        {})
+    assert w.conn.execute(
+        "SELECT id FROM esign_fields WHERE id=?",
+        (stray["id"],)).fetchone() is None, \
+        "removed field still in the core"
     _s, _u, page = w.browser.post(
         f"/files/{w.file2_id}/esign/request", {})
     _s, _u, page = w.browser.get(f"/files/{w.file2_id}")
@@ -812,8 +832,8 @@ def step_files_esign_prepare(w):
                for m_ in mail), \
         "request email does not carry the signer link path"
     w.esign_file_id = w.file2_id
-    return ("PDF-only prepare by POST; signer + field + request;"
-            " email out")
+    return ("PDF-only prepare by POST; signer + field + stray"
+            " removed + request; email out")
 
 
 def step_files_esign_sign(w):

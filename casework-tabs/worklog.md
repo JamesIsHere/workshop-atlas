@@ -717,3 +717,19 @@ Rail 22 pass/0 fail sha 35553738 x2 (supersedes c44c5e31);
 ui-walk GREEN; 8500 restarted. His drive confirmed download
 fine; prep-page question answered (Continue preparing = the
 prep editor; his snap showed it working).
+
+P4b gate feedback r2 (James, live drive): he placed a DUPLICATE
+field -- no remove/edit existed on the prep editor. The core
+already had it (esign.remove_field, draft-only, "the trashcan
+icon"); rendering had no button. Fix: Remove control per field
+row (draft only; locked editors render none), route + handler
+calling the core; rail's prepare step gains a place-stray-then-
+remove arm (RED-driven: no-op remove -> FAIL "removed field
+still in the core"). Editing-in-place has NO core setter: edit =
+remove + re-place, stated in the new hint. ALSO landed, from the
+r2 exchange (disclosed, his verdict rules): the coordinate hint
+(PDF points, bottom-left origin, 612x792, Y~120 for signatures)
++ a Preview link on the prep editor -- the X/Y opacity was the
+one element that failed his "everything justifies itself" bar.
+X/Y now render :g (100, not 100.0). Sha fd5ea835 x2 (supersedes
+35553738); ui-walk GREEN; 8500 restarted.

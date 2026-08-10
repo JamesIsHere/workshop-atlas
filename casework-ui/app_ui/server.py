@@ -319,6 +319,11 @@ class Handler(BaseHTTPRequestHandler):
                     return self._file_esign_field_add(conn, fid)
                 if segs[3] == "request":
                     return self._file_esign_request(conn, now, fid)
+            if len(segs) == 6 and segs[0] == "files" \
+                    and segs[2] == "esign" and segs[3] == "fields" \
+                    and segs[5] == "remove":
+                return self._file_esign_field_remove(
+                    conn, _id(segs[1]), _id(segs[4]))
             if segs == ["tasks", "quick"]:
                 return self._task_quick_create(conn, now, uid)
             if len(segs) == 3 and segs[0] == "tasks" \
@@ -1642,6 +1647,7 @@ class Handler(BaseHTTPRequestHandler):
         fields = esign.fields_of(conn, es["id"])
         labels = {s["id"]: self._signer_label(conn, s, cnames)
                   for s in signers}
+        draft = es["status"] == "draft"
         srows = [[html.esc(labels[s["id"]]),
                   "link by email" if s["access_token"]
                   else "signs in-app",
@@ -1651,12 +1657,22 @@ class Handler(BaseHTTPRequestHandler):
         stable = (html.table(["Signer", "Channel", "Status"], srows)
                   if srows else "<p class='hint'>No signers yet."
                   " Add the signing party below.</p>")
-        frows = [[html.esc(fl["field_type"]),
-                  str(fl["page"]), str(fl["x"]), str(fl["y"]),
-                  html.esc(labels.get(fl["signer_id"], "-"))]
-                 for fl in fields]
-        ftable = (html.table(["Field", "Page", "X", "Y", "Signer"],
-                             frows)
+        # a misplaced field is removable while draft (gate r2,
+        # James placed a duplicate; core esign.remove_field)
+        frows = []
+        for fl in fields:
+            row = [html.esc(fl["field_type"]), str(fl["page"]),
+                   f"{fl['x']:g}", f"{fl['y']:g}",
+                   html.esc(labels.get(fl["signer_id"], "-"))]
+            if draft:
+                row.append(
+                    f"<form method='post' class='inline' action="
+                    f"'/files/{fid}/esign/fields/{fl['id']}/remove'>"
+                    f"<button class='small'>Remove</button></form>")
+            frows.append(row)
+        fheads = (["Field", "Page", "X", "Y", "Signer"]
+                  + ([""] if draft else []))
+        ftable = (html.table(fheads, frows)
                   if frows else "<p class='hint'>No fields placed"
                   " yet. Place at least a signature field.</p>")
         forms_html = ""
@@ -1693,6 +1709,13 @@ class Handler(BaseHTTPRequestHandler):
                 f"<div><label>Y</label><input type='number' name='y'"
                 f" value='600' style='width:5.5rem'></div>"
                 f"<button class='small'>Place field</button></form>"
+                f"<p class='hint'>Position is in PDF points from"
+                f" the BOTTOM-LEFT corner; a letter page is 612"
+                f" wide by 792 tall (a signature near the page"
+                f" bottom sits around Y 120). Check the document"
+                f" while placing: <a href='/files/{fid}/preview'>"
+                f"Preview</a>. Misplaced? Remove the field and"
+                f" place it again.</p>"
                 f"<form method='post' class='inline'"
                 f" action='/files/{fid}/esign/request'>"
                 f"<button class='primary'>Send signature requests"
@@ -1755,6 +1778,15 @@ class Handler(BaseHTTPRequestHandler):
             conn.commit()
         except (ValueError, KeyError):
             pass  # locked file or no signer; editor renders truth
+        return self._redirect(f"/files/{fid}/esign")
+
+    def _file_esign_field_remove(self, conn, fid, field_id):
+        self._es_live(conn, fid)
+        try:
+            esign.remove_field(conn, field_id)
+            conn.commit()
+        except ValueError:
+            pass  # locked or unknown field; editor renders truth
         return self._redirect(f"/files/{fid}/esign")
 
     def _file_esign_request(self, conn, now, fid):
