@@ -76,9 +76,11 @@ Settings layout at P6 -- avoids P6 blocking P1-P3.
   P4a mechanics built green (upload/custody, matter+contact
   sections, index filters, rename/preview/print/bulk), 3 RED
   drives, sha 81168b79 x2, suites green, demo reseeded, 8500 up.
-- U4.2 P4a gate: James hands-on drives files mechanics;
-  disclosures queued (contact files card, preview-types-only
-  links, upload landing); verdict + receipt.
+- U4.2 DONE 2026-08-10 (s6): P4a gate PASSED ("yes pass"), zero
+  fix rounds (first gate with none); ingestion question answered
+  closed from corpus+schema (Files is custody, not ingestion; IQ
+  has no spine footprint); disclosures accepted with "as is";
+  receipt p4a-files.md.
 - U4.3 P4b build: e-sign prep editor + signer flow to the two
   refined rail steps; 2 RED drives owed.
 - U4.4 P4b gate: hands-on e-sign drive (staff prep + live signer

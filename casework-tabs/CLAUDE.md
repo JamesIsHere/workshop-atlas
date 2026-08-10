@@ -17,13 +17,13 @@ is the contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P4a FILES MECHANICS BUILT 2026-08-10, gate         |
-|              | PENDING; rail 20 pass/0 fail, sha 81168b79 x2      |
-| Last session | 2026-08-10 s6 -- files rail refined (4->5 steps,   |
-|              | unpassable+vacuous asserts fixed), P4a built,      |
-|              | 3 RED drives, suites green, demo reseeded          |
-| Next action  | P4a gate (James drives 8500), then P4b e-sign      |
-|              | build. [Q1]-[Q11]+[Q13] carry. See state.md        |
+| Status       | P4a FILES MECHANICS PASSED 2026-08-10 (receipt     |
+|              | p4a-files.md); rail 20 pass/0 fail, 81168b79 x2    |
+| Last session | 2026-08-10 s6 -- files rail refined (4->5 steps),  |
+|              | P4a built + gate PASSED zero fix rounds;           |
+|              | ingestion q answered closed from corpus            |
+| Next action  | P4b e-sign build to the two refined rail steps,    |
+|              | then P4b gate. [Q1]-[Q11]+[Q13] carry. state.md    |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

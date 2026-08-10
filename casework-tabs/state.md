@@ -2,7 +2,8 @@
 
 ## Status
 
-P4a FILES MECHANICS BUILT 2026-08-10 (s6), GATE PENDING. Rail
+P4a FILES MECHANICS PASSED 2026-08-10 (s6, "yes pass", zero fix
+rounds -- receipt verify/gate-receipts/p4a-files.md). Rail was
 refined four->five files steps (e-sign split prepare/sign; one
 structurally unpassable assert and two vacuous ones fixed from
 ground-truth reads of the frozen core), then the mechanics built:
