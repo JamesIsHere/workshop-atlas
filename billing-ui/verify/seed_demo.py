@@ -111,14 +111,16 @@ def main():
         consult = billing.create_invoice(conn, "bill", c["Vera"],
                                          admin, D[0])
         billing.add_charge(conn, consult, "service",
-                           "SYNTH consultation", 50000, admin)
+                           "SYNTH consultation", 50000, admin,
+                           charge_date=D[0])
         billing.record_payment(conn, consult, "direct", 50000, D[0],
                                admin, destination_account_id=op)
         tr_vera = billing.create_invoice(
             conn, "trust_request", c["Vera"], admin, D[0],
             trust_level="client", trust_account_id=iolta)
         billing.add_charge(conn, tr_vera, "service",
-                           "SYNTH retainer request", 500000, admin)
+                           "SYNTH retainer request", 500000, admin,
+                           charge_date=D[0])
         billing.share_invoice(conn, tr_vera, admin, share_date=D[0])
         billing.pay_online(conn, tr_vera, "SYNTHETIC-VISA-SEED-V",
                            "card", D[0])
@@ -134,14 +136,16 @@ def main():
             conn, "trust_request", c["Omar"], admin, D[1],
             trust_level="client", trust_account_id=iolta)
         billing.add_charge(conn, tr_omar, "service",
-                           "SYNTH retainer request", 800000, admin)
+                           "SYNTH retainer request", 800000, admin,
+                           charge_date=D[1])
         billing.share_invoice(conn, tr_omar, admin, share_date=D[1])
         billing.pay_online(conn, tr_omar, "SYNTHETIC-VISA-SEED-O",
                            "card", D[1])
         consult_o = billing.create_invoice(conn, "bill", c["Omar"],
                                            admin, D[1])
         billing.add_charge(conn, consult_o, "service",
-                           "SYNTH strategy consult", 30000, admin)
+                           "SYNTH strategy consult", 30000, admin,
+                           charge_date=D[1])
         billing.record_payment(conn, consult_o, "direct", 30000,
                                D[1], admin,
                                destination_account_id=op)
@@ -204,13 +208,15 @@ def main():
             conn, "trust_request", c["Petra"], admin, D[6],
             trust_level="client", trust_account_id=iolta)
         billing.add_charge(conn, tr_petra, "service",
-                           "SYNTH retainer request", 200000, admin)
+                           "SYNTH retainer request", 200000, admin,
+                           charge_date=D[6])
         billing.share_invoice(conn, tr_petra, admin, share_date=D[6])
         draft = billing.create_invoice(conn, "bill", c["Petra"],
                                        admin, D[7],
                                        matter_id=m["petra"])
         billing.add_charge(conn, draft, "service",
-                           "SYNTH I-485 preparation", 400000, admin)
+                           "SYNTH I-485 preparation", 400000, admin,
+                           charge_date=D[7])
         conn.commit()
 
         # --- verify the books we just wrote ---

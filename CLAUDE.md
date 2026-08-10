@@ -45,9 +45,9 @@ Method observations belong in child worklogs with a `METHOD:` prefix.
 |                 | all verifiers green,      | (ratified 2026-08-03);      |
 |                 | result.md on disk         | result.md is the authority  |
 | billing-ui      | ACTIVE -- P4 open; item   | billing-ui/goal.md          |
-|                 | 12 objects-complete (s12  | (ratified 2026-08-04)       |
-|                 | 2026-08-09, close act     |                             |
-|                 | built); finish pass next  |                             |
+|                 | 12 complete; finish pass  | (ratified 2026-08-04)       |
+|                 | done (s13 2026-08-09);    |                             |
+|                 | attempt-5 prep next       |                             |
 
 ## Spikes
 

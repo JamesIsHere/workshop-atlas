@@ -2327,3 +2327,82 @@ Server restarted on 8500 over data/demo-billing.db (single bind
 verified). NOTE for cold resume: 8500 currently serves the
 PREVIEW db, not a walk db; James may click Prepare/Approve
 freely -- it regenerates via verify/seed_demo.py.
+
+## 2026-08-09 -- s13: FINISH PASS (James's eyes first, agent pass second)
+
+James ruled on his own pass before the session: "I think it looks
+good" -- his half of the finish pass is done. This session ran the
+agent pass: the two queued mechanical defects, a full-screen sweep
+in the browser, one sweep catch, all suites.
+
+FIX 1 (step-29, friction entry 1): the ledger links under the
+trust-overview dollar tiles were small underlined .sub text --
+"always miss them". Promoted to the .go button affordance the
+dashboard tiles already use (billing_ui.trust_overview); link text
+and hrefs byte-identical (drive_sheet pins "SYNTH IOLTA ledger",
+the walk pins /billing/trust/<id>). Verified on-screen: chips
+render, chip navigates.
+
+FIX 2 (carried-item checkbox float, James's s12 snap): root cause
+is the base stylesheet's input { width: 100% } -- the ack
+checkbox went full-width and shoved its label text to the next
+line. Override added in BILLING_STYLE: label.ackrow input,
+label.pick input { width: auto; padding: 0; margin-right:
+0.45rem; }. Covers the same latent defect on the invoice import
+card's .pick rows. Verified on-screen: checkbox inline with its
+text on the prepare page.
+
+FIX 3 (sweep catch): Vera's B0001 charge rendered a blank DATE
+cell -- seed_demo never passed charge_date, predating gated item
+C's ruling that charges carry real dates at the write path (not
+cell filler). All six seed add_charge calls now date to their
+invoice's issue date. seed_demo.py is this child's own generated-
+artifact seeder; regenerated. Verified on-screen: 07/21/2026 in
+the cell.
+
+SWEEP (preview db, July-seeded): dashboard, billing home, invoice
+B0001, client page Money band, footed payments listing, trust
+overview, IOLTA ledger, recon (three panes, identity footed),
+time, saved charges, and the FULL close act driven end to end --
+prepare with both acknowledgments, approve, record page. Firm-
+local dates verified live: both signature lines read 08/09/2026
+(the s12 defect showed tomorrow). Three B0001s in the firm-wide
+invoice list checked against invoice-codes.md: per-client series,
+by design, not a defect.
+
+FLAGS (outside this child's write surface -- gate decisions, not
+code changes from here): (1) the contact detail card renders raw
+machine keys as labels (bio.family_name, bio.given_name,
+contact.email); (2) the contact page's Matters card prints ISO
+dates (2026-07-20) against the MM/DD/YYYY convention everywhere
+else. Both live on frozen casework-ui screens James has walked
+through four attempts without naming, but attempt 5's verdict is
+beauty-sensitive; James may gate them in or leave them.
+
+SUITES (all rerun this session, quoted):
+- billing-ui walk: "20 pass, 0 pending, 0 fail; float-sweep pass;
+  verdict GREEN".
+- drive-sheet: "24/24 groups pass; verdict GREEN"; labels: "82
+  labels checked, 0 not found"; sheet lock UNCHANGED.
+- ui-walk (frozen): "13 pass, 0 pending, 0 fail; sweeps pass;
+  verdict GREEN".
+- spine: "107 green, 0 red, 0 pending; checks pass".
+- billing: "25 green, 0 red, 0 pending, 0 parked; checks pass;
+  verdict: GREEN".
+- fiduciary --seeded: "9 pass, 0 red, 0 stub; verdict: GREEN".
+- anchor-billing: "PASS (1.300s of 900s budget)".
+report_sha.py = 30301f88 UNCHANGED -- rendering-only changes left
+the walk report byte-identical; no supersession.
+
+OPS: netstat single-bind protocol followed at every relaunch
+(stale s12 server killed first). Preview db regenerated TWICE:
+once mid-session to restore July-closable state for the checkbox
+eyeball (the s12 live close had already sealed July), once at
+close so the served db carries the dated charges and an open
+July. Server left UP on 8500 over
+billing-ui/data/demo-billing.db; reseeds wipe sessions, so the
+next login is demo.reviewer@synthetic.test / demo-seed-pass with
+the code shown on-screen.
+
+Next: attempt-5 prep -- James's call on the demo-sheet close act
+(precondition 5), then the standard attempt protocol.

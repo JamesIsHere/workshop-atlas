@@ -1,42 +1,35 @@
 # state.md -- billing-ui (session cache, overwritten each wind-down)
 
-## COLD-START POINTER (s12, 2026-08-09)
+## COLD-START POINTER (s13, 2026-08-09)
 
-THE PERIOD-CLOSE ACT IS DESIGNED, RATIFIED, AND BUILT -- item 12
-is objects-complete. Rulings PC1 (hard close: engine refuses
-postings dated into a closed month; late facts post
-current-dated), PC2 (two-step prepare/approve, same person
-allowed and SHOWN on the record), PC3 (tie required, exceptions
-carried with per-item acknowledgment). Sheet: period-close.md,
-RATIFIED as drafted; flags 9 (billing docs unlocked v1) and 10
-(no reopen, ever) stand. Program amendment 2026-08-09 recorded
-in ../CLAUDE.md (scoped casework write surface). Build:
-period_closes table (gen_schema), casework/app/period.py, lock
-guard in ledger._post + create_external_event, /billing/close +
-record page + entry links, fiduciary F9 (closed periods must
-recompute byte-equal), unit_period_close.py 6/6, walk step 20
-(July-coda close; August story untouched). CROSS-PROJECT FIX:
-reconcile._sub_ledger_sum now as-of-period_end (was as-of-now;
-latent; broke retrospective recomputes) -- under the standing F7
-amendment, flagged in worklog s12. ALL suites green and quoted
-in worklog s12; sha chain ... c59b8e9d -> 30301f88
-(report_sha.py only). Sheet lock f7f821edb1e9 UNCHANGED.
+THE FINISH PASS IS DONE, both halves: James ruled "I think it
+looks good" on his own pass; the agent pass fixed the two queued
+defects and swept every billing screen live. Fixes, all verified
+on-screen: step-29 ledger links promoted to the .go button
+affordance (text + hrefs byte-identical, sheet lock and pins
+untouched); carried-item checkbox float killed by a BILLING_STYLE
+override (base input width:100% was the cause; .pick rows covered
+too); seed_demo now dates all six seeded charges (blank DATE cell
+on invoice Charges, per gated item C's write-path convention).
+Full close act driven in-browser on the preview db: prepare ->
+approve -> record, firm-local signature dates verified 08/09.
+ALL suites green and quoted in worklog s13; report_sha 30301f88
+UNCHANGED (rendering-only; no supersession). Sheet lock
+f7f821edb1e9 UNCHANGED.
 
 ## Status
 
-P4 OPEN after attempt 4 (verdict FAIL b/c, (a) PASS,
-2026-08-08). Item 12: ALL FOUR OBJECTS BUILT (home page s10,
-flow markers + client summary s11, period-close act s12).
-Remaining before attempt 5: the FINISH PASS against "not
-beautiful", step-29 ledger-link fix, and attempt prep.
-Friction log: 5 entries; step-29 fix still queued.
+P4 OPEN after attempt 4 (verdict FAIL b/c, (a) PASS, 2026-08-08).
+Item 12: all four objects built (s10-s12); finish pass DONE
+(s13). Remaining: the attempt-prep decision, then attempt 5.
 
-## Attempt 5 preconditions (updated s12)
+## Attempt 5 preconditions (updated s13)
 
 1. DONE (s11): objects 1-3 of gated item 12.
 2. DONE (s12): period-close act designed with James and built.
-3. Finish pass against "not beautiful" (his eyes are the bar).
-4. Step-29 ledger-link visibility fix (friction entry 1).
+3. DONE (s13): finish pass -- James's eyes + agent sweep, two
+   queued defects fixed, one sweep catch fixed.
+4. DONE (s13): step-29 ledger-link visibility fix.
 5. Attempt-prep decision: does the demo sheet gain a close act?
    The fresh demo db seeds July dates (seed_demo NOW=07-20), so
    July is closable live at the attempt; a sheet amendment needs
@@ -46,31 +39,34 @@ Friction log: 5 entries; step-29 fix still queued.
 
 ## Watch items and caveats
 
-- Server UP at close of s12 on 8500 over the PREVIEW db
-  billing-ui/data/demo-billing.db (regenerated on the new
-  schema via verify/seed_demo.py; July closable; James drove a
-  live close on it -- clicking is consequence-free, it
-  regenerates). The migrated walk db (demo-walk-2026-08-08.db,
-  all-August facts, honest empty close page) is the alternate;
-  swap dbs behind the port, never the port. Restart after ANY
-  app_ui or casework/app change. Launcher:
-  python billing-ui/serve.py --db <ABSOLUTE path>.
-- FIRM-LOCAL DATES RULING (2026-08-09, s12 cont): business
-  dates stamp firm-local (system clock), timestamps stay UTC.
-  Applied in billing_ui._today, the client pay date in
-  casework/app/server.py, and drive_sheet.today. A new date
-  surface must follow the ruling.
-- FINISH-PASS QUEUE now: step-29 ledger-link visibility;
-  carried-item checkbox layout on the prepare page (floats
-  away from its text -- James's snap, s12).
+- Server UP at close of s13 on 8500 over the PREVIEW db
+  billing-ui/data/demo-billing.db (reseeded at close: dated
+  charges in, July OPEN and closable; James's s12 live close was
+  wiped with the reseed -- clicking is consequence-free, it
+  regenerates). Reseeds wipe sessions: login is
+  demo.reviewer@synthetic.test / demo-seed-pass, code shown
+  on-screen. The migrated walk db (demo-walk-2026-08-08.db,
+  all-August facts) is the alternate; swap dbs behind the port,
+  never the port. Restart after ANY app_ui or casework/app
+  change. Launcher: python billing-ui/serve.py --db <ABS path>.
+- NEW FLAGS from the s13 sweep, both on frozen casework-ui
+  screens (gate decisions, not billing-ui code changes): contact
+  detail card shows raw machine keys as labels (bio.family_name,
+  bio.given_name, contact.email); contact Matters card prints
+  ISO dates vs the MM/DD/YYYY convention. James may gate them in
+  for attempt 5 or leave them.
+- FIRM-LOCAL DATES RULING (2026-08-09, s12 cont): business dates
+  stamp firm-local (system clock), timestamps stay UTC. Verified
+  live on the close signatures this session. A new date surface
+  must follow the ruling.
 - Pre-close dbs (all retained walk dbs except -08) FAIL LOUD on
   any ledger write and on /billing/close (missing period_closes
   table -- deliberate). Run migrate_period_close.py before
   serving one. Pre--08 dbs are PRE-ENGINE; pre-07c ones also
   need migrate_invoice_codes.py.
 - s11 double-bind incident protocol still applies: netstat
-  before blaming the db (s12 killed the stale s11 server PID
-  before relaunch; single bind verified).
+  before blaming the db (followed at every s13 relaunch; single
+  bind verified each time).
 - Close judgment calls flagged, unruled (worklog s12): month
   closable only after it ends; ranking rows unlinked plain
   text; approve-on-stale commits the void; one closable month,
@@ -100,19 +96,18 @@ Friction log: 5 entries; step-29 fix still queued.
 - ONE-ADDRESS: http://127.0.0.1:8500 forever; dbs swap behind
   the port.
 - FULL-PATHS + Evidence Discipline: ground first, read before
-  assert, no error-tolerant probing. s12 added the design-sheet
-  present-tense incident (James hunted for an unbuilt route) to
-  the s7 lineage -- sheets phrase proposals as proposals with
-  verified ground facts.
+  assert, no error-tolerant probing. Sheets phrase proposals as
+  proposals with verified ground facts (s7/s12 lineage).
 - STEP RULE: one step = one screen; every step carries a
   from-scratch re-entry route.
 - No levity while the driver is eating friction.
 
 ## Open decisions
 
-- FINISH PASS against "not beautiful" (next; James's eyes are
-  the bar). Step-29 fix rides it.
-- Attempt-prep: demo-sheet close act (precondition 5 above).
+- Attempt-prep: demo-sheet close act (precondition 5 above) --
+  NEXT, James's call.
+- Contact-screen flags from s13 (raw labels, ISO dates): gate in
+  for attempt 5 or leave; James's call.
 - Dashboard settling backing list: flagged, unruled.
 - Close judgment calls: see watch items; James may re-rule.
 - E-item select wording: James may re-rule any line.

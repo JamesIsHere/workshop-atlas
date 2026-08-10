@@ -1,13 +1,13 @@
-PASS step_install                  0.751s  fresh db installed; admin id 1
+PASS step_install                  0.749s  fresh db installed; admin id 1
 PASS step_client_matter            0.000s  contact 1, matter 1
 PASS step_accounts                 0.000s  trust bank 1, operating 2
 PASS step_fund_operating           0.001s  consult bill paid direct; operating funded 500.00
-PASS step_trust_request_online     0.525s  client paid 5,000.00 over HTTP via SimProcessor
-PASS step_settlement               0.001s  settled gross 5,000.00 to trust; fee 150.30 from operating
+PASS step_trust_request_online     0.530s  client paid 5,000.00 over HTTP via SimProcessor
+PASS step_settlement               0.002s  settled gross 5,000.00 to trust; fee 150.30 from operating
 PASS step_bill_earn_out            0.001s  bill 3,000.00 (saved charge + 2h imported) earned out of trust
 PASS step_disbursement             0.000s  1,200.00 disbursed to SYNTH-USCIS; client funds 800.00
-PASS step_invoice_pdf              0.011s  invoice PDF rendered and read back
+PASS step_invoice_pdf              0.013s  invoice PDF rendered and read back
 PASS step_reconciliation           0.001s  three-way reconciliation HOLDS for both banks at two period ends -> recon-report.txt
 PASS step_audit_continuity         0.000s  audit spans system/user/contact actors, story-ordered
 PASS step_fiduciary                0.001s  fiduciary suite on the walked db: fiduciary: 9 pass, 0 red, 0 stub; verdict: GREEN
-anchor-billing: PASS (1.295s of 900s budget)
+anchor-billing: PASS (1.300s of 900s budget)

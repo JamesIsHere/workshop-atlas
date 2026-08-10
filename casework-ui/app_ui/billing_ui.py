@@ -58,6 +58,8 @@ p.split { color: #6a7383; font-size: 0.95rem; margin: 0.5rem 0 0;
           font-variant-numeric: tabular-nums; }
 label.ackrow, p.ackrow { display: block; margin: 0.35rem 0;
                          font-variant-numeric: tabular-nums; }
+label.ackrow input, label.pick input { width: auto; padding: 0;
+                                       margin-right: 0.45rem; }
 .actions { overflow: auto; }
 input.copylink { font-family: Consolas, monospace; font-size: 0.9rem;
                  background: #f0f2f5; border: 1px dashed #b9c0cb;
@@ -854,7 +856,7 @@ def trust_overview(h, conn, user, error=None):
             cards.append(
                 f"<div class='tile'><div class='label'>{label}</div>"
                 f"<div class='value'>{dollars(bal)}</div>"
-                f"<div class='sub'>"
+                f"<div class='go'>"
                 + html.link(f"/billing/trust/{b['id']}",
                             f"{html.esc(b['name'])} ledger")
                 + "</div></div>")
