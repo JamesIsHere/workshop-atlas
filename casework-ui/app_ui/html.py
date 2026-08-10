@@ -134,6 +134,7 @@ textarea { width: 100%; padding: 0.45rem 0.6rem; font-size: 1rem;
 .notes-timeline .note-entry.pinned { border-left-color: #2456a6; }
 .note-meta { color: #6a7383; font-size: 0.85rem; margin: 0 0 0.15rem; }
 .note-meta a { color: #2456a6; }
+.tab-detail .kv a { color: #2456a6; }
 .note-body { margin: 0; white-space: pre-line; }
 .actions-row { margin: 0.8rem 0 0; }
 """

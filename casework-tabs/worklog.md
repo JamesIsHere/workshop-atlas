@@ -514,3 +514,18 @@ per demos-from-fresh-dbs rule), server restarted on 8500.
   ISO timestamps inside the document -- a user-facing date-format
   defect that would need a core amendment (same shape as Reopen)
   or stays as-is; capability bar is met either way.
+
+P3 gate feedback r1 (James's snap): the note detail's Linked link
+rendered browser-default visited purple -- the P1-killed defect
+class, but the blue pin was table-scoped and this is a kv line.
+Fixed on the note detail (this phase's screen: card gains
+tab-detail, .tab-detail .kv a pinned firm blue -- scoped class,
+NOT a global .kv a, which would repaint billing-ui's signed kv
+surfaces). Task detail and calendar event detail carry the SAME
+purple on their kv links; they are passed screens, so extending
+the class there is queued for James's call at this gate. Rail 16
+pass/0 fail sha 157f5ac1 unchanged; ui-walk GREEN; server
+restarted. His questions (PDF / attachments) answered from corpus
++ schema ground truth: notes.notes-export exists and is built;
+NO attachment capability anywhere in corpus/notes.md and no
+note-file linkage in the schema -- answer stands on both reads.

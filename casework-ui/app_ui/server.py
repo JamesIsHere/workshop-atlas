@@ -1894,7 +1894,7 @@ class Handler(BaseHTTPRequestHandler):
         pinned = ("<span class='pill'>pinned</span> " if n["pinned"]
                   else "")
         text = html.esc(n["body"]).replace("\n", "<br>")
-        body = (f"<div class='card'><h1>"
+        body = (f"<div class='card tab-detail'><h1>"
                 f"{html.esc(n['title'] or 'Note')}</h1>"
                 f"<p>{pinned}{self._pin_button(n, f'/notes/{nid}')}</p>"
                 f"<dl class='kv'>"

@@ -1,24 +1,24 @@
 # ui-walk-report -- verifier 1 (scripted UI walk)
 
-run started: 2026-08-10T13:41:10Z
+run started: 2026-08-10T13:55:02Z
 
-PASS    first-run setup                  0.080s  cold GET -> /setup; admin created; landed on MFA enrollment
-PASS    MFA enrollment                   0.011s  email 2FA enrolled; static code read from mailbox panel; dashboard reached
-PASS    login round-trip                 0.069s  logout; re-login issued a fresh static code; wrong code refused; code survived the failed try
-PASS    auth gate                        0.057s  4 paths redirect anonymous to /login; bad password refused
+PASS    first-run setup                  0.102s  cold GET -> /setup; admin created; landed on MFA enrollment
+PASS    MFA enrollment                   0.012s  email 2FA enrolled; static code read from mailbox panel; dashboard reached
+PASS    login round-trip                 0.050s  logout; re-login issued a fresh static code; wrong code refused; code survived the failed try
+PASS    auth gate                        0.056s  4 paths redirect anonymous to /login; bad password refused
 PASS    create contact                   0.007s  contact 1 created by click (no family name); audit actor user
 PASS    create matter                    0.005s  matter 1 created; detail shows primary contact
-PASS    form package + invitation        0.010s  package 1 (g-28); invitation emailed; client link visible and copyable
-PASS    client intake leg                0.036s  5 answers over the client surface; fact store updated; firm sees Returned for Review
-PASS    review returned intake           0.022s  review screen shows the client's answers per question
-PASS    G-28 render + download           0.178s  G-28 downloaded (573226 bytes); client-entered family name and firm-entered given name both in the PDF
-PASS    deadline + reminder visible      0.010s  deadline created by click; visible on calendar, matter, and event detail; tick fires exactly one reminder
+PASS    form package + invitation        0.022s  package 1 (g-28); invitation emailed; client link visible and copyable
+PASS    client intake leg                0.053s  5 answers over the client surface; fact store updated; firm sees Returned for Review
+PASS    review returned intake           0.001s  review screen shows the client's answers per question
+PASS    G-28 render + download           0.185s  G-28 downloaded (573226 bytes); client-entered family name and firm-entered given name both in the PDF
+PASS    deadline + reminder visible      0.027s  deadline created by click; visible on calendar, matter, and event detail; tick fires exactly one reminder
 PASS    audit chain                      0.000s  6 legs present, story-ordered (audit ids 50..67)
-PASS    browse sweep                     1.567s  seeded render 12 checks; BFS reached 69 pages, all 7 entities clickable from /; empty states designed on a fresh db
+PASS    browse sweep                     1.353s  seeded render 12 checks; BFS reached 69 pages, all 7 entities clickable from /; empty states designed on a fresh db
 
 # supporting sweeps
 PASS no-logic-lint: SQL confined to reads.py (SELECT-only); 1 named exemption(s); mutations ride casework modules
 PASS js-discipline: zero JS; nothing to justify
 
-steps: 13 pass, 0 pending, 0 fail; total 2.052s
+steps: 13 pass, 0 pending, 0 fail; total 1.872s
 verdict: GREEN
