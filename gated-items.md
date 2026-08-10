@@ -79,13 +79,11 @@ once, worked. To fix a locked file NOW instead of dragging it:
    cents charge table (both /100 float divisions gone), styled
    pay form, receipt page, payments on the invoice page, both
    languages; verifier strengthened; all suites green quoted in
-   billing-ui worklog s8. FOUR JUDGMENT CALLS from that build
-   remain flagged, unruled: (i) conn.commit() added after
-   pay_online -- persistence fix, arguably past rendering-only;
-   (ii) pay-form labels stay English-only on es invoices;
-   (iii) trust-held line added to the client page; (iv) receipt
-   reference renders the processor txn id. Item otherwise
-   CLOSED.
+   billing-ui worklog s8. The four judgment calls from that
+   build were RULED 2026-08-10 (billing-ui worklog s16 cont 2):
+   conn.commit KEEP, en-only pay form KEEP, trust-held line
+   KEEP (wording unified per-client to "Remaining in trust"),
+   receipt reference KEEP. Item fully CLOSED.
 3. EMPTY INVOICE derives status paid and appears on NEITHER
    default list tab (invisible until charged; drive finding 6).
    Lives: status logic casework core (frozen); a rendering-side

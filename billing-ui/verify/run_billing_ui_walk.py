@@ -557,7 +557,7 @@ def step_client_money(w):
     need(w.disbursed, "disbursement")
     page = probe(w, f"/contacts/{w.contact_id}")
     assert ">Money</h1>" in page, "Money band missing"
-    assert "Held in trust: " in page and "$800.00" in page, \
+    assert "Remaining in trust: " in page and "$800.00" in page, \
         "trust held figure missing"
     assert "Outstanding: $0.00" in page, \
         "outstanding headline figure missing"

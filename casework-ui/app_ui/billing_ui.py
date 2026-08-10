@@ -442,7 +442,7 @@ def client_money_band(conn, contact_id):
               else "<p class='hint'>No invoices yet.</p>")
 
     pay_list = f"/billing/clients/{contact_id}/payments"
-    heads = (f"Held in trust: "
+    heads = (f"Remaining in trust: "
              + html.link("/billing/recon", dollars(held))
              + f" &middot; Outstanding: {dollars(out_sum)}"
              + f" &middot; Collected to date: "

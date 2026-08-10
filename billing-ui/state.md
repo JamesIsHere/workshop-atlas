@@ -136,18 +136,15 @@ any), open gated items.
   six clusters and the verdict is the only one not taken --
   the sixth cluster IS the verdict, deliberately left for
   James's own timing.
-- LEFTOVER SMALL FLAGS rediscovered by the s16 cont full-log
-  sweep (they had fallen out of the session cache; all agent
-  calls standing until struck): (1) the four s8 pay-page
-  judgment calls (conn.commit persistence fix / English-only
-  pay-form labels on es invoices / trust-held line on the
-  client page / receipt reference = processor txn id) -- now
-  also recorded on gated-items.md item 2; (2) trust-tile
-  wording: firm-wide "Client funds in trust" vs per-client
-  "Remaining in trust", one word across both if he wants;
-  (3) invoice page keeps the stored number as a "Number #n
-  (scope)" attribute row; (4) imported saved charges inherit
-  the bill's issue date (item C, s7).
+- LEFTOVER SMALL FLAGS: ALL RULED s16 cont 2 (worklog has the
+  six verbatim rulings): conn.commit KEEP; en-only pay form
+  KEEP; per-client trust wording UNIFIED to "Remaining in
+  trust" (band + verifier pin edited, dashboard tile
+  deliberately distinct, no sheet re-sync); receipt reference
+  raw txn id KEEP; "Number #n (scope)" row KEEP; imported-
+  charge issue-date default KEEP. Every flagged judgment call
+  in the ledgers is now ruled -- the map is the verdict plus
+  the parked/gated pool, nothing else.
 - Budget figure re-rule: 25:00 was agent-derived then ratified
   ("25 is good!") -- closed unless James reopens.
 - Client portal: gated item 11, deliberately out of scope.

@@ -3167,3 +3167,52 @@ pointer. A map re-lay must sweep the ledgers, not the cache.
 
 No code touched; no suites owed (bookkeeping only). Server
 stays up on the walked -09b db, untouched this entry.
+
+## 2026-08-10 -- s16 cont 2: leftover flags whittled -- six
+## rulings, one label unified
+
+James took the rediscovered flags one by one. Rulings, in
+order taken:
+
+1. KEEP (James: "keep"): conn.commit() after pay_online stands
+   (server.py:377). The persistence fix is ruled in; the
+   vanishing-payment defect stays dead.
+2. KEEP (James: "agree"): pay form stays English-only on es
+   invoices -- synthetic demo machinery, sheet-pinned labels;
+   the chrome a client reads is already bilingual.
+3. UNIFY (James: "unify"): per-client trust wording unified to
+   "Remaining in trust". Ground sweep had found THREE labels
+   over TWO facts (invoice/PDF "Remaining in Trust" +
+   contact-band "Held in trust" = per-client; dashboard tile
+   "Client funds in trust" = firm-wide IOLTA total). The
+   per-client pair now shares the invoice wording: band render
+   billing_ui.py:445 + verifier pin run_billing_ui_walk.py:560
+   (the only two occurrences; the locked sheet quotes none of
+   them -- no re-sync, lock stays 7b30fc89c159). Dashboard
+   tile deliberately unchanged: different fact, identical
+   label would mislead.
+4a. KEEP (James: "keep"): receipt Reference renders the raw
+   synthetic processor txn id; dressed-up formats are
+   manufactured realism, a real processor's code takes the
+   slot later.
+4b. KEEP (James: "I like the subordinate row"): the invoice
+   page's "Number #n (scope)" attribute row stays -- identity
+   is the code, the corpus-pinned number stays inspectable.
+4c. KEEP (James: "keep"): imported saved charges inherit the
+   bill's issue date -- same default as the manual Add form,
+   editable per charge; blank recreates the attempt-3 defect.
+
+Suites after the call-3 edit, quoted: billing-ui-walk "21
+pass, 0 pending, 0 fail; float-sweep pass; verdict GREEN",
+report_sha b3aa0a03 UNCHANGED; drive-sheet "27/27 groups pass;
+verdict GREEN"; labels "92 labels checked, 0 not found";
+ui-walk "13 pass, 0 pending, 0 fail; sweeps pass; verdict
+GREEN". Core untouched (app_ui + billing-ui verifier only) --
+the reciprocal guard does not trigger; the four UI-side suites
+are the owed set. Server restarted on the walked -09b db (PID
+10264 killed, port verified free, new PID 19616, single bind,
+HTTP 303) -- the unified label is live for review.
+
+With these six, EVERY flagged judgment call in the ledgers is
+ruled. The decision map is now: the attempt-5 verdict, then
+the parked/gated pool. Nothing else queues.
