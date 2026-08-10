@@ -152,6 +152,19 @@ session. Delete = archive applies: nothing in spikes/ is destroyed.
   suites rerun green and quoted; sha supersessions via canonical
   scripts only, recorded in the casework-tabs worklog. Live
   contract: casework-tabs/goal.md.
+  AMENDMENT (program ruling 2026-08-10, ratified by James at the
+  casework-tabs P2 gate: "yes I think we have to, it will
+  happen"): the frozen casework core opens for ONE addition from
+  casework-tabs sessions -- tasks.reopen_task (clears
+  completed_at; the schema's audit trigger records the undo), the
+  recovery path behind the tasks tab's Reopen button after his
+  live drive proved accidental completes will happen. Hard
+  limits: no other casework/app change rides this ruling;
+  existing spine tests immutable and untouched; coverage lands in
+  casework-tabs' rail, which drives reopen through the UI and
+  asserts the machinery state; after the change ALL standing
+  suites rerun green and quoted, sha supersessions via canonical
+  scripts only, recorded in the casework-tabs worklog.
 - Each child's own CLAUDE.md + state.md is the authority on its state;
   this file's roster is a signpost, not a second snapshot.
 - The spec corpus records facts about Docketwise with citations -- it is

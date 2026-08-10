@@ -61,6 +61,15 @@ def complete_task(conn, task_id, now):
                  (now, task_id))
 
 
+def reopen_task(conn, task_id):
+    """Undo a complete: the task returns to open. The one authorized
+    post-freeze addition (program amendment 2026-08-10, ratified at
+    the casework-tabs P2 gate -- accidental completes happen and
+    must be recoverable); the audit trigger records the undo."""
+    conn.execute("UPDATE tasks SET completed_at=NULL WHERE id=?",
+                 (task_id,))
+
+
 def list_tasks(conn, contact_id=None, matter_id=None,
                include_completed=False):
     q = "SELECT * FROM tasks WHERE deleted_at IS NULL"

@@ -257,6 +257,9 @@ class Handler(BaseHTTPRequestHandler):
             if len(segs) == 3 and segs[0] == "tasks" \
                     and segs[2] == "complete":
                 return self._task_complete(conn, now, _id(segs[1]))
+            if len(segs) == 3 and segs[0] == "tasks" \
+                    and segs[2] == "reopen":
+                return self._task_reopen(conn, _id(segs[1]))
             if segs == ["settings", "task-lists"]:
                 return self._task_list_create(conn)
             if len(segs) == 4 and segs[0] == "settings" \
@@ -1307,6 +1310,17 @@ class Handler(BaseHTTPRequestHandler):
                 f" title='Check the box, then press Done'>"
                 f"<button class='small'>Done</button></form>")
 
+    @staticmethod
+    def _reopen_button(tid, back):
+        """The undo behind Done (program amendment 2026-08-10:
+        tasks.reopen_task is the one authorized post-freeze core
+        addition). One click on purpose -- reopening only resurfaces
+        work, it cannot lose any."""
+        return (f"<form class='inline' method='post'"
+                f" action='/tasks/{tid}/reopen'>"
+                f"<input type='hidden' name='back' value='{back}'>"
+                f"<button class='small'>Reopen</button></form>")
+
     def _tasks_index(self, conn, user, query):
         scope = ("firm" if query.get("scope", [None])[0] == "firm"
                  else "mine")
@@ -1317,6 +1331,12 @@ class Handler(BaseHTTPRequestHandler):
             completed=done)
         mnames, cnames = self._name_maps(conn)
         anames = reads.task_assignee_names(conn)
+        mine_href = "/tasks" + ("?done=1" if done else "")
+        firm_href = "/tasks?scope=firm" + ("&done=1" if done else "")
+        open_href = "/tasks" + ("?scope=firm" if scope == "firm"
+                                else "")
+        done_href = ("/tasks?done=1"
+                     + ("&scope=firm" if scope == "firm" else ""))
         rows = []
         for t in rows_src:
             cells = [html.link(f"/tasks/{t['id']}", t["title"]),
@@ -1325,15 +1345,11 @@ class Handler(BaseHTTPRequestHandler):
                                        t["contact_id"], mnames,
                                        cnames),
                      html.esc(anames.get(t["id"], "-"))]
-            cells.append(html.mdy(t["completed_at"]) if done
-                         else self._complete_button(t["id"], "/tasks"))
+            cells.append(
+                html.mdy(t["completed_at"]) + " "
+                + self._reopen_button(t["id"], done_href) if done
+                else self._complete_button(t["id"], "/tasks"))
             rows.append(cells)
-        mine_href = "/tasks" + ("?done=1" if done else "")
-        firm_href = "/tasks?scope=firm" + ("&done=1" if done else "")
-        open_href = "/tasks" + ("?scope=firm" if scope == "firm"
-                                else "")
-        done_href = ("/tasks?done=1"
-                     + ("&scope=firm" if scope == "firm" else ""))
         chips = (
             "<div class='chips'>"
             f"<a class='chip{' on' if scope == 'mine' else ''}'"
@@ -1393,7 +1409,7 @@ class Handler(BaseHTTPRequestHandler):
         if t["completed_at"]:
             status = (f"<span class='pill returned'>completed"
                       f" {html.mdy(t['completed_at'])}</span>")
-            act = ""
+            act = self._reopen_button(tid, f"/tasks/{tid}")
         else:
             status = "<span class='pill'>open</span>"
             act = self._complete_button(tid, f"/tasks/{tid}")
@@ -1423,6 +1439,14 @@ class Handler(BaseHTTPRequestHandler):
         if reads.task_row(conn, tid) is None:
             raise _NotFound()
         tasks.complete_task(conn, tid, now)
+        conn.commit()
+        back = self._form_body().get("back", "")
+        return self._redirect(back if back.startswith("/") else "/tasks")
+
+    def _task_reopen(self, conn, tid):
+        if reads.task_row(conn, tid) is None:
+            raise _NotFound()
+        tasks.reopen_task(conn, tid)
         conn.commit()
         back = self._form_body().get("back", "")
         return self._redirect(back if back.startswith("/") else "/tasks")

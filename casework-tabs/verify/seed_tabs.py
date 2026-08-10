@@ -188,6 +188,12 @@ def main():
         done = tasks.create_task(conn, "SYNTH open the client file",
                                  NOW, admin, matter_id=m["anya"])
         tasks.complete_task(conn, done, NOW)
+        # a completed task that STAYS visible (the one above rides
+        # into trash below) -- the gate's Reopen target
+        done2 = tasks.create_task(
+            conn, "SYNTH confirm biometrics attendance", NOW, admin,
+            matter_id=m["chloe"])
+        tasks.complete_task(conn, done2, NOW)
         tl = tasks.create_task_list(conn, "SYNTH I-130 checklist")
         tasks.add_list_item(conn, tl, "SYNTH gather civil documents",
                             1, duration_days=7)

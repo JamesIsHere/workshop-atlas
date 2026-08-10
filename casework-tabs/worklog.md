@@ -416,3 +416,23 @@ no-op, rail stayed green, and only suspicion caught it. That is
 the evidence-discipline rule (fail loud, no error-tolerant
 probing) violated in miniature; sabotages via Edit-with-known-
 content only from here.
+
+P2 gate feedback r3 -- [Q12] RULED, core amendment ratified
+(James: "yes I think we have to, it will happen"). Program
+amendment recorded in ../CLAUDE.md: tasks.reopen_task is the ONE
+authorized post-freeze casework touch (clears completed_at; audit
+rides trg_tasks_au, verified present before claiming it). UI:
+Reopen button on completed rows + completed task detail
+(one-click on purpose -- reopening resurfaces work, cannot lose
+any); POST /tasks/<id>/reopen. Rail: confirm-complete step drives
+reopen through the UI and asserts the machinery (completed_at
+NULL + >=2 update audit rows); driven RED via reopen-no-op
+sabotage, reverted. Sha ae9bdf90 x2 (supersedes 0193bb09).
+RECIPROCAL GUARD rerun after the core touch, all quoted: "spine:
+107 green, 0 red, 0 pending; checks pass" / "billing: 25 green,
+0 red, 0 pending, 0 parked; checks pass; verdict: GREEN" /
+"fiduciary: 9 pass, 0 red, 0 stub; verdict: GREEN" / "ui-walk:
+13 pass, 0 pending, 0 fail; sweeps pass; verdict GREEN". Seed
+gains a visible completed task ("SYNTH confirm biometrics
+attendance" -- the prior completed one rides into trash) as the
+gate's Reopen target; demo regenerated (11 tasks), 8500 up.

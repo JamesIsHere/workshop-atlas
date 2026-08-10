@@ -463,7 +463,25 @@ def step_tasks_complete(w):
     _s, _u, page = w.browser.get("/tasks?done=1")
     assert "SYNTH check receipt notice" in page, \
         "completed task missing under the completed filter"
-    return "check-then-Done from the row; moves to completed"
+    # Reopen = the undo (program amendment 2026-08-10: the ONE
+    # authorized post-freeze core addition, tasks.reopen_task)
+    expect_marker(page, f"action='/tasks/{w.done_task_id}/reopen'",
+                  "Reopen on completed rows")
+    _s, _u, page = w.browser.post(
+        f"/tasks/{w.done_task_id}/reopen", {})
+    assert "SYNTH check receipt notice" in page, \
+        "reopened task not back in the open view"
+    row = w.conn.execute("SELECT completed_at FROM tasks WHERE id=?",
+                         (w.done_task_id,)).fetchone()
+    assert row["completed_at"] is None, \
+        "reopen did not clear completed_at in the core"
+    audit = w.conn.execute(
+        "SELECT count(*) FROM audit_log WHERE entity_type='tasks'"
+        " AND action='update' AND entity_id=?",
+        (w.done_task_id,)).fetchone()[0]
+    assert audit >= 2, f"complete+reopen audit rows: {audit}"
+    return ("check-then-Done from the row; completed view; Reopen"
+            " undoes, audited")
 
 
 def step_tasks_lists(w):
