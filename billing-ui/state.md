@@ -1,5 +1,24 @@
 # state.md -- billing-ui (session cache, overwritten each wind-down)
 
+## ATTEMPT 5 IS IN FLIGHT (handover 2026-08-09, s13 close)
+
+James cleared context and is DRIVING THE WALK solo. The agent's
+setup is done: 8500 serves the FRESH EMPTY walk db
+billing-ui/data/demo-walk-2026-08-09b.db ("b" because the plain
+-09 name is s11's retained incident artifact -- delete=archive;
+precedent -04b/-07b), /setup confirmed answering, and both
+oracles quoted GREEN at handover: billing-ui walk "20 pass, 0
+pending, 0 fail; float-sweep pass; verdict GREEN"; drive-sheet
+"27/27 groups pass; verdict GREEN". He drives all 40 steps of
+verify/demo-walk-protocol.md (sheet lock 85e4e4633a37), Part K
+closes July at the end. A resumed session is the RECORDER:
+close-out = python verify/check_demo_walk.py
+data/demo-walk-2026-08-09b.db (exit 0; now includes the Part-K
+close receipt and F9), James's PDF/ledger/recon eyeball, then
+the three-part verdict sheet -- marks M0..M7 (snap mtimes fine,
+attempt-4 precedent), soft budget still M1->M6 at 20:00. During
+the walk the recorder answers NOTHING about the screens.
+
 ## COLD-START POINTER (s13 cont, 2026-08-09)
 
 ATTEMPT 5 IS FULLY PREPPED. The finish pass is done both halves
@@ -41,12 +60,13 @@ pass done (s13), close act in the sheet + lock re-synced
 
 ## Watch items and caveats
 
-- Server UP at close of s13 on 8500 over the PREVIEW db
-  billing-ui/data/demo-billing.db (dated charges in, July OPEN
-  and closable; clicking is consequence-free -- it regenerates
-  via verify/seed_demo.py). Reseeds wipe sessions: login
+- Server UP at handover on 8500 over the ATTEMPT-5 WALK db
+  data/demo-walk-2026-08-09b.db (fresh, James driving -- see the
+  in-flight header; do NOT touch it mid-walk). The preview db
+  demo-billing.db is the alternate for gate reviews (regenerates
+  via verify/seed_demo.py; reseeds wipe sessions: login
   demo.reviewer@synthetic.test / demo-seed-pass, code shown
-  on-screen. Swap dbs behind the port, never the port. Restart
+  on-screen). Swap dbs behind the port, never the port. Restart
   after ANY app_ui or casework/app change. Launcher:
   python billing-ui/serve.py --db <ABS path>.
 - JUDGMENT CALLS FLAGGED THIS SESSION (James may re-rule):
