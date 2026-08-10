@@ -1720,7 +1720,8 @@ class Handler(BaseHTTPRequestHandler):
                 f"<div><label>Add signer (client)</label>"
                 f"<select name='contact_id' required>{copts}"
                 f"</select></div>"
-                f"<button class='small'>Add signer</button></form>"
+                f"<button class='small'>Add signer / get client"
+                f" link</button></form>"
                 f"<form method='post' class='upload-row'"
                 f" action='/files/{fid}/esign/fields'>"
                 f"<div><label>Field</label><select name='field_type'>"
@@ -1742,10 +1743,28 @@ class Handler(BaseHTTPRequestHandler):
                 f" while placing: <a href='/files/{fid}/preview'>"
                 f"Preview</a>. Misplaced? Remove the field and"
                 f" place it again.</p>")
-            # Send exists only once someone is on the request
-            # (gate r5: a zero-signer Send locked the file with
-            # nobody to sign and no link to show)
-            if signers:
+            # Send exists only once someone is on the request AND
+            # every signer has a field (gate r5: a zero-signer
+            # Send locked the file with nobody to sign; gate r6:
+            # a field-less signer's page rendered NO inputs and
+            # one button-press "signed" -- a vacuous signature)
+            fieldless = [labels[s["id"]] for s in signers
+                         if not any(fl["signer_id"] == s["id"]
+                                    for fl in fields)]
+            if not signers:
+                forms_html += (
+                    "<p class='hint'>Add a signer before sending"
+                    " -- a request with nobody to sign cannot go"
+                    " out.</p>")
+            elif fieldless:
+                forms_html += (
+                    "<p class='hint'>Every signer needs at least"
+                    " one field before sending -- place a field"
+                    " for: "
+                    + html.esc(", ".join(fieldless))
+                    + ". A signer with nothing to fill would sign"
+                    " an empty page.</p>")
+            else:
                 forms_html += (
                     f"<form method='post' class='inline'"
                     f" action='/files/{fid}/esign/request'>"
@@ -1754,11 +1773,6 @@ class Handler(BaseHTTPRequestHandler):
                     f"<p class='hint'>Sending locks the document;"
                     f" each signer gets a secure link by email."
                     f"</p>")
-            else:
-                forms_html += (
-                    "<p class='hint'>Add a signer before sending"
-                    " -- a request with nobody to sign cannot go"
-                    " out.</p>")
         else:
             forms_html = self._esign_status_block(conn, fid, es,
                                                   cnames)
@@ -1841,10 +1855,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def _file_esign_request(self, conn, now, fid):
         es = self._es_live(conn, fid)
-        # gate r5: the core locks the file even with zero signers
-        # (request_signatures loops over nobody); refusing the
-        # empty send is the surface's job
-        if not esign.signers_of(conn, es["id"]):
+        # gate r5 + r6: the core locks the file even with zero
+        # signers, and a field-less signer trivially "signs" an
+        # empty page; refusing both sends is the surface's job
+        signers = esign.signers_of(conn, es["id"])
+        with_fields = {fl["signer_id"]
+                       for fl in esign.fields_of(conn, es["id"])}
+        if not signers or any(s["id"] not in with_fields
+                              for s in signers):
             return self._redirect(f"/files/{fid}/esign")
         try:
             esign.request_signatures(conn, es["id"], now)

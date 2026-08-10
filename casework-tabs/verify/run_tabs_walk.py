@@ -805,8 +805,22 @@ def step_files_esign_prepare(w):
     _s, _u, page = w.browser.post(
         f"/files/{w.file2_id}/esign/signers", {
             "contact_id": str(w.contact_id)})
-    assert f"action='/files/{w.file2_id}/esign/request'" in page, \
-        "Send absent after the first signer"
+    # gate r6 (James's drive): a FIELD-LESS signer's page rendered
+    # no inputs and one button-press "signed" an empty page -- the
+    # completed retainer in his demo db proved it (fields=0,
+    # vacuous signature). Send stays absent until every signer
+    # has a field, and the direct POST is refused.
+    assert f"action='/files/{w.file2_id}/esign/request'" \
+        not in page, "editor offers Send for a field-less signer"
+    assert "needs at least one field" in page, \
+        "field-less editor lacks its hint"
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/request", {})
+    st = w.conn.execute(
+        "SELECT status FROM esign_files WHERE file_id=?"
+        " AND deleted_at IS NULL", (w.file2_id,)).fetchone()
+    assert st["status"] == "draft", \
+        f"field-less request went out (status {st['status']!r})"
     signer = w.conn.execute(
         "SELECT * FROM esign_signers ORDER BY id DESC").fetchone()
     assert signer is not None, "signer row missing"
@@ -818,6 +832,8 @@ def step_files_esign_prepare(w):
             "signer_id": str(w.signer_id),
             "field_type": "signature", "page": "1",
             "x": "100", "y": "600"})
+    assert f"action='/files/{w.file2_id}/esign/request'" in page, \
+        "Send absent once every signer has a field"
     # a misplaced field is removable while draft (P4b gate r2:
     # James placed a duplicate live; core remove_field is
     # draft-only and had no button)

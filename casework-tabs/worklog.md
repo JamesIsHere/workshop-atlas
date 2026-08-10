@@ -809,3 +809,28 @@ first signer. RED-driven: guard disabled -> FAIL "no-signer
 request went out (status 'requested')" -- his exact state
 reproduced. Rail 22 pass/0 fail sha 05ffb243 x2 (supersedes
 4f3a5880); ui-walk GREEN (app_ui-only round). 8500 restarted.
+
+P4b gate feedback r6 (James's snaps + db forensics): his no-box
+signing reconstructed from the db, not memory -- es 5, the
+REDONE retainer: signer added, ZERO fields, r5's guard checked
+signers only, Send went out, the signer page (his bab89086
+snap) rendered no inputs, one button-press "signed", the core
+completed and filed a stamped copy with nothing stamped. A
+VACUOUS signature in produced custody. Second pre-guard
+artifact: es 3 (g28-anya-filled) requested w/ 0 signers.
+Fixes (rendering only): (a) Send requires every signer to have
+at least one field -- editor hint names who lacks one ("a
+signer with nothing to fill would sign an empty page"), handler
+refuses the direct POST; (b) his label ask verbatim: the add
+button is now "Add signer / get client link" (it took him
+forever to realize signer -> Send -> link was the path). Rail's
+prepare step: r5's Send-present-after-signer assert FLIPPED
+(absent until the field lands), field-less direct POST asserted
+refused, Send-present asserted only after the field. RED:
+field-guard disabled -> FAIL "field-less request went out
+(status 'requested')" -- his exact path reproduced. Rail 22
+pass/0 fail sha 3fcf00d3 x2 (supersedes 05ffb243); ui-walk
+GREEN (app_ui-only round). 8500 restarted. Demo db keeps his
+artifacts mid-gate (fresh reseed at gate close per standing
+rule); the vacuous completed retainer is demo-only and dies at
+reseed.

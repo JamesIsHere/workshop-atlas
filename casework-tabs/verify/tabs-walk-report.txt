@@ -1,30 +1,30 @@
 # tabs-walk-report -- verifier 1
 
-run started: 2026-08-10T15:37:43Z
+run started: 2026-08-10T15:43:56Z
 
-PASS    setup + login                            0.093s  fresh db; admin created; MFA enrolled; dashboard reached
-PASS    empty states designed (fresh db)         0.004s  all list tabs show designed empty states with actions
-PASS    client + matter (existing UI)            0.009s  contact 1 + matter 1 via existing screens
-PASS    calendar: new appointment                0.005s  appointment 1 by click; MM/DD/YYYY; end time
+PASS    setup + login                            0.098s  fresh db; admin created; MFA enrolled; dashboard reached
+PASS    empty states designed (fresh db)         0.005s  all list tabs show designed empty states with actions
+PASS    client + matter (existing UI)            0.010s  contact 1 + matter 1 via existing screens
+PASS    calendar: new appointment                0.006s  appointment 1 by click; MM/DD/YYYY; end time
 PASS    calendar: new deadline                   0.005s  deadline created via its lean pre-shaped form
 PASS    calendar: unified view + kind filter     0.002s  unified view: both kinds rendered; single-kind filter
 PASS    calendar: agenda/month toggle            0.004s  two-button toggle; month grid; sticky per user
 PENDING calendar: derived kinds [Q]              0.001s  derived calendar kinds not built (marker "class='kind kind-expiry'" absent)
 PASS    calendar: provenance links               0.001s  derived rows carry provenance links to their source
-PASS    tasks: quick-add + due date              0.006s  quick-add by Enter (due rides the form); on the calendar
+PASS    tasks: quick-add + due date              0.007s  quick-add by Enter (due rides the form); on the calendar
 PASS    tasks: my-open default + toggles         0.002s  index opens on MY OPEN; firm + completed one click away
-PASS    tasks: confirm-complete                  0.014s  check-then-Done from the row; completed view; Reopen undoes, audited
-PASS    tasks: lists builder + import            0.030s  list built in its Settings home; imported onto matter
-PASS    notes: categories home                   0.014s  note categories managed in their Settings home
-PASS    notes: minimal capture + expanded        0.010s  quick capture = body + save; expanded form for the rest
-PASS    notes: matter timeline + pin             0.010s  timeline newest-first; pinning the older memo lifts it
+PASS    tasks: confirm-complete                  0.015s  check-then-Done from the row; completed view; Reopen undoes, audited
+PASS    tasks: lists builder + import            0.041s  list built in its Settings home; imported onto matter
+PASS    notes: categories home                   0.005s  note categories managed in their Settings home
+PASS    notes: minimal capture + expanded        0.011s  quick capture = body + save; expanded form for the rest
+PASS    notes: matter timeline + pin             0.011s  timeline newest-first; pinning the older memo lifts it
 PASS    notes: index defaults + filters          0.002s  defaults ALL + pinned first; category + mine chips work
 PASS    notes: PDF export                        0.003s  notes PDF exported (840 bytes); on note page
-PASS    files: upload + custody                  0.008s  upload by click; custody (source + sha256) visible
-PASS    files: matter section + index filters    0.025s  matter-centric section + firm-wide index with filters
-PASS    files: rename/preview/print/bulk         0.013s  rename, preview (= print tab), bulk zip -- all by click
-PASS    files: e-sign prepare + request          0.085s  PDF-only prepare; stray field removed; request sent, VOIDED (old link dead), redone to requested
-PASS    files: e-sign signer + custody           0.028s  typed signature via the live link; stamped copy filed as produced; source filter narrows
+PASS    files: upload + custody                  0.007s  upload by click; custody (source + sha256) visible
+PASS    files: matter section + index filters    0.009s  matter-centric section + firm-wide index with filters
+PASS    files: rename/preview/print/bulk         0.010s  rename, preview (= print tab), bulk zip -- all by click
+PASS    files: e-sign prepare + request          0.094s  PDF-only prepare; stray field removed; request sent, VOIDED (old link dead), redone to requested
+PASS    files: e-sign signer + custody           0.029s  typed signature via the live link; stamped copy filed as produced; source filter narrows
 PENDING search: chrome bar everywhere            0.001s  chrome-level search bar not built (marker 'chrome-search' absent)
 PENDING search: coverage + grouped results       0.001s  grouped results not built (marker 'result-group' absent)
 PENDING search: recents                          0.002s  recents on the search page not built (marker 'Recent' absent)
@@ -36,7 +36,7 @@ PENDING settings: machinery homes collected      0.001s  machinery homes in the 
 
 # supporting sweeps (empty-state sweep = step 2)
 PASS float-sweep: no float() and no true /100 in app_ui
-PASS iso-stray-sweep: no visible ISO dates on 83 tab pages
+PASS iso-stray-sweep: no visible ISO dates on 84 tab pages
 
-steps: 22 pass, 9 pending, 0 fail; total 0.383s
+steps: 22 pass, 9 pending, 0 fail; total 0.386s
 verdict: ON TRACK (pending screens)
