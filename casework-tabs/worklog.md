@@ -834,3 +834,20 @@ GREEN (app_ui-only round). 8500 restarted. Demo db keeps his
 artifacts mid-gate (fresh reseed at gate close per standing
 rule); the vacuous completed retainer is demo-only and dies at
 reseed.
+
+P4b gate feedback r7 (James, mid-draft: "where is my URL for the
+client to sign?"): the answer is IT DOES NOT EXIST YET -- links
+are minted at Send and live on the file's page -- and nothing on
+the prep editor said either fact; the r6 button label ("get
+client link") had sharpened the expectation. Fix: the draft
+editor opens with the flow line ("add signers, place their
+fields, then Send. The client signing links are created at Send
+and shown on the file's page (and emailed)"); the Send hint now
+names the link's home too. Rail pins the flow line ("created at
+Send"). Its RED came organically: the first build CLOBBERED the
+hint (a later forms_html assignment overwrote the +=) and the
+new assert failed against the real page before the one-char fix
+-- the arm's failure mode is proven without a staged sabotage.
+Rail 22 pass/0 fail sha 3fcf00d3 x2 -- UNCHANGED from r6 by
+construction (the hint is page content the report never quotes;
+the pin lives in the rail). ui-walk GREEN. 8500 restarted.

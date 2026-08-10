@@ -1703,6 +1703,13 @@ class Handler(BaseHTTPRequestHandler):
                   " yet. Place at least a signature field.</p>")
         forms_html = ""
         if es["status"] == "draft":
+            # gate r7 (James, mid-draft: "where is my URL?"): the
+            # link's birth and home were stated nowhere
+            forms_html += (
+                "<p class='hint'>Flow: add signers, place their"
+                " fields, then Send. The client signing links are"
+                " created at Send and shown on the file's page"
+                " (and emailed).</p>")
             copts = "".join(
                 f"<option value='{i}'>{html.esc(n)}</option>"
                 for i, n in sorted(cnames.items(),
@@ -1714,7 +1721,7 @@ class Handler(BaseHTTPRequestHandler):
             topts = "".join(
                 f"<option value='{t}'>{t}</option>"
                 for t in esign.FIELD_TYPES)
-            forms_html = (
+            forms_html += (
                 f"<form method='post' class='upload-row'"
                 f" action='/files/{fid}/esign/signers'>"
                 f"<div><label>Add signer (client)</label>"
@@ -1771,8 +1778,9 @@ class Handler(BaseHTTPRequestHandler):
                     f"<button class='primary'>Send signature"
                     f" requests</button></form>"
                     f"<p class='hint'>Sending locks the document;"
-                    f" each signer gets a secure link by email."
-                    f"</p>")
+                    f" each signer gets a secure link by email,"
+                    f" and the live links appear on the file's"
+                    f" page.</p>")
         else:
             forms_html = self._esign_status_block(conn, fid, es,
                                                   cnames)

@@ -795,6 +795,10 @@ def step_files_esign_prepare(w):
         not in page, "editor offers Send with no signers"
     assert "Add a signer before sending" in page, \
         "no-signer editor lacks its hint"
+    # gate r7 (James, mid-draft: "where is my URL?"): the draft
+    # editor must state where the link is born and where it lives
+    assert "created at Send" in page, \
+        "draft editor does not say where the signing link appears"
     _s, _u, page = w.browser.post(
         f"/files/{w.file2_id}/esign/request", {})
     st = w.conn.execute(
