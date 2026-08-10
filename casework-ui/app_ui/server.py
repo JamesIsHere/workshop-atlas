@@ -227,9 +227,6 @@ class Handler(BaseHTTPRequestHandler):
                     and segs[2] == "preview":
                 return self._file_preview(conn, _id(segs[1]))
             if len(segs) == 3 and segs[0] == "files" \
-                    and segs[2] == "print":
-                return self._file_print(conn, _id(segs[1]))
-            if len(segs) == 3 and segs[0] == "files" \
                     and segs[2] == "esign":
                 return self._file_esign_editor(conn, user,
                                                _id(segs[1]))
@@ -1492,11 +1489,14 @@ class Handler(BaseHTTPRequestHandler):
         when = f"{html.mdy(up)} {up[11:16]}" if up else "-"
         ext = ("." + f["name"].rsplit(".", 1)[-1].lower()
                if "." in f["name"] else "")
+        # ONE view control (P4b gate r1, James: preview and print
+        # view were identical -- true by construction in a zero-JS
+        # build, both serve the same bytes inline; print = the
+        # browser's print from the preview tab)
         view_links = ""
         if ext in files.PREVIEW_TYPES:
             view_links = (f"<a href='/files/{fid}/preview'>Preview"
-                          f"</a><a href='/files/{fid}/print'>Print"
-                          f" view</a>")
+                          f"</a>")
         rename = (f"<form method='post' action='/files/{fid}/rename'"
                   f" class='upload-row'><div class='grow'>"
                   + html.field("Rename", "name", value=f["name"])
@@ -1572,13 +1572,6 @@ class Handler(BaseHTTPRequestHandler):
     def _file_preview(self, conn, fid):
         try:
             ctype, content = files.preview(conn, fid)
-        except (ValueError, OSError):
-            raise _NotFound() from None
-        self._send_inline(content, ctype)
-
-    def _file_print(self, conn, fid):
-        try:
-            ctype, content = files.print_view(conn, fid)
         except (ValueError, OSError):
             raise _NotFound() from None
         self._send_inline(content, ctype)

@@ -703,3 +703,17 @@ chain -- staff surface renders the link, an un-authed Browser
 follows it to the frozen client surface, signs, and the staff
 surface then shows the produced custody. Cross-surface
 round-trips are rail-able; nothing about them requires a human.
+
+P4b gate feedback r1 (James's snaps, mid-drive): preview and
+print view were IDENTICAL -- true by construction: for viewable
+types both routes serve the same bytes inline; Docketwise's
+distinction (modal vs raw tab) does not exist in a zero-JS
+build. Fix: ONE Preview control on the detail; the app_ui print
+route retired (the capability -- displayable content in a tab,
+fx-0195 -- is the preview tab itself; printing is the browser's
+print from there; core print_view untouched). Rail manage step
+refined to match (print asserts left with the second button).
+Rail 22 pass/0 fail sha 35553738 x2 (supersedes c44c5e31);
+ui-walk GREEN; 8500 restarted. His drive confirmed download
+fine; prep-page question answered (Continue preparing = the
+prep editor; his snap showed it working).

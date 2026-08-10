@@ -725,13 +725,16 @@ def step_files_manage(w):
     and its entries asserted -- the bare PK magic passed any zip."""
     need(w.file_id, "uploaded file")
     need(w.file2_id, "PDF candidate")
+    # P4b gate r1 (James): preview and print view were identical by
+    # construction (zero-JS: both serve the same bytes inline), so
+    # the detail carries ONE Preview control; printing is the
+    # browser's print from that tab. The print asserts left with
+    # the second button.
     _s, _u, page = w.browser.get(f"/files/{w.file_id}")
     expect_marker(page, f"action='/files/{w.file_id}/rename'",
                   "rename on the file detail")
     assert f"/files/{w.file_id}/preview" in page, \
         "preview control missing from the detail page"
-    assert f"/files/{w.file_id}/print" in page, \
-        "print control missing from the detail page"
     _s, _u, page = w.browser.post(f"/files/{w.file_id}/rename", {
         "name": "SYNTH-civil-documents-v2.txt"})
     assert "SYNTH-civil-documents-v2.txt" in page, "rename not shown"
@@ -741,8 +744,6 @@ def step_files_manage(w):
         "old name still listed after rename"
     content = w.browser.get_bytes(f"/files/{w.file_id}/preview")
     assert b"SYNTH civil document scan" in content, "preview empty"
-    page = probe(w, f"/files/{w.file_id}/print")
-    assert "SYNTH civil document scan" in page, "print view empty"
     _s, _u, page = w.browser.get("/files")
     expect_marker(page, "bulk-download", "bulk download control")
     blob = w.browser.get_bytes(
@@ -755,7 +756,7 @@ def step_files_manage(w):
         f"zip entries: {sorted(names)}"
     assert b"SYNTH civil document scan" in z.read(
         "SYNTH-civil-documents-v2.txt"), "zip content wrong"
-    return "rename, preview, print, bulk zip -- all by click"
+    return "rename, preview (= print tab), bulk zip -- all by click"
 
 
 def step_files_esign_prepare(w):
