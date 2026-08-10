@@ -1,7 +1,7 @@
 # plan.md -- casework-tabs (agent-owned strategy; rewritten freely)
 
-DRAFT alongside the unratified goal. Phase order is a strawman --
-order changes are Approval-required per goal.md.
+Goal RATIFIED 2026-08-10; this phase order is now the working
+strategy -- order changes are Approval-required per goal.md.
 
 ## Phase order and rationale
 
@@ -47,5 +47,13 @@ Settings layout at P6 -- avoids P6 blocking P1-P3.
 
 ## Unit queue (current)
 
-- U0.1 verify/ scaffold + seed script + RED rail run.
-- (blocked on ratification)
+- U0.1 DONE 2026-08-10 (s2): rail RED (sha e084bd4b x2), seed
+  green, sha script canonical, four sabotages proven, suites green.
+- U1.1 Calendar readers + unified index (kinds, filter, empty
+  state) to the rail's pinned contract.
+- U1.2 Two create forms (new-appointment, new-deadline) + detail
+  parity rides (attendees, end times, MM/DD/YYYY).
+- U1.3 Agenda/month toggle (sticky) + provenance links; [Q1]
+  ruling shapes the derived-kinds step at the gate.
+- U1.4 P1 gate: seeded db up on the ruled port, ruling queue
+  serialized, hands-on verdict, receipt in verify/gate-receipts/.

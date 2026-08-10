@@ -1,0 +1,41 @@
+# tabs-walk-report -- verifier 1
+
+run started: 2026-08-10T10:31:10Z
+
+PASS    setup + login                            0.334s  fresh db; admin created; MFA enrolled; dashboard reached
+PENDING empty states designed (fresh db)         0.028s  designed empty states absent: ['/calendar', '/files', '/tasks', '/notes']
+PASS    client + matter (existing UI)            0.032s  contact 1 + matter 1 via existing screens
+PENDING calendar: new appointment                0.001s  /calendar/new-appointment not built
+PENDING calendar: new deadline                   0.001s  /calendar/new-deadline not built
+PENDING calendar: unified view + kind filter     0.000s  upstream not walked yet (appointment)
+PENDING calendar: agenda/month toggle            0.000s  upstream not walked yet (appointment)
+PENDING calendar: derived kinds [Q]              0.000s  upstream not walked yet (appointment)
+PENDING calendar: provenance links               0.000s  upstream not walked yet (deadline)
+PENDING tasks: quick-add + due date              0.026s  type-and-Enter quick-add not built (marker "action='/tasks/quick'" absent)
+PENDING tasks: my-open default + toggles         0.000s  upstream not walked yet (quick-added task)
+PENDING tasks: one-click complete                0.000s  upstream not walked yet (quick-added task)
+PENDING tasks: lists builder + import            0.001s  /settings/task-lists not built
+PENDING notes: categories home                   0.001s  /settings/note-categories not built
+PENDING notes: minimal capture + expanded        0.001s  minimal capture not built (marker "action='/notes/quick'" absent)
+PENDING notes: matter timeline + pin             0.000s  upstream not walked yet (expanded note)
+PENDING notes: index defaults + filters          0.000s  upstream not walked yet (expanded note)
+PENDING notes: PDF export                        0.000s  upstream not walked yet (expanded note)
+PENDING files: upload + custody                  0.001s  upload from the files tab not built (marker "action='/files/upload'" absent)
+PENDING files: matter section + index filters    0.000s  upstream not walked yet (uploaded file)
+PENDING files: rename/preview/print/bulk         0.000s  upstream not walked yet (uploaded file)
+PENDING files: e-sign flow                       0.000s  upstream not walked yet (PDF candidate)
+PENDING search: chrome bar everywhere            0.001s  chrome-level search bar not built (marker 'chrome-search' absent)
+PENDING search: coverage + grouped results       0.000s  upstream not walked yet (uploaded file)
+PENDING search: recents                          0.017s  recents on the search page not built (marker 'Recent' absent)
+PENDING settings: users admin                    0.001s  /settings/users not built
+PENDING settings: permissions groups             0.014s  /settings/permissions not built
+PENDING settings: trash + restore                0.000s  upstream not walked yet (quick note)
+PENDING settings: notifications + firm basics    0.001s  /settings/notifications not built
+PENDING settings: machinery homes collected      0.014s  machinery homes in the Settings layout not built (marker '/settings/task-lists' absent)
+
+# supporting sweeps (empty-state sweep = step 2)
+PASS float-sweep: no float() and no true /100 in app_ui
+PASS iso-stray-sweep: no visible ISO dates on 14 tab pages
+
+steps: 2 pass, 28 pending, 0 fail; total 0.473s
+verdict: ON TRACK (pending screens)

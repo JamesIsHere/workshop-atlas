@@ -17,19 +17,28 @@ is the contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | RATIFIED 2026-08-10, pre-P0 -- contract signed,    |
-|              | Appendix B amendment ratified into atlas/CLAUDE.md |
-| Last session | 2026-08-10 -- bootstrap: interview, draft,         |
-|              | deferral-load check, ratification in one sitting   |
-| Next action  | U0.1: verify/ scaffold, oracle-first (walk rail    |
-|              | RED before any screen work). See state.md          |
+| Status       | P0 COMPLETE 2026-08-10 -- harness on disk, rail    |
+|              | RED as contracted (sha e084bd4b x2), seed green    |
+| Last session | 2026-08-10 s2 -- U0.1: rail + seed + sha script    |
+|              | built, 4 sabotages proven, all suites green quoted |
+| Next action  | P1 Calendar: build to the rail's pinned contract;  |
+|              | [Q1] derived-kinds ruling rides to the P1 gate.    |
+|              | See state.md                                       |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.
 
 ## How to run
 
-Nothing runs from here yet. The substrate: from ../casework-ui/,
+From casework-tabs/: `python verify/run_tabs_walk.py` runs this
+child's rail (exit 0 only when all steps green; pending screens =
+exit 1, verdict ON TRACK; float/ISO sweeps ride the report and the
+empty-state sweep is walk step 2). `python verify/report_sha.py`
+is the ONLY valid report sha. `python verify/seed_tabs.py`
+regenerates the gate-review demo db (data/demo-tabs.db; login
+demo.tabs@synthetic.test / demo-tabs-pass).
+
+The substrate: from ../casework-ui/,
 `python -m app_ui.server --db data/ui.db [--port 8500]` starts the
 UI and `python verify/run_ui_walk.py` is the frozen walk guard; from
 ../casework/, `python verify/run_spine.py`; from ../casework-billing/,
