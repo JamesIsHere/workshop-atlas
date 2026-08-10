@@ -1,98 +1,83 @@
 # state.md -- billing-ui (session cache, overwritten each wind-down)
 
-## ATTEMPT 5 IS IN FLIGHT (handover 2026-08-09, s13 close)
+## COLD-START POINTER (s14, 2026-08-10)
 
-James cleared context and is DRIVING THE WALK solo. The agent's
-setup is done: 8500 serves the FRESH EMPTY walk db
-billing-ui/data/demo-walk-2026-08-09b.db ("b" because the plain
--09 name is s11's retained incident artifact -- delete=archive;
-precedent -04b/-07b), /setup confirmed answering, and both
-oracles quoted GREEN at handover: billing-ui walk "20 pass, 0
-pending, 0 fail; float-sweep pass; verdict GREEN"; drive-sheet
-"27/27 groups pass; verdict GREEN". He drives all 40 steps of
-verify/demo-walk-protocol.md (sheet lock 85e4e4633a37), Part K
-closes July at the end. A resumed session is the RECORDER:
-close-out = python verify/check_demo_walk.py
-data/demo-walk-2026-08-09b.db (exit 0; now includes the Part-K
-close receipt and F9), James's PDF/ledger/recon eyeball, then
-the three-part verdict sheet -- marks M0..M7 (snap mtimes fine,
-attempt-4 precedent), soft budget still M1->M6 at 20:00. During
-the walk the recorder answers NOTHING about the screens.
+ATTEMPT 5 WAS DRIVEN AND RECORDED; THE VERDICT IS PENDING.
+James drove all 40 steps solo on data/demo-walk-2026-08-09b.db
+(sheet lock 85e4e4633a37), 23:43-00:06 firm-local 08/09->08/10.
+Close-out ran green this session: check_demo_walk.py on the
+walked db = 13/13 PASS, fiduciary 9/0/0 GREEN, closed periods
+['2026-07'], exit 0. All 32 snaps (Desktop/snaps, steps 15-40)
+reviewed and matched. Marks M1->M6 = 16:56 (UNDER the 20:00
+soft budget, first time); M1->M7 = 22:33 (data). Full record:
+worklog s14. James's reaction: "This looks pretty good. I have
+to sit with it a while and click around for UI" -- he is
+REVIEWING; the three sub-verdicts (a)/(b)/(c) are unsigned.
+At wind-down he added, verbatim: "I think it's good for a
+meeting but I still want to do more work before the meeting
+because I still think there's more we can do." Read that as a
+LEAN toward (c) bookable, NOT a signature -- and as notice
+that a more-work round is coming before any firm meeting. The
+next session should expect BOTH: take the formal verdict when
+offered, and be ready to scope the more-work round (friction
+items, open flags, gated items are the natural candidate
+pool).
 
-## COLD-START POINTER (s13 cont, 2026-08-09)
-
-ATTEMPT 5 IS FULLY PREPPED. The finish pass is done both halves
-(James: "I think it looks good"; agent pass fixed step-29 ledger
-links, the checkbox float, and undated seed charges -- all
-verified on-screen). James then RULED the attempt-prep decision:
-the demo sheet gains the period-close act. BUILT as the sheet's
-seventh amendment: Part K, steps 33-40 (July coda -- 100.00
-consult billed+paid 07/01 -- then prepare, approve, the
-permanent record, and the PC1 lock proven on screen by a refused
-July-dated disbursement). SHEET LOCK RE-SYNCED: f7f821edb1e9 ->
-85e4e4633a37. drive_sheet extended (+3 groups, 27/27 GREEN);
-labels 91/0; check_demo_walk gains the Part-K receipt (smoke-
-tested: pre-close dbs fail exactly that receipt). ALL suites
-green and quoted in worklog s13/s13 cont; report_sha 30301f88
-UNCHANGED.
+A resumed session's FIRST job: ask nothing until he volunteers;
+when he is ready, take the three-part verdict (a) fiduciary
+story lands, (b) nothing embarrassing, (c) bookable -- each
+up/down, then P4 closes on his sheet, not before. If he signs
+PASS, next is the goal.md close-out (result.md etc. per
+contract). If any axis FAILs, the failed-axis reason drives the
+next build round, attempt 6 under the standard protocol.
 
 ## Status
 
-P4 OPEN after attempt 4 (FAIL b/c, (a) PASS, 2026-08-08). All
-attempt-5 preconditions MET: item 12 built (s10-s12), finish
-pass done (s13), close act in the sheet + lock re-synced
-(s13 cont). NEXT: attempt 5 itself, whenever James is ready.
-
-## Attempt 5 protocol (the standard one; sheet now 40 steps)
-
-1. Agent seeds a FRESH data/demo-walk-<today>.db behind 8500
-   (empty -- James creates everything; NOT seed_demo, which is
-   the preview/gate-review db), confirms /setup answers, runs
-   the walk verifier and quotes it GREEN before handover.
-2. James receives exactly two things: http://127.0.0.1:8500 and
-   the sheet (verify/demo-walk-protocol.md). Two browser
-   windows: normal + incognito blank. He drives all 40 steps
-   (Part K closes July at the end).
-3. Close-out: check_demo_walk.py on the walked db (now includes
-   the close receipt; fiduciary in place includes F9), James's
-   PDF/ledger/recon eyeball, then the three-part verdict sheet.
-   Marks M0..M7; soft budget still M1->M6 at 20:00.
+P4 OPEN. Attempt 5 driven 2026-08-10, record filed (worklog
+s14), close-out verifier green and quoted, VERDICT PENDING
+James's sit-with-it review. Nothing advances past P4 on
+"looks pretty good" -- signed sheet only.
 
 ## Watch items and caveats
 
-- Server UP at handover on 8500 over the ATTEMPT-5 WALK db
-  data/demo-walk-2026-08-09b.db (fresh, James driving -- see the
-  in-flight header; do NOT touch it mid-walk). The preview db
-  demo-billing.db is the alternate for gate reviews (regenerates
-  via verify/seed_demo.py; reseeds wipe sessions: login
-  demo.reviewer@synthetic.test / demo-seed-pass, code shown
-  on-screen). Swap dbs behind the port, never the port. Restart
-  after ANY app_ui or casework/app change. Launcher:
+- Server UP on 8500 over the WALKED attempt-5 db
+  data/demo-walk-2026-08-09b.db -- deliberately left up for
+  James's review clicking. It is now a walked artifact
+  (delete=archive; retained set grows to -04, -04b, -07, -07b,
+  -07c, -08, -09, -09b). Do NOT reseed or swap it while his
+  review is open. Preview db demo-billing.db remains the
+  alternate for gate reviews (verify/seed_demo.py; reseeds wipe
+  sessions: demo.reviewer@synthetic.test / demo-seed-pass).
+  Swap dbs behind the port, never the port. Restart after ANY
+  app_ui or casework/app change. Launcher:
   python billing-ui/serve.py --db <ABS path>.
-- JUDGMENT CALLS FLAGGED THIS SESSION (James may re-rule):
-  (1) marks -- M7 added, soft budget kept at M1->M6 for
-  cross-attempt comparability, M1->M7 recorded as data;
-  (2) the PC1 refusal error renders the period ISO-style
-  ("period 2026-07 is closed...") in an otherwise MM/DD/YYYY
-  surface -- core-owned text in casework/app/period.py, inside
-  the standing close amendment's write surface if he wants it
-  reworded; the sheet quotes it verbatim with a translation.
-- FLAGS from the s13 sweep, both on frozen casework-ui screens
-  (gate decisions): contact detail card shows raw machine keys
-  as labels (bio.family_name etc.); contact Matters card prints
+- FRICTION LOG from attempt 5 (all minor, worklog s14): step-17
+  checkpoint conditional read as unconditional stop (sheet
+  wording); step-27 Note field not in the sheet, James filled
+  it; step-39 refusal clears the form's typed values (product
+  polish). None is a stop-rule event; all are candidate work
+  if James rules them in.
+- JUDGMENT CALLS still open for re-rule: M7/soft-budget
+  handling (kept M1->M6 for comparability); PC1 refusal renders
+  the period ISO-style ("period 2026-07...") in an MM/DD/YYYY
+  surface (core-owned text, casework/app/period.py, inside the
+  standing close amendment's write surface).
+- FLAGS from s13 sweep, frozen casework-ui screens (gate
+  decisions): contact detail card shows raw machine keys as
+  labels (bio.family_name etc.); contact Matters card prints
   ISO dates vs MM/DD/YYYY.
 - FIRM-LOCAL DATES RULING (s12 cont): business dates stamp
-  firm-local, timestamps stay UTC; verified live on the close
-  signatures. A new date surface must follow it.
-- Pre-close dbs (all retained walk dbs except -08) FAIL LOUD on
-  ledger writes and /billing/close (missing period_closes --
+  firm-local, timestamps UTC. Proven live in attempt 5: the
+  close signatures stamped 08/10/2026 when James crossed
+  midnight mid-walk.
+- Pre-close dbs (retained walk dbs except -08, -09b) FAIL LOUD
+  on ledger writes and /billing/close (missing period_closes --
   deliberate). migrate_period_close.py before serving one;
   pre--08 dbs are PRE-ENGINE; pre-07c also need
-  migrate_invoice_codes.py. check_demo_walk now FAILS any
-  pre-Part-K walked db on the close receipt -- correct, not a
-  bug.
+  migrate_invoice_codes.py. check_demo_walk FAILS any
+  pre-Part-K walked db on the close receipt -- correct.
 - s11 double-bind protocol: netstat before blaming the db;
-  single bind verified at every s13 relaunch.
+  single bind verified at the attempt-5 close-out.
 - Close judgment calls flagged, unruled (s12): month closable
   only after it ends; ranking rows plain text; approve-on-stale
   commits the void; one closable month, never a choice.
@@ -104,8 +89,6 @@ pass done (s13), close act in the sheet + lock re-synced
   ../casework-billing/; spine from ../casework/; core touches
   trigger the reciprocal guard (ALL suites). period.py imports
   the recon oracle LAZILY.
-- Retained walk dbs (delete=archive): -04, -04b, -07, -07b,
-  -07c, -08 (migrated), -09 (empty, incident artifact).
 - atlas/gated-items.md current as of s12.
 - Anti-stall ledgers: P2 1/2, P3 0/2, F-1 1/2 used. Firm
   question still unasked: flat-fee vs hourly mix.
@@ -126,11 +109,14 @@ pass done (s13), close act in the sheet + lock re-synced
 
 ## Open decisions
 
-- ATTEMPT 5: ready to run; James picks the moment.
+- THE VERDICT: attempt 5's three sub-verdicts (a)/(b)/(c) --
+  James signs when his review is done. Everything else queues
+  behind this.
+- Friction-log items 1-3 (s14): rule in as work or log-only.
 - Marks judgment call (M7/budget) and the refusal-message
-  wording: flagged above; James may re-rule.
+  wording: James may re-rule.
 - Contact-screen flags from s13 (raw labels, ISO dates): gate
-  in or leave; James's call.
+  in or leave.
 - Dashboard settling backing list: flagged, unruled.
 - Close judgment calls (s12): James may re-rule.
 - E-item select wording: James may re-rule any line.

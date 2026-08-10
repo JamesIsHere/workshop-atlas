@@ -19,18 +19,20 @@ contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P4 open after attempt 4 (FAIL b/c, (a) PASS).      |
-|              | ALL attempt-5 preconditions MET: item 12 built,    |
-|              | finish pass done, and the sheet's seventh          |
-|              | amendment adds Part K (period-close act, steps     |
-|              | 33-40) with the lock re-synced                     |
-| Last session | 2026-08-09 s13 cont -- James ruled the close act   |
-|              | into the sheet; Part K built mirroring walk step   |
-|              | 20; sheet lock f7f821edb1e9 -> 85e4e4633a37;       |
-|              | drive-sheet 27/27, labels 91/0, ALL suites green;  |
-|              | report sha 30301f88 unchanged                      |
-| Next action  | ATTEMPT 5 -- standard protocol, 40 steps, James    |
-|              | picks the moment. See state.md cold-start pointer  |
+| Status       | P4 open. ATTEMPT 5 DRIVEN 2026-08-10 (all 40       |
+|              | steps, James solo): close-out verifier 13/13 PASS  |
+|              | exit 0, fiduciary 9/0/0 GREEN on the walked db,    |
+|              | M1->M6 16:56 (under budget, first time). VERDICT   |
+|              | PENDING -- James is sitting with it; the three     |
+|              | sub-verdicts are unsigned                          |
+| Last session | 2026-08-10 s14 -- recorder session for attempt 5:  |
+|              | mid-walk step-17 checkpoint misread clarified      |
+|              | (sheet mechanics only), 32 snaps reviewed all      |
+|              | matching, marks + friction log filed (worklog      |
+|              | s14), walked db left live behind 8500              |
+| Next action  | Take James's three-part verdict when his review    |
+|              | is done; P4 closes on his signed sheet only. See   |
+|              | state.md cold-start pointer                        |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

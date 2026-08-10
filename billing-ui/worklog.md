@@ -2478,3 +2478,68 @@ Attempt-5 preconditions are now ALL MET. Next: the standard
 attempt protocol -- agent seeds a fresh dated db behind 8500,
 runs the walk verifier green, hands over the URL and the sheet;
 James drives all 40 steps; close-out; three-part verdict.
+
+## 2026-08-10 -- s14: ATTEMPT 5 DRIVEN -- all 40 steps, record filed,
+## verdict PENDING James's sit-with-it review
+
+James drove the full 40-step walk solo on the fresh
+data/demo-walk-2026-08-09b.db (sheet lock 85e4e4633a37), 23:43 -
+00:06 firm-local, crossing midnight mid-walk. The resumed session
+acted as RECORDER only. One mid-walk pause: at the step-17
+CHECKPOINT he read the conditional STOP ("if the payment line
+reads direct") as an instruction and halted; recorder clarified
+sheet mechanics only (allowed: wording questions about the
+sheet), he confirmed the line read card, walk resumed. Ground
+truth pulled before clarifying: payment 2 was sim_card via
+processor txn 1 -- the data was never in doubt.
+
+CLOSE-OUT (quoted, this session):
+- check_demo_walk.py data/demo-walk-2026-08-09b.db: 13/13 PASS
+  incl. "july coda closed (33-40): coda bill 4 paid; closed
+  periods ['2026-07']" and "fiduciary in place: 9 pass, 0 red,
+  0 stub; verdict: GREEN". "check-demo-walk: PASS", exit 0.
+- Snap review: James snapped from step 15 on (32 images,
+  Desktop/snaps, steps 15-40); every snap matches its step's
+  promised labels, figures, and pills. Dollar spine foots end to
+  end: 5,000.00 gross to trust / 349.70 operating after fee /
+  2,000.00 post-earn-out / 800.00 after disbursement / 3,449.70
+  operating at close. Correction trail e1 + e6 "reverses e1" +
+  e7 "replaces e1". Recon ties 800.00 = 800.00 = 800.00 with
+  in-transit settlement and outstanding check shown. Part K:
+  B0003 July coda, two-signature close (prepared + approved
+  Demo Driver 08/10/2026 -- firm-local, correct under the s12
+  ruling), refusal verbatim "period 2026-07 is closed (hard
+  close through 2026-07): post the fact current-dated in the
+  open month", Vera's 800.00 unmoved on the final screen.
+
+MARKS (firm-local EDT; M2-M7 snap mtimes per attempt-4
+precedent, M0/M1 from the walked db's audit timestamps --
+no snaps exist before step 15):
+  M0 ~23:43:26 | M1 ~23:43:30 | M2 23:48:21 | M3 23:51:52 |
+  M4 23:55:32 | M5 23:58:30 | M6 00:00:26 | M7 00:06:03.
+  M1->M6 = 16:56 -- UNDER the 20:00 soft budget (first time).
+  M1->M7 = 22:33 (data; no budget).
+
+FRICTION LOG (all minor, none a stop-rule event):
+1. Step-17 checkpoint wording read as an unconditional stop
+   (sheet wording).
+2. Step-27 "Correct this payment" card has a Note field the
+   sheet never mentions; James filled it ("Was not told to
+   leave note...") -- harmless to the books (sheet gap).
+3. Step-39 refusal renders the correct verbatim error but
+   CLEARS the form's typed values -- client, amount, payee all
+   reset (product polish; from snap 39B).
+
+VERDICT: PENDING. James's reaction: "This looks pretty good. I
+have to sit with it a while and click around for UI" -- the
+three sub-verdicts (a)/(b)/(c) are deliberately unsigned; a
+verdict signed on trust is worthless (interface ruling). The
+walked db stays behind 8500 for his review clicking. P4 stays
+OPEN until he signs the sheet.
+
+METHOD: the recorder-silence rule survived contact with a live
+driver misread -- the sheet's own carve-out ("wording questions
+about this sheet may be clarified") was exactly the release
+valve needed; the screens were never discussed mid-walk. The
+step-17 checkpoint phrasing goes to the friction log, not a
+mid-walk sheet edit.
