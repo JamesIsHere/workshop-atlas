@@ -682,6 +682,9 @@ def step_period_close(w):
     assert "Billed $100.00" in page and "Collected $100.00" in page, \
         "July story figures wrong on the record"
     assert "of collections" in page, "cash ranking missing"
+    # ranking rows link to the client page (ruled 2026-08-10)
+    assert f"<a href='/contacts/{w.contact_id}'>" in page, \
+        "ranking row does not link the client name"
     # closed-months listing back on the close page
     page = probe(w, "/billing/close")
     assert "July 2026" in page and "/billing/close/2026-07" in page, \

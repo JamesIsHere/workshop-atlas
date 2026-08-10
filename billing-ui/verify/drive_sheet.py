@@ -19,6 +19,12 @@ deliberately does not have:
    To re-sync: verify the edited sheet's steps against this file,
    then update EXPECTED_SHEET_SHA to the printed value.
 
+3. BUDGET COUPLING (ruling 2026-08-10): the soft budget spans the
+   FULL walk. The preflight parses the sheet's final step, the
+   marks table's final mark, the budget prose, and the verdict
+   template's budget line; any disagreement fails loud before the
+   drive runs. Adding a step without re-ruling the budget is drift.
+
 Also locked in, the attempt-2 regression set:
 - date prefills are exactly what the sheet claims (invoice forms,
   payment folds, time, disburse start on today; charge dates copy
@@ -95,6 +101,35 @@ def sheet_sha():
     section = text[text.index("## Walk sheet"):
                    text.index("## Timing marks")]
     return hashlib.sha256(section.encode("utf-8")).hexdigest()[:12]
+
+
+def budget_coupling(text):
+    """Ruling 2026-08-10: the soft budget spans the FULL walk. The
+    sheet's final step, the marks table's final mark, the budget
+    prose, and the verdict template's budget line must all agree --
+    a step added without the budget re-ruled is drift. Returns the
+    drift description, or None when coupled."""
+    sheet = text[text.index("## Walk sheet"):
+                 text.index("## Timing marks")]
+    final_step = max(int(n) for n in
+                     re.findall(r"(?m)^(\d+)\.\s", sheet))
+    marks = text[text.index("## Timing marks"):
+                 text.index("## Close-out")]
+    mark_rows = re.findall(r"(?m)^\|\s*M(\d+)\s*\|(.*)", marks)
+    final_mark, final_row = max((int(n), row) for n, row in mark_rows)
+    if f"step {final_step}" not in final_row:
+        return (f"final mark M{final_mark} does not name the sheet's"
+                f" final step {final_step}")
+    span = f"M1 -> M{final_mark}"
+    if span not in marks or "soft budget" not in marks:
+        return f"timing-marks budget prose does not span {span}"
+    verdict = text[text.index("## Verdict sheet"):]
+    budget_lines = [ln for ln in verdict.splitlines()
+                    if "soft budget" in ln]
+    if len(budget_lines) != 1 or f"M1->M{final_mark}" not in budget_lines[0]:
+        return (f"verdict template must carry the soft budget on the"
+                f" M1->M{final_mark} line and nowhere else")
+    return None
 
 
 def today():
@@ -739,6 +774,11 @@ def main():
         print(f"DATE COUPLING: the walk sheet contains the ISO date"
               f" {stray.group()} -- every driver-facing date must be"
               f" MM/DD/YYYY (gated item A).")
+        return 2
+    drift = budget_coupling(text)
+    if drift:
+        print(f"BUDGET COUPLING: {drift} -- the soft budget must"
+              " span the full walk (ruling 2026-08-10).")
         return 2
     lines = [f"# drive-sheet-report -- sheet-coupling drive",
              f"# sheet sha {actual}", ""]

@@ -2931,3 +2931,204 @@ verdict: GREEN".
 
 SERVER: 8500 restarted, same walked db; PID 46392 -> 57704,
 single bind, HTTP 303.
+
+## 2026-08-10 -- s16: judgment-call sweep opens -- budget ruled
+## over the full walk; coupling made mechanical
+
+James opened the session asking to take the open judgment calls
+one by one. Map presented (six clusters); call 1 taken first.
+
+RULING (James): the soft budget is redefined over ALL 40 steps
+-- "We should always have it match the steps. That's a coupling
+we need to make sure stays reffed." Two parts implemented:
+
+1. REDEFINITION: demo-walk-protocol.md eighth amendment -- the
+   budget now spans M1 -> M7 at 25:00 (the 20:00 M1->M6 budget
+   scaled by step count, 40/32 = 1.25; attempt 5's 22:33 sits
+   at 90% of it, vs 85% under the old span -- similar headroom).
+   THE NUMBER IS AN AGENT DERIVATION, flagged for re-rule; James
+   ruled the span, not the figure. M1 -> M6 stays recorded as
+   data for lineage with attempts 1-4 (no Part K). Roles line,
+   marks heading, budget prose, and the verdict template's
+   Elapsed lines all updated. All edits OUTSIDE the locked
+   walk-sheet section; sheet lock stays 7b30fc89c159 (verified:
+   drive ran green under it after the edit).
+
+2. COUPLING ENFORCED: the grounding found the exact drift
+   channel -- sheet_sha() hashes "## Walk sheet" up to
+   "## Timing marks", so the steps live INSIDE the lock and the
+   budget definition lives right OUTSIDE it; either could move
+   without the other noticing. drive_sheet.py gains a
+   budget_coupling() preflight (beside the DATE COUPLING check,
+   exit 2): parses the sheet's final step number, the marks
+   table's final mark (its row must name that step), the budget
+   prose (must span M1 -> M<final>), and the verdict template
+   (the one "soft budget" line must be the M1->M<final> line).
+   Red/green proved in memory before the suites: green on the
+   live file; three drift mutations each refused with the right
+   message (step 41 added / M8 mark added / verdict line
+   reverted to M6). goal.md line 183 still reads "Soft budget
+   20:00" -- goal.md is James-only; his approval to restamp it
+   25:00 (or another figure) is queued as the open half of this
+   call.
+
+SUITES (all rerun this session, quoted): drive-sheet "27/27
+groups pass; verdict GREEN" (new preflight in the path); labels
+"92 labels checked, 0 not found"; billing-ui-walk "21 pass, 0
+pending, 0 fail; float-sweep pass; verdict GREEN" x2; ui-walk
+"13 pass, 0 pending, 0 fail; sweeps pass; verdict GREEN"; spine
+"107 green, 0 red, 0 pending; checks pass"; billing "25 green,
+0 red, 0 pending, 0 parked; checks pass; verdict: GREEN";
+fiduciary --seeded "9 pass, 0 red, 0 stub; verdict: GREEN"
+(F9: 0 closed, 0 drifted on the scratch db); anchor-billing
+"PASS (1.225s of 900s budget)".
+
+BOOKKEEPING GAP, found and closed late: s15 rebuilt the walk
+(19 -> 21 steps) and quoted the suite green but never recorded
+the report_sha supersession -- the last recorded sha was
+30301f88. Recorded now: report_sha.py = b3aa0a03 SUPERSEDES
+30301f88 (history: ... c59b8e9d -> 30301f88 -> b3aa0a03),
+verified x2 byte-identical this session. The s15 entries stand
+unedited; this note is the correction.
+
+Also fixed on resume: billing-ui/CLAUDE.md's State row said the
+s15 lock re-sync ended at 04f8db62ec6d; the worklog shows a
+later re-sync to 7b30fc89c159 (state.md and the s15 commit
+agree). One value corrected.
+
+## 2026-08-10 -- s16 cont: budget number RATIFIED ("25 is good!")
+
+goal.md restamped by James's ruling: "Soft budget 25:00 over the
+full walk, M1->M7 (ruled by James 2026-08-10; the budget always
+spans through the sheet's final step)" -- the [AJ] bracket keeps
+the fluency-guard/not-a-stopwatch character, strawman word
+dropped (the number is now ruled, not provisional). Protocol
+prose updated to match (flag cleared). Call 1 of the
+judgment-call sweep is CLOSED both halves: span + number.
+
+Proof after the edits: drive-sheet "27/27 groups pass; verdict
+GREEN" (budget-coupling preflight parses the edited prose; walk
+sheet untouched, lock stays 7b30fc89c159). Other suites do not
+read goal.md or the protocol's non-locked prose; s16 quotes
+stand.
+
+RULING (call 2a, James: "yes"): month-must-end stands as built
+-- closable_month never offers a running month. No code change;
+the s12 accounting default is now ruled, not assumed.
+
+RULING (call 2b, James: "Yes pelase"): ranking rows LINK. Both
+close-screen ranking tables (way behind / keeps us in cash) now
+render the client name as a link to the client page -- the s11
+"Collected to date" precedent applied (a name and a dollar with
+no way through is the defect class James already ruled on).
+Grounded first: period.compute snapshots ALWAYS carried
+contact_id in both row shapes, so frozen snapshots on retained
+walk dbs link identically -- rendering-only, no core touch, no
+migration. html.link escapes the name (checked, html.py:130).
+Verifier STRENGTHENED: step_period_close pins the contact link
+on the record page. Sheet never mentions rankings -- no sheet
+edit, lock stays 7b30fc89c159.
+
+Quoted green: billing-ui-walk "21 pass, 0 pending, 0 fail;
+float-sweep pass; verdict GREEN" x2, report_sha b3aa0a03
+UNCHANGED x2 (step names, not assertion text, feed the report);
+drive-sheet "27/27 groups pass; verdict GREEN"; labels "92
+labels checked, 0 not found"; ui-walk "13 pass ... verdict
+GREEN". Server restarted on the walked -09b db: old PID 57704
+killed, port verified free, new PID 57328, single bind, HTTP
+303. Links live for James's review clicking.
+
+RULING (call 2c, James: "Keep as is please"): approve-on-stale
+keeps its auto-void, committed before the error renders. The
+refusal-changes-nothing invariant deliberately yields to the
+control: a stale prepare must not remain signable, and the void
+must survive an unseen error page. No code change; the s12
+build is now ruled.
+
+RULING (call 2d, James: "sounds good keep it"): one closable
+month, strict order, never a choice -- stands as built. All
+four s12 close judgment calls are now RULED (2a keep / 2b link
+build / 2c keep / 2d keep); the "Close judgment calls (s12)"
+line leaves the open-decisions queue.
+
+RULING (call 3, James): sibling messages KEEP month names.
+Verbatim guidance: "Side on consistency for something like this
+always But you did ask. You should always also ask so good
+job." -- the disclose-and-extend pattern is confirmed as the
+standing default: make the consistency extension inside the
+authorized scope, and always surface it for re-rule. No code
+change; s15's extension is now ruled.
+
+METHOD: that ruling doubles as method feedback -- the flagged
+judgment call machinery worked exactly as designed here
+(extension made, disclosed, ratified two sessions later without
+archaeology because the worklog carried the grounding).
+
+RULING (call 4, James: "they all look good"): all seven
+blank-select lines stand as worded. Gated item E's wording flag
+is CLOSED; no sheet edit, no re-pin, lock stays 7b30fc89c159.
+
+RULING (call 5a, James: "yes"): overdue beats sent stands --
+one chipnote per row, age-first once past due. No code change.
+
+RULING (call 5b, James: "yes"): the flow chips get their OWN
+colors -- the borrow pairs were byte-identical CSS and the
+settling/refunded pair shared a hue across opposite money
+directions on the same payment surfaces. Palette geometry:
+taken hue bands are green/amber/indigo/red/purple + grays; the
+two widest open bands are teal and olive, and the semantics
+land (settling = inbound, one step from paid-green -> teal;
+clearing = both-directions bank dust -> olive, far from every
+money-direction hue). Applied, single definition site
+(billing_ui.py CSS; the client band's BILLING_STYLE rides the
+same block):
+  .pill.settling  #f3e9f7/#6b3a86 -> #ddf1ec/#146c5c
+  .pill.clearing  #e8eefb/#24519e -> #eff1d8/#5f6716
+Verifiers assert chip words and spans, never colors -- nothing
+re-pinned, lock stays 7b30fc89c159.
+
+Quoted green after the change: billing-ui-walk "21 pass, 0
+pending, 0 fail; float-sweep pass; verdict GREEN", report_sha
+b3aa0a03 UNCHANGED; drive-sheet "27/27 groups pass; verdict
+GREEN"; labels "92 labels checked, 0 not found"; ui-walk "13
+pass, 0 pending, 0 fail; sweeps pass; verdict GREEN". Server
+restarted on the walked -09b db (PID 57328 -> new bind, port
+verified free between, HTTP 303) -- colors live for review.
+Flow-marker flags from s11: BOTH now ruled (5a keep, 5b built).
+
+## 2026-08-10 -- s16 close (freeze recovery): stranded work
+## committed; all suites re-proven green
+
+The PC froze after call 5b landed, before s16's wind-down: no
+commit was made, state.md and CLAUDE.md still pointed at s15,
+and the 8500 server died with the machine. James opened the
+recovery session asking where we left off. Ground check: all
+s16 work sat intact and uncommitted in the working tree (10
+files, +277/-49); the worklog's s16 entries were complete
+through call 5b, so nothing was lost -- only the bookkeeping.
+
+Because the pre-freeze suite quotes predate the crash, ALL
+standing suites were rerun on the recovered tree before
+committing. Quoted this session: drive-sheet "27/27 groups
+pass; verdict GREEN"; labels "92 labels checked, 0 not found";
+billing-ui-walk "21 pass, 0 pending, 0 fail; float-sweep pass;
+verdict GREEN", report_sha b3aa0a03 UNCHANGED; ui-walk "13
+pass, 0 pending, 0 fail; sweeps pass; verdict GREEN"; spine
+"107 green, 0 red, 0 pending; checks pass"; billing "25 green,
+0 red, 0 pending, 0 parked; checks pass; verdict: GREEN";
+fiduciary --seeded "9 pass, 0 red, 0 stub; verdict: GREEN";
+anchor-billing "PASS (1.274s of 900s budget)". Sheet lock
+7b30fc89c159 (drive ran green under it).
+
+Wind-down completed in this entry's commit: state.md rewritten
+to the s16 pointer, CLAUDE.md State row updated, server
+restarted on the walked attempt-5 db
+data/demo-walk-2026-08-09b.db behind 8500.
+
+SWEEP LEDGER: the s16 map had six clusters; five appear in the
+log as taken (1 budget, 2 close calls, 3 sibling wording,
+4 E-item lines, 5 flow markers). The sixth is NOT named in the
+log -- unverified whether it was presented and deferred or
+never reached; re-offer the map next touchpoint. The attempt-5
+three-part verdict remains the open gate regardless, untouched
+by the freeze.

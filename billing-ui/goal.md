@@ -180,9 +180,11 @@ exists for deferred entries).
 Verifier 2 -- the James demo walk (live). Protocol doc drafted in P0
 (billing-ui/verify/demo-walk-protocol.md) and red-penned before
 first use: fresh dated db, walk steps as a task sheet, James drives
-unassisted by dev tools. Soft budget 20:00 [AJ -- strawman: this is
-a demo-fluency guard, not a cold-run stopwatch; blowing it triggers
-a friction log, not a FAIL]. After "done": fiduciary suite must
+unassisted by dev tools. Soft budget 25:00 over the full walk,
+M1->M7 (ruled by James 2026-08-10; the budget always spans through
+the sheet's final step) [AJ -- this is a demo-fluency guard, not a
+cold-run stopwatch; blowing it triggers a friction log, not a
+FAIL]. After "done": fiduciary suite must
 exit 0 against the walked db, invoice PDF eyeballed, ledger and
 reconciliation screens shown holding. PASS additionally requires
 James's demo-grade verdict, structured as three named up/down

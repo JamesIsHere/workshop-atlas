@@ -50,9 +50,9 @@ span.money { display: block; text-align: right;
 .pill.holds { background: #e6f4e6; color: #256325; }
 .pill.broken { background: #fdecec; color: #8a2525; }
 .pill.refunded { background: #f3e9f7; color: #6b3a86; }
-.pill.settling { background: #f3e9f7; color: #6b3a86; }
+.pill.settling { background: #ddf1ec; color: #146c5c; }
 .pill.empty { background: #eef1f5; color: #5b6472; }
-.pill.clearing { background: #e8eefb; color: #24519e; }
+.pill.clearing { background: #eff1d8; color: #5f6716; }
 span.chipnote { color: #8a5b12; font-size: 0.8rem;
                 white-space: nowrap; }
 p.split { color: #6a7383; font-size: 0.95rem; margin: 0.5rem 0 0;
@@ -2227,13 +2227,15 @@ def _close_rankings(snapshot):
     wb = "".join(
         "<tr><td>%s</td><td><span class='money'>%s</span></td>"
         "<td>oldest %s (%d days)</td></tr>"
-        % (html.esc(r["name"]), fmt_cents(r["outstanding_cents"]),
+        % (html.link(f"/contacts/{r['contact_id']}", r["name"]),
+           fmt_cents(r["outstanding_cents"]),
            fmt_date(r["oldest_issued"]), r["age_days"])
         for r in snapshot["way_behind"])
     kc = "".join(
         "<tr><td>%s</td><td><span class='money'>%s</span></td>"
         "<td>%d.%02d%% of collections</td></tr>"
-        % (html.esc(r["name"]), fmt_cents(r["collected_cents"]),
+        % (html.link(f"/contacts/{r['contact_id']}", r["name"]),
+           fmt_cents(r["collected_cents"]),
            r["share_bp"] // 100, r["share_bp"] % 100)
         for r in snapshot["keeps_in_cash"])
     return (

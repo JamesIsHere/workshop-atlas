@@ -153,6 +153,20 @@ recorded as data (agent judgment call, flagged for re-rule).
 The close-out checker gains the close receipt. Data values and
 semantics of steps 1-32 untouched; no steps renumbered.
 
+AMENDED 2026-08-10 eighth time (ruled by James: the budget
+should "always have it match the steps"): the soft budget is
+REDEFINED over the FULL walk, M1 -> M7 -- 25:00 (the 20:00
+M1->M6 budget scaled by step count, 40/32; the number is an
+agent derivation, flagged for re-rule). M1 -> M6 remains
+recorded as data for lineage with attempts 1-4, which had no
+Part K. Standing COUPLING RULE, same ruling: the budget's span
+always ends at the sheet's final mark and final step -- a step
+added without the budget re-ruled is drift. drive_sheet.py
+gains a budget-coupling preflight that parses the sheet's final
+step, the marks table, and the verdict template's budget line
+and fails loud when they disagree. Walk-sheet section
+untouched; sheet lock unchanged.
+
 Contract hooks (goal.md): James drives the full billing lifecycle
 entirely through screens on a FRESH database -- no terminal, no
 SQL, no dev tools mid-walk. The fiduciary suite must run green
@@ -164,7 +178,7 @@ protocol, untouched).
 
 ## Roles
 
-- DRIVER: James. Screens only. The 20:00 budget is SOFT -- blowing
+- DRIVER: James. Screens only. The 25:00 budget is SOFT -- blowing
   it triggers friction-log entries, never a FAIL by itself.
 - RECORDER: the agent (or James solo with screen recording). Preps
   setup, records marks and friction, runs the untimed close-out
@@ -651,7 +665,7 @@ and watch the app refuse. There is no reopen.
 
 Say "done" out loud.
 
-## Timing marks (recorder; budget is SOFT, M1 -> M6)
+## Timing marks (recorder; budget is SOFT, M1 -> M7)
 
 | Mark | Moment                                              |
 | ---- | --------------------------------------------------- |
@@ -664,9 +678,12 @@ Say "done" out loud.
 | M6   | Recon holds, both accounts (step 32)                |
 | M7   | July closed and the lock proven (step 40, "done")   |
 
-The 20:00 soft budget stays defined over M1 -> M6 so attempts
-stay comparable; M1 -> M7 is recorded as data with no budget
-(agent judgment call 2026-08-09, flagged for re-rule).
+The soft budget covers the FULL walk: M1 -> M7, 25:00 (span and
+number both ruled by James 2026-08-10; the budget always spans
+through the sheet's final step, goal.md restamped same day).
+M1 -> M6 is recorded as data for lineage with attempts 1-4,
+which had no Part K. The span-matches-steps coupling is
+enforced by drive_sheet.py's budget-coupling preflight.
 
 ## Close-out (untimed; the AGENT runs 1, quoting output -- James
 ## only looks and rules)
@@ -688,8 +705,8 @@ WALK ------------------------------------------------------------
 Date (UTC):            ____________
 Db file:               data/demo-walk-________.db  (fresh: Y/N)
 Marks M0..M7:          ____________________________________
-Elapsed M1->M6:        ____________  (soft budget 20:00)
-Elapsed M1->M7:        ____________  (data; no budget)
+Elapsed M1->M6:        ____________  (data; attempts 1-4 lineage)
+Elapsed M1->M7:        ____________  (soft budget 25:00)
 Dev-tools touched mid-walk (voids): Y/N
 
 FRICTION LOG (demo-readiness data)

@@ -25,14 +25,17 @@ contract; this file is a signpost.
 |              | M1->M6 16:56 (under budget, first time). VERDICT   |
 |              | PENDING -- James is sitting with it; the three     |
 |              | sub-verdicts are unsigned                          |
-| Last session | 2026-08-10 s15 -- friction items 1-3 fixed (step-  |
-|              | 17 reword, step-27 Note demo beat, step-39 keeps   |
-|              | typed values) + PC1 refusal now speaks month       |
-|              | names; sheet lock re-synced to 04f8db62ec6d; ALL   |
-|              | suites green; server restarted, same walked db     |
+| Last session | 2026-08-10 s16 -- judgment-call sweep: budget      |
+|              | ruled 25:00 over the full walk M1->M7 (coupling    |
+|              | preflight built), close calls 2a-2d ruled (ranking |
+|              | rows now link), sibling wording + E-item lines +   |
+|              | flow markers ruled (chips got own colors). PC      |
+|              | froze pre-wind-down; recovery reran ALL suites     |
+|              | green, committed, restarted server on walked db    |
 | Next action  | Take James's three-part verdict when his review    |
-|              | is done; P4 closes on his signed sheet only. See   |
-|              | state.md cold-start pointer                        |
+|              | is done; P4 closes on his signed sheet only.       |
+|              | Sixth sweep cluster unverified -- re-offer the     |
+|              | map. See state.md cold-start pointer               |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.
