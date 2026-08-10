@@ -79,6 +79,16 @@ once, worked. To fix a locked file NOW instead of dragging it:
    list-filter fix is possible in billing_ui.py (unlocked).
    Unlock: James picks the layer; rendering-side needs no
    break-in.
+   DONE 2026-08-10 s15: James picked rendering-side. Landing
+   buckets chargeless invoices to the default Outstanding tab
+   with an Empty pill + "no charges yet"; Paid tab stops
+   claiming them; tile count ties to the tab count. Core
+   derivation untouched. (Ground-truth note: the pre-fix
+   behavior was Paid-tab membership, not neither-tab as
+   recorded above -- executed probe, billing-ui worklog s15.)
+   Residual CLOSED same day: detail title + client band render
+   Empty too (detail had already suppressed the pill; the band
+   was the one lying surface). One vocabulary, three surfaces.
 4. NO ROUTE TO DASHBOARD -- brand word is not a link, no menu
    entry (attempt-3 snap; the drive hit the same wall).
    Lives: casework-ui/app_ui/html.py shared chrome.
@@ -92,6 +102,13 @@ once, worked. To fix a locked file NOW instead of dragging it:
    (kills the login-memory wall for parked demos; queued s4).
    Lives: casework-ui login screen.
    Unlock: gate decision, still queued, still not blocking.
+   DONE 2026-08-10 s15: James gated it in. Prefill rides a
+   demo_prefill attr set only by billing-ui/serve.py (synthetic
+   dbs exclusively; --no-prefill opts out); login renders the
+   seeded credentials filled in. The no-expiry half proved
+   moot: the /mfa screen already shows the current code every
+   login, so re-login is zero typing. Core untouched.
+   (billing-ui worklog s15.)
 6. CLIENT INTAKE QUESTIONNAIRE loses unsaved fields, no
    re-render, submit verifies nothing (parked s3, program-level).
    Lives: casework-ui intake screens (own child, ON HOLD).

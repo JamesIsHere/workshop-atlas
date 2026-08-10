@@ -2543,3 +2543,391 @@ about this sheet may be clarified") was exactly the release
 valve needed; the screens were never discussed mid-walk. The
 step-17 checkpoint phrasing goes to the friction log, not a
 mid-walk sheet edit.
+
+## 2026-08-10 -- s15: friction items 1-3 knocked out (James ruled them
+## in as the more-work round's first slice); verdict still PENDING
+
+James ruled the three attempt-5 friction items in as work. All
+three fixed this session, each grounded before editing:
+
+ITEM 1 (step-17 checkpoint wording). Root cause: the CHECKPOINT
+block carried only failure language ("STOP here"); the pass
+outcome lived up in the Observe line, so a driver scanning the
+block saw an instruction to stop. Steps 16 and 39 never misread
+because they state the pass state first and gate STOP behind
+"if anything else." Step 17 reworded to match that pattern:
+"CHECKPOINT: card is the expected reading -- continue to Part
+F. Only if the line reads direct instead has the walk diverged:
+STOP and record it; do not continue." James approved the
+wording before the edit.
+
+ITEM 2 (step-27 Note field absent from the sheet). Ground truth
+first: a typed Note becomes the memo on the reversal/repost
+journal entries (billing.edit_payment, casework/app/billing.py
+~508; route passes it through at billing_ui.py payment_edit)
+and renders in the Journal trail's Memo column James observes
+at step 28. James chose option (b): use the field as a demo
+beat rather than just acknowledge it. Sheet step 27 gains
+'- "Note" = Deposit date corrected per bank record' (placed in
+the card's on-screen field order); step 28's Observe now reads
+"...and the corrected entry's Memo carries your note -- the
+correction's written reason lives in the books." Driver
+s27_28_correct now posts that note and asserts it renders.
+
+ITEM 3 (step-39 refusal wiped typed values). Root cause: the
+refused post re-rendered disburse_form with no values --
+every field reset to default. Fix, rendering-only, in
+casework-ui/app_ui/billing_ui.py: disburse_form gains a
+values= param (the submitted form on a refused post); all
+three selects prefill via selected=, Amount/Date/Memo via
+value=, the Pay-to input gains an escaped value attr;
+disburse_post's error path passes values=f. No new business
+logic, no new write path. Driver s39_40_lock_proof now asserts
+the refusal page still carries value='1.00',
+value='2026-07-05', value='SYNTH late vendor', and the client
+selection. Sheet step 39's Observe gains "The form still holds
+everything you typed -- client, amount, date, payee -- a
+refusal never costs you your work."
+
+SHEET LOCK: three re-syncs this session, each verified against
+the driver before updating EXPECTED_SHEET_SHA:
+85e4e4633a37 -> dabaf08073ee (item 1) -> abb07dcfa753 (item 2)
+-> 7612d81b8aad (items 1-3 final). Attempt 5's record keeps its
+85e4e4633a37 lineage untouched; a future attempt 6 drives the
+7612d81b8aad sheet.
+
+SUITES (all run this session, quoted):
+- drive_sheet.py: "drive-sheet: 27/27 groups pass; verdict
+  GREEN" (final run, with the new note + kept-values asserts
+  live; step 39-40 detail now reads "typed values kept").
+- check_sheet_labels.py: "sheet-label audit: 92 labels
+  checked, 0 not found" (grew 91 -> 92 with the Note label).
+- casework-ui run_ui_walk.py: "ui-walk: 13 pass, 0 pending,
+  0 fail; sweeps pass; verdict GREEN".
+- casework-billing run_billing.py: "billing: 25 green, 0 red,
+  0 pending, 0 parked; checks pass; verdict: GREEN".
+- run_fiduciary.py --selftest: "selftest: draft DDL
+  instantiated; empty ledger 7/7 non-stub checks pass;
+  calibration scenarios: all behaved", exit 0. (Argless run
+  prints usage, exit 2 -- it wants a db path; the walked db's
+  9/0/0 GREEN from the s14 close-out stands, untouched by
+  today's rendering-only edits.)
+- casework run_spine.py: "spine: 107 green, 0 red, 0 pending;
+  checks pass".
+
+SERVER: 8500 restarted on the SAME walked db
+data/demo-walk-2026-08-09b.db (standing rule: restart after any
+app_ui change; the db was not reseeded or swapped -- James's
+review clicking and his db session survive). Old PID 51612
+killed, new PID 59724, single bind verified by netstat, HTTP
+303 on /. The step-39 kept-values behavior is live for his
+review.
+
+VERDICT: still PENDING -- the three sub-verdicts (a)/(b)/(c)
+remain unsigned; this was more-work-round work, not a
+substitute for the sheet.
+
+## 2026-08-10 -- s15 cont: PC1 refusal speaks month names (open
+## judgment call ruled in by James)
+
+James took the flagged judgment call next: the period-close
+refusal rendered ISO ("period 2026-07 is closed...") on an
+MM/DD/YYYY surface. Fixed in casework/app/period.py (inside the
+2026-08-09 period-close amendment's authorized write surface):
+new _month_name() helper ('2026-07' -> 'July 2026'); the
+assert_open refusal now reads "July 2026 is closed (hard close
+through July 2026): post the fact current-dated in the open
+month".
+
+SCOPE EXTENSION, disclosed: three sibling PeriodError messages
+in the same module carried the same ISO defect and got the same
+helper -- "cannot close July 2026: reconciliation broken for
+...", "July 2026 has no prepared close to approve", "stale
+prepare for July 2026: ...". James ruled in the refusal
+specifically; the siblings are the same defect in the same
+authorized file. Flagged here for his re-rule if unwanted.
+Grounded first: no test anywhere pins any of these strings
+(grep across atlas *.py; unit_period_close.py asserts types,
+not text).
+
+RIPPLE: sheet step 39's verbatim quote updated to the new
+refusal; the "(2026-07 is the app's internal name for July
+2026.)" explainer deleted -- the message speaks English now.
+Driver assert requoted. Sheet lock re-synced 7612d81b8aad ->
+04f8db62ec6d.
+
+SUITES (core touch -> reciprocal guard, ALL suites, quoted):
+- drive_sheet.py: "drive-sheet: 27/27 groups pass; verdict
+  GREEN"
+- check_sheet_labels.py: "sheet-label audit: 92 labels checked,
+  0 not found"
+- casework run_spine.py: "spine: 107 green, 0 red, 0 pending;
+  checks pass"
+- casework-billing run_billing.py: "billing: 25 green, 0 red,
+  0 pending, 0 parked; checks pass; verdict: GREEN"
+- run_fiduciary.py --selftest: "calibration scenarios: all
+  behaved"; --seeded: "fiduciary: 9 pass, 0 red, 0 stub;
+  verdict: GREEN", exit 0
+- casework-ui run_ui_walk.py: "ui-walk: 13 pass, 0 pending,
+  0 fail; sweeps pass; verdict GREEN"
+- tests/unit_period_close.py: "6/6 pass", exit 0
+
+SERVER: 8500 restarted again (period.py is loaded code); same
+walked db, not reseeded; old PID 59724 -> new PID 76416, single
+bind, HTTP 303. The English refusal is live: Billing -> Trust
+accounting -> Disburse funds, date it into July.
+
+NOTE: the s14 attempt-5 record quotes the OLD refusal verbatim
+as observed -- that history stands unedited; attempt 6 (if any)
+observes the new text via the 04f8db62ec6d sheet.
+
+## 2026-08-10 -- s15 cont: contact-screen flags fixed under an explicit
+## gate ruling (frozen casework-ui screen opened for two cosmetic fixes)
+
+GATE RULING (James, this session, verbatim "Yes, premission
+granted"): the frozen casework-ui contact detail screen may be
+touched for exactly two fixes -- (1) fact labels render human
+text from fact_definitions.label instead of raw machine keys
+(bio.family_name -> Family name), falling back to the raw key
+when no definition exists (a visible gap, never a blank);
+(2) the Matters card's Created column renders MM/DD/YYYY via
+billing_ui.fmt_date instead of raw ISO. Both flags were from
+the s13 sweep; both grounded before the ask: the defect lived
+in _contact_detail (app_ui/server.py), the label data already
+existed (fact_definitions.label, seeded), and run_ui_walk pins
+neither (its bio.family_name asserts are db-level get_fact
+calls, never page labels).
+
+BUILD NOTE, method-relevant: the first cut put the label SELECT
+inline in server.py and the no-logic lint FAILED the ui-walk
+sweeps exactly as designed ("SQL outside reads.py",
+server.py:437-438). Moved the query to reads.fact_labels();
+sweeps green. METHOD: the lint guarded the frozen surface's
+discipline against the very session authorized to touch it --
+the guard earned its keep.
+
+PROOF (scratch db, live render through the final code path):
+contact with bio.family_name fact + one matter; page shows
+"Family name" TRUE, raw key FALSE; Matters date MM/DD/YYYY
+TRUE, ISO cell FALSE.
+
+SUITES (all rerun after the reads.py refactor, quoted):
+- casework-ui run_ui_walk.py: "ui-walk: 13 pass, 0 pending,
+  0 fail; sweeps pass; verdict GREEN"
+- drive_sheet.py: "drive-sheet: 27/27 groups pass; verdict
+  GREEN"; check_sheet_labels.py: "92 labels checked, 0 not
+  found" (no sheet change this item; lock stays 04f8db62ec6d)
+- casework run_spine.py: "spine: 107 green, 0 red, 0 pending;
+  checks pass"
+- casework-billing run_billing.py: "billing: 25 green ...
+  verdict: GREEN"; run_fiduciary.py --seeded: "fiduciary:
+  9 pass, 0 red, 0 stub; verdict: GREEN"
+
+SERVER: 8500 restarted (server.py is loaded code); same walked
+db, not reseeded; PID 76416 -> 57812, single bind, HTTP 303.
+Vera's contact page now shows human labels and MM/DD/YYYY.
+
+## 2026-08-10 -- s15 cont: dashboard settling backing list BUILT
+## (s11 flagged judgment call, James: "same ruling" as the client
+## band's Collected listing)
+
+RULING: James ruled BUILD, explicitly the same ruling as the s11
+client-side twin (client_payments). The dashboard pipeline's
+settling figure was the last figure on the "On the way" line
+with no list behind it: one settling payment linked to its own
+page, plural rendered unlinked text.
+
+BUILT (all rendering-only):
+- reads.settling_payments() gains contact columns (i.contact_id,
+  c.display_name via JOIN contacts) -- same reader, same filter,
+  one consumer before, two after.
+- New screen settling_list at /billing/settling
+  (app_ui/billing_ui.py, placed by client_payments): every
+  processor-held payment firm-wide -- Date (links payment),
+  Invoice (links), Client (links), Method, Amount; foot
+  "Settling: $X" ties to the pipeline figure BY CONSTRUCTION
+  (both sum reads.settling_payments); empty state explains the
+  bucket's lifecycle; hint points at Run settlement on Trust
+  accounting.
+- Dashboard segment now ALWAYS links to /billing/settling; the
+  flagged single-payment special case is retired.
+- Router: literal GET ["billing","settling"] before the recon
+  line; tier-3 fence untouched (path was unrouted -> 404
+  before, route-listed now).
+
+VERIFIER: step_settlement (run_billing_ui_walk.py) extended --
+the settling moment now asserts FOUR surfaces before
+extinguishing: pipeline dollars, invoice chip, payment chip,
+and the new backing list (href asserted on the dashboard,
+"Settling: $5,000.00" foot tie, T0001 row, method text).
+
+SHEET: untouched -- the demo walk never visits the dashboard at
+the settling moment. Lock stays 04f8db62ec6d.
+
+SUITES (all rerun, quoted):
+- run_billing_ui_walk.py: "billing-ui-walk: 20 pass, 0 pending,
+  0 fail; float-sweep pass; verdict GREEN" (new asserts live)
+- drive_sheet.py: "drive-sheet: 27/27 groups pass; verdict
+  GREEN"; check_sheet_labels.py: "92 labels checked, 0 not
+  found"
+- casework-ui run_ui_walk.py: "ui-walk: 13 pass, 0 pending,
+  0 fail; sweeps pass; verdict GREEN"
+- casework run_spine.py: "spine: 107 green, 0 red, 0 pending;
+  checks pass"
+- casework-billing run_billing.py: "billing: 25 green ...
+  verdict: GREEN"; run_fiduciary.py --seeded: "fiduciary:
+  9 pass, 0 red, 0 stub; verdict: GREEN"
+
+SERVER: 8500 restarted; same walked db, not reseeded; PID 57812
+-> 50960, single bind, HTTP 303; /billing/settling answers 303
+(auth redirect, not 404 -- route live). On the walked db
+everything is settled, so the screen shows its empty state --
+correct.
+
+## 2026-08-10 -- s15 cont: gated item 3 DONE (empty invoice visible;
+## James picked the rendering layer)
+
+RULING: layer choice put to James per the gated ledger's unlock
+condition; he chose (a) rendering-side, agreeing the core's
+corpus-pinned derivation (paid at zero balance, fx-0070/0071)
+is defensible bookkeeping and the lie was presentational.
+
+GROUND-TRUTH CORRECTION recorded (evidence discipline, sources
+disagree): gated-items.md and sheet step 11 both said a
+chargeless bill is on NEITHER default tab. Executed probe
+(scratch db, this session): it sat ON the Paid tab, count 1,
+wearing a Paid pill -- absent only from Outstanding. Both
+values recorded here; the sheet text was stale against the
+product either way and is now superseded by the fix.
+
+BUILT (rendering-only):
+- reads.charged_invoice_ids(): invoice ids with >= 1 live
+  charge, one query.
+- billing_landing: bucket_of overlays status_of -- a chargeless
+  invoice buckets to Outstanding regardless of derived status.
+  Tabs, tab counts, the Outstanding tile count, and the shown
+  filter all follow the bucket (tile count == tab count, the
+  2026-08-07 tile/list contradiction cannot recur; empty rows
+  add 0.00 to the tile sum). Row renders Empty pill (new
+  .pill.empty, neutral gray family) + chipnote "no charges
+  yet", balance 0.00, no overdue/sent chipnotes.
+- Derived status untouched: invoice pages, client band, and
+  core list_invoices still say paid-at-zero -- landing only.
+  FLAG (new, unruled): the client money band's invoice rows
+  and the invoice detail title still show a Paid pill on a
+  chargeless invoice (same lie, other surfaces); candidate
+  follow-up, not touched under this ruling.
+
+SHEET: step 11's if-lost route now rides the DEFAULT tab
+("row B0001, right on the default Outstanding tab -- a bill
+with no charges yet sits there marked Empty until you charge
+it"); the stale neither-tab justification for "Use All" is
+gone. Steps 12/14 keep their All routes (still valid). Lock
+re-synced 04f8db62ec6d -> 7b30fc89c159.
+
+DRIVER: s11_add_charge now drives the new route -- lands on the
+default landing, asserts the Empty pill and "no charges yet",
+asserts the Paid tab does NOT claim B0001, then locates the row
+tab-less. The drive's step-21 stray (chargeless by design) now
+lives on Outstanding with the Empty marker; no locate ever
+targeted it, so nothing else moved.
+
+SUITES (all rerun, quoted): drive-sheet "27/27 groups pass;
+verdict GREEN"; labels "92 checked, 0 not found";
+billing-ui-walk "20 pass ... verdict GREEN"; ui-walk "13 pass
+... sweeps pass; verdict GREEN"; spine "107 green"; billing
+"25 green ... GREEN"; fiduciary --seeded "9 pass, 0 red,
+0 stub; verdict: GREEN".
+
+SERVER: 8500 restarted, same walked db (all its invoices are
+charged, so no Empty rows show there -- correct); PID 50960 ->
+70784, single bind, HTTP 303.
+
+## 2026-08-10 -- s15 cont: gated item 5 DONE (demo-login prefill;
+## James gated it in via the option prompt)
+
+RULING: James gated item 5 IN ("Yes, build it"), shape as
+proposed: prefill only when launched via billing-ui/serve.py,
+which serves synthetic dbs exclusively; no core changes. (He
+flagged mid-session that a long message buried the gate
+question -- it was re-put as a bare option prompt. Interface
+note: keep gate asks SHORT or use the option prompt.)
+
+GROUND FINDING that shrank the item: the six-digit-code wall
+never existed -- the /mfa screen already renders the current
+code on every login (synthetic outbox shown on-page,
+server.py _mfa_page). Item 5 reduced to login prefill alone;
+the no-expiry half is moot (14-day sessions + a zero-typing
+login) and stays untouched in core.
+
+BUILT:
+- serve.py: sets httpd.demo_prefill after make_server --
+  demo.reviewer@synthetic.test / demo-seed-pass when --seeded,
+  demo.driver@synthetic.test / demo-walk-pass otherwise (both
+  pinned conventions: seed_demo.py and the sheet's setup step).
+  New --no-prefill opt-out.
+- casework-ui server.py _login_page (frozen surface, opened by
+  this gate ruling): when the server object carries
+  demo_prefill, the email and password fields render prefilled
+  with a one-line hint ("Demo database: the seeded credentials
+  are filled in -- click Continue"). Unset -- every other
+  launcher, including every verifier's make_server -- renders
+  the plain form, byte-identical to before.
+- run_billing_ui_walk gains step 21 "demo-login prefill":
+  asserts no leak without the flag, sets the attr, asserts both
+  values + hint render, unsets, asserts it retires.
+
+SHEET: untouched (the walk starts at /setup on a fresh db and
+never sees the login screen); lock stays 7b30fc89c159.
+
+SUITES (all rerun, quoted): billing-ui-walk "21 pass, 0
+pending, 0 fail; float-sweep pass; verdict GREEN"; drive-sheet
+"27/27 groups pass; verdict GREEN"; labels "92 checked, 0 not
+found"; ui-walk "13 pass ... sweeps pass; verdict GREEN";
+spine "107 green"; billing "25 green ... GREEN"; fiduciary
+--seeded "9 pass, 0 red, 0 stub; verdict: GREEN".
+
+SERVER: 8500 relaunched through serve.py (PID 70784 -> 46392,
+single bind); LIVE PROOF quoted from the running server:
+curl /login shows value='demo.driver@synthetic.test',
+value='demo-walk-pass', "credentials are filled in". If
+James's cookie ever dies, login is now zero typing.
+
+## 2026-08-10 -- s15 cont: Paid-pill-on-chargeless flag closed
+## (James: keep going)
+
+FLAG CORRECTION first (evidence discipline): the s15 flag said
+"invoice detail + client band" both showed Paid on a chargeless
+invoice. Grounding found invoice detail ALREADY suppressed the
+pill deliberately (in-code comment: "presenting that pill on an
+empty bill is a lie of rendering, so no status pill until
+charges exist"). Only the client money band actually lied. Flag
+recorded as half-stale.
+
+BUILT (rendering-only, both one-liners):
+- _status_pill: derived paid + zero live charges now renders
+  the Empty pill -- fixes the client money band, the one lying
+  surface. Landing rows are unaffected (empty rows short-
+  circuit before _status_pill).
+- invoice_detail title: the deliberate no-pill state upgraded
+  to the Empty pill -- since gated item 3 the truthful marker
+  exists, so absence is no longer the best truth. All three
+  surfaces (landing, detail, band) now say Empty with one
+  vocabulary.
+
+PROOF (scratch db, live render): chargeless bill -- detail
+title Empty TRUE / Paid FALSE; client band Empty TRUE / Paid
+FALSE.
+
+SHEET: untouched (step 10's End pins the crumb only; no step
+observes a pre-charge title pill). Lock stays 7b30fc89c159.
+
+SUITES (all rerun, quoted): billing-ui-walk "21 pass ...
+verdict GREEN"; drive-sheet "27/27 groups pass; verdict
+GREEN"; labels "92 checked, 0 not found"; ui-walk "13 pass ...
+sweeps pass; verdict GREEN"; spine "107 green"; billing "25
+green ... GREEN"; fiduciary --seeded "9 pass, 0 red, 0 stub;
+verdict: GREEN".
+
+SERVER: 8500 restarted, same walked db; PID 46392 -> 57704,
+single bind, HTTP 303.

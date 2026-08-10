@@ -32,6 +32,8 @@ def main():
                     help="open the seeded gate-review db instead")
     ap.add_argument("--port", type=int, default=8500)
     ap.add_argument("--client-port", type=int, default=8501)
+    ap.add_argument("--no-prefill", action="store_true",
+                    help="disable the demo login prefill")
     args = ap.parse_args()
 
     if args.seeded and args.db:
@@ -50,6 +52,16 @@ def main():
     fresh = "existing" if db.exists() else "fresh"
     from app_ui import server as ui_server
     httpd = ui_server.make_server(db, args.port, args.client_port)
+    if not args.no_prefill:
+        # gated item 5 (ruled IN 2026-08-10): this launcher serves
+        # synthetic demo dbs exclusively, so the login screen may
+        # prefill the seeded credentials. The conventions are pinned:
+        # the walk sheet's setup step dictates demo-walk-pass; the
+        # gate-review seed (verify/seed_demo.py) uses demo-seed-pass.
+        httpd.demo_prefill = (
+            ("demo.reviewer@synthetic.test", "demo-seed-pass")
+            if args.seeded else
+            ("demo.driver@synthetic.test", "demo-walk-pass"))
     host, port = httpd.server_address[:2]
     ui_server.serve_client(httpd)
     print(f"casework-ui on http://{host}:{port}")

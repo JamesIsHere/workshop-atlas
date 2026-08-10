@@ -310,6 +310,15 @@ def step_settlement(w):
     assert "settling" in page, "dashboard pipeline missing settling"
     assert "5,000.00 settling" in page, \
         "settling dollars wrong on the pipeline line"
+    # fourth surface (backing list ruled BUILD 2026-08-10): the
+    # figure links to the firm-wide list; the foot ties to it
+    assert re.search(r"href='/billing/settling'>5,000\.00\s+settling<",
+                     page), "settling figure is not a backing-list link"
+    _s, _u, page = w.browser.get("/billing/settling")
+    assert "Settling: $5,000.00" in page, \
+        "backing list foot does not tie to the pipeline figure"
+    assert "T0001" in page, "settling list missing the invoice link"
+    assert "card (online)" in page, "settling list missing the method"
     _s, _u, page = w.browser.get(
         f"/billing/invoices/{w.trust_request_id}")
     assert "Settling" in page, "payment row missing Settling chip"
@@ -705,6 +714,31 @@ def step_period_close(w):
             " backdated writes; " + lines[-1])
 
 
+def step_demo_prefill(w):
+    """Gated item 5 (ruled IN 2026-08-10): only a demo launcher that
+    serves synthetic dbs exclusively (billing-ui/serve.py) sets
+    demo_prefill on the server; the login screen then renders the
+    seeded credentials prefilled. Default stays a plain form."""
+    _s, _u, page = w.browser.get("/login")
+    assert "demo-walk-pass" not in page, \
+        "prefill leaked without the launcher flag"
+    w.httpd.demo_prefill = ("demo.driver@synthetic.test",
+                            "demo-walk-pass")
+    try:
+        _s, _u, page = w.browser.get("/login")
+        assert "value='demo.driver@synthetic.test'" in page, \
+            "email not prefilled in demo mode"
+        assert "value='demo-walk-pass'" in page, \
+            "password not prefilled in demo mode"
+        assert "credentials are filled in" in page, \
+            "demo hint line missing"
+    finally:
+        del w.httpd.demo_prefill
+    _s, _u, page = w.browser.get("/login")
+    assert "demo-walk-pass" not in page, "prefill did not retire"
+    return "login prefills only when the demo launcher flags it"
+
+
 STEPS = [
     ("setup + login", step_setup_login),
     ("client + matter (existing UI)", step_client_matter),
@@ -726,6 +760,7 @@ STEPS = [
     ("billing audit chain", step_billing_audit_chain),
     ("fiduciary on walked db", step_fiduciary_on_walked),
     ("period close: July coda", step_period_close),
+    ("demo-login prefill", step_demo_prefill),
 ]
 
 

@@ -65,7 +65,7 @@ from run_billing_ui_walk import Browser, ui_server  # noqa: E402
 REPORT = HERE / "drive-sheet-report.txt"
 SHEET = HERE / "demo-walk-protocol.md"
 
-EXPECTED_SHEET_SHA = "85e4e4633a37"  # re-synced 2026-08-09: Part K
+EXPECTED_SHEET_SHA = "7b30fc89c159"  # re-synced 2026-08-10: + gated item 3 (empty bill on Outstanding, step-11 route rides the default tab)
 # (period-close act, steps 33-40) added at James's attempt-5 prep
 # order; supersedes f7f821edb1e9
 
@@ -270,8 +270,16 @@ def s10_new_bill(d):
 
 
 def s11_add_charge(d):
-    iid, page = enter_invoice(d, "B0001", tab="all",
-                              expect=d.consult_inv)
+    # the if-lost route rides the DEFAULT tab (gated item 3, ruled
+    # rendering-side 2026-08-10): a chargeless bill sits on
+    # Outstanding marked Empty, and the Paid tab does not claim it
+    page = enter(d, *BILLING)
+    assert "pill empty'>Empty<" in page, \
+        "chargeless bill missing the Empty marker on the default tab"
+    _see(page, "no charges yet")
+    _s, _u, ptab = d.b.get("/billing?tab=paid")
+    assert "B0001" not in ptab, "Paid tab still claims the empty bill"
+    iid, page = enter_invoice(d, "B0001", expect=d.consult_inv)
     _see(page, "Add a charge", "Description", "Amount", "Type", "Date")
     assert "value='2026-08-01'" in page, \
         "sheet claims the charge date copies the issue date"
@@ -533,8 +541,10 @@ def s25_26_find_payment(d):
 def s27_28_correct(d):
     _s, _u, page = d.b.post(
         f"/billing/payments/{d.payment_id}/edit",
-        {"payment_date": "2026-08-02"})
-    _see(page, "Journal trail", "Bank record")
+        {"payment_date": "2026-08-02",
+         "note": "Deposit date corrected per bank record"})
+    _see(page, "Journal trail", "Bank record",
+         "Deposit date corrected per bank record")
     assert "reverses" in page and "replaces" in page, \
         "correction trail does not show reverses/replaces tags"
     # re-enter from scratch (If lost route) and confirm it persists
@@ -666,12 +676,18 @@ def s39_40_lock_proof(d):
         "disburse_date": "2026-07-05",
         "contact_id": str(d.contact_id),
         "counterparty": "SYNTH late vendor"})
-    _see(page, "period 2026-07 is closed (hard close through"
-               " 2026-07): post the fact current-dated in the open"
+    _see(page, "July 2026 is closed (hard close through July"
+               " 2026): post the fact current-dated in the open"
                " month")
+    # the refusal re-renders what was typed (friction item 3):
+    # amount, date, payee, and the client selection all survive
+    _see(page, "value='1.00'", "value='2026-07-05'",
+         "value='SYNTH late vendor'")
+    assert (f"value='{d.contact_id}' selected" in page), \
+        "refused disburse form dropped the client selection"
     page = enter(d, *TRUST)
     _see(page, "Client funds", "Vera Synthetic", "800.00")
-    return "July-dated check refused on screen; 800.00 unmoved"
+    return "July-dated check refused on screen; 800.00 unmoved, typed values kept"
 
 
 STEPS = [

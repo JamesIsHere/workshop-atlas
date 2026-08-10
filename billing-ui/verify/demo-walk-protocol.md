@@ -327,10 +327,10 @@ account -- the simplest money path, no trust involved.
     End: click "Create bill" -> the new bill's page; its crumb
     line reads Billing / Bill B0001. This is the CONSULT bill.
 11. The consult bill's page, the "Add a charge" form in the
-    Charges card (If lost: menu "Billing" -> tab "All" -> row
-    B0001; click its link in the INVOICE column. Use All: a
-    bill with no charges yet is on neither the Outstanding nor
-    the Paid tab)
+    Charges card (If lost: menu "Billing" -> row B0001, right
+    on the default Outstanding tab -- a bill with no charges
+    yet sits there marked Empty until you charge it; click its
+    link in the INVOICE column)
     - "Description" = SYNTH consultation
     - "Amount" = 500.00
     - "Type" = Service
@@ -401,9 +401,10 @@ processor until Part F settles it.
     lost: menu "Billing" -> tab "Paid" -> row T0001)
     End: refresh the page.
     Observe: a Paid pill, and the payment line reads card
-    (online, simulated processor). CHECKPOINT: if the payment
-    line reads direct instead of card, the walk has diverged
-    -- STOP here and record it; do not continue to Part F.
+    (online, simulated processor). CHECKPOINT: card is the
+    expected reading -- continue to Part F. Only if the line
+    reads direct instead has the walk diverged: STOP and
+    record it; do not continue.
 
 Part F -- settlement: gross to trust, fees firm-side
 
@@ -510,14 +511,17 @@ themselves by ADDING entries -- never by rewriting history.
     lost: repeat step 26's route)
     - "Date" = 08/02/2026
     - leave "Amount" and "Apply to charge" as they are
+    - "Note" = Deposit date corrected per bank record
     End: click "Save correction".
 28. The payment's page, after the save (you are still on it)
     Observe: in "Journal trail" the original entry stays,
     joined by entries tagged "reverses e<n>" / "replaces
-    e<n>"; the "Bank record" card still shows only what the
-    bank actually saw -- a correction lives in the books, and
-    the reconciliation explains any difference between books
-    and bank. Nothing is ever silently rewritten.
+    e<n>", and the corrected entry's Memo carries your note
+    -- the correction's written reason lives in the books;
+    the "Bank record" card still shows only what the bank
+    actually saw, and the reconciliation explains any
+    difference between books and bank. Nothing is ever
+    silently rewritten.
 
 Part J -- the books, end to end
 
@@ -634,9 +638,10 @@ and watch the app refuse. There is no reopen.
     - "Pay to" = SYNTH late vendor
     - leave "Memo" blank
     End: click "Disburse". Observe: a red error box refuses,
-    reading: period 2026-07 is closed (hard close through
-    2026-07): post the fact current-dated in the open month.
-    (2026-07 is the app's internal name for July 2026.) If the
+    reading: July 2026 is closed (hard close through July
+    2026): post the fact current-dated in the open month. The
+    form still holds everything you typed -- client, amount,
+    date, payee -- a refusal never costs you your work. If the
     page shows anything but that refusal -- STOP and record it.
 40. Trust accounting (Go: menu "Billing" -> "Trust
     accounting")

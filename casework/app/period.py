@@ -50,6 +50,12 @@ def _month_end(period):
     return _date.fromordinal(first_of_next.toordinal() - 1).isoformat()
 
 
+def _month_name(period):
+    # '2026-07' -> 'July 2026': error text faces the driver, and the
+    # driver's surface never speaks ISO
+    return _date.fromisoformat(period + "-01").strftime("%B %Y")
+
+
 # --- the lock (PC1) ---------------------------------------------------
 
 def last_closed(conn):
@@ -63,8 +69,9 @@ def assert_open(conn, iso_date):
     lc = last_closed(conn)
     if lc is not None and _month_of(iso_date) <= lc:
         raise PeriodError(
-            f"period {_month_of(iso_date)} is closed (hard close through"
-            f" {lc}): post the fact current-dated in the open month")
+            f"{_month_name(_month_of(iso_date))} is closed (hard close"
+            f" through {_month_name(lc)}): post the fact current-dated"
+            f" in the open month")
 
 
 # --- what is closable -------------------------------------------------
@@ -273,7 +280,7 @@ def prepare(conn, user_id, on_date, acks):
         broken = [a["name"] for a in snap["accounts"]
                   if not a["identity_holds"]]
         raise PeriodError("cannot close %s: reconciliation broken for %s"
-                          % (period, ", ".join(broken)))
+                          % (_month_name(period), ", ".join(broken)))
     required = required_acks(snap)
     if set(acks) != required:
         raise PeriodError(
@@ -302,15 +309,16 @@ def approve(conn, user_id, on_date):
     period, period_end = closable
     row = get_row(conn, period, statuses=("prepared",))
     if row is None:
-        raise PeriodError(f"{period} has no prepared close to approve")
+        raise PeriodError(f"{_month_name(period)} has no prepared close"
+                          f" to approve")
     fresh = canonical(compute(conn, period, period_end))
     if fresh != row["snapshot"]:
         conn.execute("UPDATE period_closes SET status='void' WHERE id=?",
                      (row["id"],))
         raise PeriodError(
-            f"stale prepare for {period}: the numbers moved since it was"
-            " prepared -- the prepare is void, re-prepare from the"
-            " close page")
+            f"stale prepare for {_month_name(period)}: the numbers moved"
+            " since it was prepared -- the prepare is void, re-prepare"
+            " from the close page")
     conn.execute(
         "UPDATE period_closes SET status='closed', approved_by=?,"
         " approved_at=? WHERE id=?", (user_id, on_date, row["id"]))

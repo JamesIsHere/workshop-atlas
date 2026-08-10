@@ -25,11 +25,11 @@ contract; this file is a signpost.
 |              | M1->M6 16:56 (under budget, first time). VERDICT   |
 |              | PENDING -- James is sitting with it; the three     |
 |              | sub-verdicts are unsigned                          |
-| Last session | 2026-08-10 s14 -- recorder session for attempt 5:  |
-|              | mid-walk step-17 checkpoint misread clarified      |
-|              | (sheet mechanics only), 32 snaps reviewed all      |
-|              | matching, marks + friction log filed (worklog      |
-|              | s14), walked db left live behind 8500              |
+| Last session | 2026-08-10 s15 -- friction items 1-3 fixed (step-  |
+|              | 17 reword, step-27 Note demo beat, step-39 keeps   |
+|              | typed values) + PC1 refusal now speaks month       |
+|              | names; sheet lock re-synced to 04f8db62ec6d; ALL   |
+|              | suites green; server restarted, same walked db     |
 | Next action  | Take James's three-part verdict when his review    |
 |              | is done; P4 closes on his signed sheet only. See   |
 |              | state.md cold-start pointer                        |

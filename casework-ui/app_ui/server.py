@@ -276,12 +276,23 @@ class Handler(BaseHTTPRequestHandler):
     def _login_page(self, conn, now, error=None):
         if reads.user_count(conn) == 0:
             return self._redirect("/setup")
+        # gated item 5 (ruled IN 2026-08-10): a demo launcher that
+        # serves synthetic dbs exclusively (billing-ui/serve.py) may
+        # set demo_prefill on the server; the seeded credentials
+        # render prefilled. Unset -- every other launcher -- renders
+        # the plain form.
+        pre = getattr(self.server, "demo_prefill", None)
+        pre_email, pre_pw = pre if pre else ("", "")
+        note = ("<p class='hint'>Demo database: the seeded"
+                " credentials are filled in -- click Continue.</p>"
+                if pre else "")
         body = (f"<div class='card narrow'><h1>Log in</h1>"
                 f"{html.error_box(error)}"
-                f"<form method='post' action='/login'>"
+                f"<form method='post' action='/login'>" + note
                 + html.field("Email", "email", ftype="email",
-                             autofocus=True)
-                + html.field("Password", "password", ftype="password")
+                             value=pre_email, autofocus=True)
+                + html.field("Password", "password", ftype="password",
+                             value=pre_pw)
                 + "<button class='primary'>Continue</button></form></div>")
         self._send_page(200, html.page("Log in", body))
 
@@ -430,12 +441,19 @@ class Handler(BaseHTTPRequestHandler):
         if row is None:
             raise _NotFound()
         f = facts.facts_of(conn, "contact", cid)
+        # human labels from fact_definitions (gate ruling 2026-08-10:
+        # James authorized touching this frozen screen for labels +
+        # date format only); a key with no definition renders raw --
+        # a visible gap, never a blank
+        labels = reads.fact_labels(conn)
         kv = "".join(
-            f"<dt>{html.esc(key)}</dt><dd>{html.esc(str(val))}</dd>"
+            f"<dt>{html.esc(labels.get(key) or key)}</dt>"
+            f"<dd>{html.esc(str(val))}</dd>"
             for (key, idx), val in sorted(f.items())
             if key != "meta.synthetic")
+        from app_ui.billing_ui import fmt_date
         mrows = [[html.link(f"/matters/{m['id']}", m["name"]),
-                  html.esc(m["created_at"][:10])]
+                  html.esc(fmt_date(m["created_at"][:10]))]
                  for m in reads.contact_matters(conn, cid)]
         mtable = (html.table(["Matter", "Created"], mrows) if mrows
                   else "<p class='hint'>No matters yet.</p>")

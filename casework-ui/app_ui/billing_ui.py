@@ -51,6 +51,7 @@ span.money { display: block; text-align: right;
 .pill.broken { background: #fdecec; color: #8a2525; }
 .pill.refunded { background: #f3e9f7; color: #6b3a86; }
 .pill.settling { background: #f3e9f7; color: #6b3a86; }
+.pill.empty { background: #eef1f5; color: #5b6472; }
 .pill.clearing { background: #e8eefb; color: #24519e; }
 span.chipnote { color: #8a5b12; font-size: 0.8rem;
                 white-space: nowrap; }
@@ -194,6 +195,11 @@ def _crumbs(*pairs):
 
 def _status_pill(conn, invoice_id):
     status = billing.invoice_status(conn, invoice_id)
+    if status == "paid" and not billing.invoice_charges(conn,
+                                                        invoice_id):
+        # chargeless: derived paid is true of the books but a lie
+        # on a chip -- Empty is the truthful marker (gated item 3)
+        return _pill("empty", "Empty")
     return _pill(status, status.capitalize())
 
 
@@ -254,8 +260,16 @@ def billing_landing(h, conn, user, query):
     rows = reads.invoice_rows(conn)
     status_of = {r["id"]: billing.invoice_status(conn, r["id"])
                  for r in rows}
+    # gated item 3 (ruled rendering-side, James 2026-08-10): a
+    # chargeless invoice derives paid (zero balance, corpus-pinned)
+    # but nothing was collected -- the LIST treats it as open work.
+    # It sits on the default Outstanding tab marked Empty and the
+    # Paid tab stops claiming it; the derived status is untouched.
+    charged = reads.charged_invoice_ids(conn)
+    bucket_of = {r["id"]: ("outstanding" if r["id"] not in charged
+                           else status_of[r["id"]]) for r in rows}
     outstanding = [r for r in rows
-                   if status_of[r["id"]] == "outstanding"]
+                   if bucket_of[r["id"]] == "outstanding"]
     out_sum = sum(billing.invoice_balance(conn, r["id"])
                   for r in outstanding)
     tiles = (
@@ -280,7 +294,7 @@ def billing_landing(h, conn, user, query):
     # invoices ARE, not imply none exist (James's snap, 2026-08-07:
     # tile said 0 open, list said "No invoices here yet" -- a
     # contradiction on one screen)
-    counts = {t: sum(1 for s in status_of.values() if s == t)
+    counts = {t: sum(1 for s in bucket_of.values() if s == t)
               for t in ("outstanding", "paid")}
     counts["all"] = len(rows)
     tabs = "<div class='tabs'>" + "".join(
@@ -289,13 +303,26 @@ def billing_landing(h, conn, user, query):
         f" ({counts[t]})</a>"
         for t in ("outstanding", "paid", "all")) + "</div>"
     shown = [r for r in rows
-             if tab == "all" or status_of[r["id"]] == tab]
+             if tab == "all" or bucket_of[r["id"]] == tab]
     if shown:
         today = _today()
         trows = []
         for r in shown:
             # flow annotation (s11 L3): the outstanding pill carries
             # its age -- overdue beats sent when both apply
+            if r["id"] not in charged:
+                trows.append([
+                    html.link(f"/billing/invoices/{r['id']}",
+                              r["display_code"]),
+                    _type_pill(r),
+                    html.link(f"/contacts/{r['contact_id']}",
+                              r["display_name"]),
+                    html.esc(fmt_date(r["issued_date"])),
+                    _pill("empty", "Empty") + " <span class='chipnote'>"
+                    "no charges yet</span>",
+                    "<span class='money'>0.00</span>",
+                ])
+                continue
             status_cell = _status_pill(conn, r["id"])
             if status_of[r["id"]] == "outstanding":
                 if r["due_date"] and r["due_date"] < today:
@@ -509,6 +536,47 @@ def client_payments(h, conn, user, contact_id):
             + f"<div class='card'><h1>Payments -- {html.esc(name)}"
             + f"</h1>{table}{foot}{notes}</div>")
     _page(h, f"Payments -- {name}", body, user)
+
+
+def settling_list(h, conn, user):
+    """The footed drill behind the dashboard pipeline's settling
+    figure (s11 flagged judgment call, ruled BUILD 2026-08-10, the
+    same ruling as the client band's Collected listing): every
+    processor-held payment firm-wide on one page. The foot equals
+    the pipeline segment by construction -- both sum
+    reads.settling_payments."""
+    rows = reads.settling_payments(conn)
+    method_names = {"sim_card": "card (online)",
+                    "sim_echeck": "eCheck (online)"}
+    trows = [[html.link(f"/billing/payments/{p['id']}",
+                        fmt_date(p["payment_date"])),
+              html.link(f"/billing/invoices/{p['invoice_id']}",
+                        p["display_code"]),
+              html.link(f"/contacts/{p['contact_id']}",
+                        p["display_name"]),
+              html.esc(method_names.get(p["method"], p["method"])),
+              f"<span class='money'>{fmt_cents(p['amount_cents'])}"
+              f"</span>"]
+             for p in rows]
+    if trows:
+        table = html.table(["Date", "Invoice", "Client", "Method",
+                            "Amount"], trows)
+        foot = (f"<p class='due'><strong>Settling:"
+                f" {dollars(sum(p['amount_cents'] for p in rows))}"
+                f"</strong></p>")
+    else:
+        table = html.empty_state(
+            "Nothing is settling. An online payment appears here"
+            " the moment the client pays and leaves at settlement,"
+            " when the money lands at the bank.")
+        foot = ""
+    hint = ("<p class='hint'>Paid by the client, held by the"
+            " processor, not yet at the bank. Run settlement on the"
+            " Trust accounting screen to move it.</p>")
+    body = (_crumbs(("Billing", "/billing"), ("Settling", None))
+            + f"<div class='card'><h1>Settling</h1>{hint}{table}"
+            + f"{foot}</div>")
+    _page(h, "Settling", body, user)
 
 
 def invoice_detail(h, conn, user, invoice_id, error=None):
@@ -806,9 +874,10 @@ def invoice_detail(h, conn, user, invoice_id, error=None):
                 if charges else "")
     # an invoice with no charges derives "paid" (zero balance) in
     # the core -- presenting that pill on an empty bill is a lie of
-    # rendering, so no status pill until charges exist
+    # rendering. Since gated item 3 the truthful marker exists:
+    # Empty, the same pill the landing shows.
     status_pill = (_pill(status, status.capitalize()) if charges
-                   else "")
+                   else _pill("empty", "Empty"))
     header = (f"<div class='card'><h1>{html.esc(title)} "
               + ("".join((_type_pill(inv), " ", status_pill)))
               + f"</h1>{kvs}{due_line}{split_line}{pdf_link}</div>")
@@ -1349,12 +1418,12 @@ def dashboard_screen(h, conn, user):
         flight.append(html.link("/billing?tab=outstanding",
                                 f"{fmt_cents(open_sum)} outstanding"))
     if settling_cents:
-        # no list screen exists for processor money (judgment call,
-        # flagged): a single settling payment links to its own page
-        one = (settling_rows[0] if len(settling_rows) == 1 else None)
-        text = f"{fmt_cents(settling_cents)} settling"
-        flight.append(html.link(f"/billing/payments/{one['id']}",
-                                text) if one else text)
+        # backing list ruled BUILD 2026-08-10 (retired the flagged
+        # single-payment special case): figure and foot sum the
+        # same reader, so they tie by construction
+        flight.append(html.link("/billing/settling",
+                                f"{fmt_cents(settling_cents)}"
+                                " settling"))
     if clearing_cents:
         flight.append(html.link("/billing/recon",
                                 f"{fmt_cents(clearing_cents)}"
@@ -1998,7 +2067,10 @@ def saved_charge_create(h, conn, uid, user):
     return h._redirect("/billing/charges/saved")
 
 
-def disburse_form(h, conn, user, error=None):
+def disburse_form(h, conn, user, error=None, values=None):
+    # values: the submitted form on a refused post -- a refusal
+    # re-renders what was typed, it never discards it
+    v = values or {}
     trusts = [b for b in ledger.list_bank_accounts(conn)
               if b["kind"] == "trust_bank"]
     crumbs = _crumbs(("Billing", "/billing"),
@@ -2023,17 +2095,21 @@ def disburse_form(h, conn, user, error=None):
               " sub-ledger and the trust account move together.</p>"
             + "<form method='post' action='/billing/trust/disburse'>"
             + _select("From trust account", "account_id",
-                      [(b["id"], b["name"]) for b in trusts])
+                      [(b["id"], b["name"]) for b in trusts],
+                      selected=v.get("account_id"))
             + _select("Funds held for client", "contact_id",
                       _contact_opts(conn),
+                      selected=v.get("contact_id"),
                       blank="No client (pick a matter below)")
             + _select("Funds held for matter", "matter_id",
                       _matter_opts(conn),
+                      selected=v.get("matter_id"),
                       blank="No matter (funds are client-level)")
             + html.field("Amount", "amount",
+                         value=v.get("amount", ""),
                          hint="Dollars and cents, e.g. 1,200.00")
             + html.field("Date", "disburse_date", ftype="date",
-                         value=_today())
+                         value=v.get("disburse_date") or _today())
             # known-payee datalist + free entry (gated item F):
             # native, zero-JS -- prior counterparties suggest,
             # anything typed still goes through
@@ -2041,13 +2117,15 @@ def disburse_form(h, conn, user, error=None):
             + "<p class='hint'>Who receives the money, e.g."
               " SYNTH-USCIS. Known payees appear as you type; a new"
               " name is fine.</p>"
-            + "<input name='counterparty' list='known-payees'"
-              " required>"
+            + f"<input name='counterparty' list='known-payees'"
+              f" value='{html.esc(v.get('counterparty', ''))}'"
+              f" required>"
             + ("<datalist id='known-payees'>"
                + "".join(f"<option value='{html.esc(p)}'>"
                          for p in reads.known_counterparties(conn))
                + "</datalist>")
-            + html.field("Memo", "memo", required=False)
+            + html.field("Memo", "memo", value=v.get("memo", ""),
+                         required=False)
             + "<button class='primary'>Disburse</button>"
               "</form></div>")
     _page(h, "Disburse funds", body, user)
@@ -2067,7 +2145,7 @@ def disburse_post(h, conn, uid, user):
             memo=f.get("memo", "").strip() or None)
     except (ValueError, KeyError) as e:
         conn.rollback()
-        return disburse_form(h, conn, user, error=str(e))
+        return disburse_form(h, conn, user, error=str(e), values=f)
     conn.commit()
     return h._redirect("/billing/trust")
 
@@ -2344,6 +2422,8 @@ def route(h, conn, method, segs, query, now, uid, user):
         if len(segs) == 4 and segs[:2] == ["billing", "clients"] \
                 and segs[3] == "payments":
             return client_payments(h, conn, user, _id(segs[2]))
+        if segs == ["billing", "settling"]:
+            return settling_list(h, conn, user)
         if segs == ["billing", "recon"]:
             return recon_screen(h, conn, user, query)
         if segs == ["billing", "close"]:

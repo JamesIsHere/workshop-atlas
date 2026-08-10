@@ -1,6 +1,28 @@
 # state.md -- billing-ui (session cache, overwritten each wind-down)
 
-## COLD-START POINTER (s14, 2026-08-10)
+## COLD-START POINTER (s15, 2026-08-10)
+
+S15 UPDATE: James ruled the three attempt-5 friction items IN
+and all three are FIXED and green (worklog s15): step-17
+checkpoint reworded, step-27 Note is now a driven demo beat,
+step-39 refusal keeps typed values (rendering-only fix in
+app_ui/billing_ui.py disburse_form). Then he ruled in the PC1
+refusal-wording judgment call: period.py errors now speak month
+names ("July 2026", not "2026-07") -- refusal + three sibling
+messages, scope extension disclosed in the worklog. Then two
+more rulings landed the same session: the settling backing
+list BUILT (/billing/settling, same ruling as the client
+listing) and gated item 3 DONE (empty invoices visible on the
+default tab, rendering-side, James picked the layer). Sheet
+lock re-synced 85e4e4633a37 -> 7b30fc89c159 across the
+session; attempt 6 (if any) drives the new sheet. ALL suites
+rerun green and quoted after every change (worklog s15
+entries). Server restarted on the SAME walked db after each
+code reload so every fix is live for his review. The s14
+pointer below stands for everything else -- the verdict is
+still the gate.
+
+## Prior pointer (s14, 2026-08-10)
 
 ATTEMPT 5 WAS DRIVEN AND RECORDED; THE VERDICT IS PENDING.
 James drove all 40 steps solo on data/demo-walk-2026-08-09b.db
@@ -36,7 +58,9 @@ next build round, attempt 6 under the standard protocol.
 P4 OPEN. Attempt 5 driven 2026-08-10, record filed (worklog
 s14), close-out verifier green and quoted, VERDICT PENDING
 James's sit-with-it review. Nothing advances past P4 on
-"looks pretty good" -- signed sheet only.
+"looks pretty good" -- signed sheet only. More-work round
+opened s15: friction items 1-3 fixed and green (worklog s15);
+remaining candidates are the open flags and gated items.
 
 ## Watch items and caveats
 
@@ -51,21 +75,20 @@ James's sit-with-it review. Nothing advances past P4 on
   Swap dbs behind the port, never the port. Restart after ANY
   app_ui or casework/app change. Launcher:
   python billing-ui/serve.py --db <ABS path>.
-- FRICTION LOG from attempt 5 (all minor, worklog s14): step-17
-  checkpoint conditional read as unconditional stop (sheet
-  wording); step-27 Note field not in the sheet, James filled
-  it; step-39 refusal clears the form's typed values (product
-  polish). None is a stop-rule event; all are candidate work
-  if James rules them in.
+- FRICTION LOG from attempt 5: RESOLVED s15, all three items
+  fixed and green (worklog s15). Sheet lock is now
+  7b30fc89c159; the s14 walk record keeps its 85e4e4633a37
+  lineage.
 - JUDGMENT CALLS still open for re-rule: M7/soft-budget
-  handling (kept M1->M6 for comparability); PC1 refusal renders
-  the period ISO-style ("period 2026-07...") in an MM/DD/YYYY
-  surface (core-owned text, casework/app/period.py, inside the
-  standing close amendment's write surface).
-- FLAGS from s13 sweep, frozen casework-ui screens (gate
-  decisions): contact detail card shows raw machine keys as
-  labels (bio.family_name etc.); contact Matters card prints
-  ISO dates vs MM/DD/YYYY.
+  handling (kept M1->M6 for comparability). PC1 refusal ISO
+  wording: RESOLVED s15 cont (month names; siblings included,
+  disclosed).
+- FLAGS from s13 sweep: RESOLVED s15 cont under an explicit
+  gate ruling (James authorized the frozen contact screen for
+  labels + date format). Labels now read from
+  reads.fact_labels(); Matters dates MM/DD/YYYY. The no-logic
+  lint caught the first inline-SQL cut; query moved to
+  reads.py.
 - FIRM-LOCAL DATES RULING (s12 cont): business dates stamp
   firm-local, timestamps UTC. Proven live in attempt 5: the
   close signatures stamped 08/10/2026 when James crossed
@@ -81,9 +104,11 @@ James's sit-with-it review. Nothing advances past P4 on
 - Close judgment calls flagged, unruled (s12): month closable
   only after it ends; ranking rows plain text; approve-on-stale
   commits the void; one closable month, never a choice.
-- Flow-marker flags (s11) still open: dashboard settling has no
-  firm-wide backing list; overdue beats sent on chipnotes; chip
-  colors reuse pill families.
+- Flow-marker flags (s11): settling backing list BUILT s15 cont
+  (/billing/settling, ruled same-as-client-listing; dashboard
+  figure always links; four-surface verifier). Still open:
+  overdue beats sent on chipnotes; chip colors reuse pill
+  families.
 - The no-logic lint counts the WORD "SELECT" in app_ui prose.
 - billing + fiduciary + anchor-billing run from
   ../casework-billing/; spine from ../casework/; core touches
@@ -111,15 +136,22 @@ James's sit-with-it review. Nothing advances past P4 on
 
 - THE VERDICT: attempt 5's three sub-verdicts (a)/(b)/(c) --
   James signs when his review is done. Everything else queues
-  behind this.
-- Friction-log items 1-3 (s14): rule in as work or log-only.
-- Marks judgment call (M7/budget) and the refusal-message
-  wording: James may re-rule.
-- Contact-screen flags from s13 (raw labels, ISO dates): gate
-  in or leave.
-- Dashboard settling backing list: flagged, unruled.
+  behind this. (Friction items 1-3: ruled in and DONE, s15.)
+- Marks judgment call (M7/budget): James may re-rule. (Refusal
+  wording: done s15 cont; the sibling-message scope extension
+  is his to re-rule if unwanted.)
+- Contact-screen flags from s13: DONE s15 cont (gate ruling
+  granted).
+- Dashboard settling backing list: BUILT s15 cont (ruled).
 - Close judgment calls (s12): James may re-rule.
 - E-item select wording: James may re-rule any line.
-- Empty-invoice list behavior (gated item 3): unchanged.
-- Demo-login prefill + no-expiry (gated item 5): queued.
+- Empty-invoice list behavior (gated item 3): DONE s15 cont
+  (rendering-side, James picked the layer). Follow-up flag
+  CLOSED same session: detail title + client band now show
+  Empty too (detail had already suppressed the pill; band was
+  the one lying surface). One Empty vocabulary on all three
+  surfaces.
+- Demo-login prefill (gated item 5): DONE s15 cont. No-expiry
+  half moot (/mfa already shows the code; login is now zero
+  typing on demo dbs).
 - Client portal: gated item 11, deliberately out of scope.

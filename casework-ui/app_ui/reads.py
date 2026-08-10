@@ -62,6 +62,23 @@ def contact_row(conn, contact_id):
         (contact_id,)).fetchone()
 
 
+def charged_invoice_ids(conn):
+    """Invoice ids carrying at least one live charge. The landing
+    list separates 'empty, never charged' from 'genuinely settled'
+    (gated item 3, ruled rendering-side by James 2026-08-10): the
+    derived status stays corpus-pinned (paid at zero balance,
+    fx-0070/0071); only the presentation reclassifies."""
+    return {r["invoice_id"] for r in conn.execute(
+        "SELECT DISTINCT invoice_id FROM invoice_charges"
+        " WHERE deleted_at IS NULL")}
+
+
+def fact_labels(conn):
+    """{key: human label} from fact_definitions -- the contact card
+    renders labels, never machine keys (gate ruling 2026-08-10)."""
+    return dict(conn.execute("SELECT key, label FROM fact_definitions"))
+
+
 def contact_matters(conn, contact_id):
     return conn.execute(
         "SELECT id, name, created_at FROM matters WHERE"
@@ -183,9 +200,9 @@ def settling_payments(conn):
     test invoice_detail's status line has always used."""
     return conn.execute(
         "SELECT p.id, p.invoice_id, p.amount_cents, p.payment_date,"
-        " p.method, i.display_code"
+        " p.method, i.display_code, i.contact_id, c.display_name"
         " FROM invoice_payments p JOIN invoices i ON"
-        " i.id = p.invoice_id"
+        " i.id = p.invoice_id JOIN contacts c ON c.id = i.contact_id"
         " WHERE p.deleted_at IS NULL AND p.refunded = 0"
         " AND p.processor_txn_id IS NOT NULL"
         " AND p.journal_entry_id IS NULL ORDER BY p.id").fetchall()
