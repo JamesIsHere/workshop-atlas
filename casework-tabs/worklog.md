@@ -224,3 +224,48 @@ pass; verdict GREEN" / "spine: 107 green, 0 red, 0 pending" /
 Gate logistics: port 8500 is currently held by billing-ui's demo
 server (James's asset, PID noted in session); the swap to
 data/demo-tabs.db behind the same port is his call at the gate.
+
+## 2026-08-10 -- s3 cont: P1 gate live-drive, spacing axis settled
+
+James authorized the 8500 swap (billing-ui server down -- a stale
+watchdog from its old session tried to restart it and failed;
+port stayed ours). Demo db regenerated, server up, James drove.
+
+Three gate-fed polish rounds on the crowding/spacing axis (gate
+feedback, not agent-judgment iterations -- anti-stall cap
+untouched):
+- r1 (commit 3a899e9): agenda When column stacks date over muted
+  time (mid-range wrap killed); Linked column reduced to ONE
+  matter-first link (redundant "matter -- client" pair was the
+  wrap driver; flagged for re-rule, James did not object); month
+  cells: color dot + title instead of full badge words.
+- r2 (fd05d70): server-side 20-char chop removed in favor of CSS
+  ellipsis -- DID NOT WORK: auto table layout grows cells, the
+  clip never engages, titles bled across day borders. James's
+  snap caught it.
+- r3 (0fe8d3c): table-layout fixed (ellipsis engages), month view
+  renders on a wide main (92rem), color KEY legend under the grid
+  (James's direction: "use the colors to reduce the text and add
+  a key"). James: "We got the spacing right."
+
+Clarified at his question: month cell text is the item TITLE per
+kind (never the matter); matter/client linkage lives in the
+agenda's Linked column and on detail pages only.
+
+Parked with triggers (log-don't-build, James: "leave it for now,
+things will change"):
+- "+N more" cell overflow (Outlook pattern) -- trigger: real
+  density makes cells stack past ~3 entries.
+- Matter/client name in month cell or hover -- trigger: James
+  asks, or the final cross-tab walk shows scan-time confusion
+  about whose item is whose.
+
+Rail 7 pass / 0 fail and ui-walk GREEN re-quoted after every
+round; sha d1a45962 held through r1 (layout-only), unchanged
+through r3 (no asserted strings touched).
+
+METHOD: the r2 miss is a verify-the-verifier lesson in the OTHER
+direction -- the rail cannot see CSS-rendering truth (it asserts
+markup, not layout), so gate snaps are the only oracle for visual
+defects. The hands-on gate medium rule (screenshots support,
+James drives) earned its keep three times in one hour.
