@@ -17,14 +17,16 @@ is the contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P4a PASSED (receipt p4a-files.md); P4b E-SIGN      |
-|              | BUILT, gate PENDING; rail 22 pass/0 fail,          |
-|              | sha c44c5e31 x2                                    |
-| Last session | 2026-08-10 s6 -- files rail refined, P4a built +   |
-|              | PASSED (zero fix rounds), P4b e-sign built, 5 RED  |
-|              | drives total, suites green, 8500 up                |
-| Next action  | P4b gate (James drives e-sign on 8500), then P5    |
-|              | Search. [Q1]-[Q11]+[Q13] carry. See state.md       |
+| Status       | P4a PASSED (p4a-files.md); P4b gate IN PROGRESS,   |
+|              | PAUSED mid-drive after 8 fix rounds (r8 =          |
+|              | one-click Request signature); sha 698eca26 x2      |
+| Last session | 2026-08-10 s6 -- P4a built+passed, P4b built, 8    |
+|              | live fix rounds incl ratified typed-name core      |
+|              | amendment; James paused spent; MISUSE-PASS rule    |
+|              | added to rhythm (his catch: 4 rounds were          |
+|              | machine-findable)                                  |
+| Next action  | RESUME P4b: his 3-click drive (state.md), verdict, |
+|              | receipt. Then P5. [Q1]-[Q11]+[Q13] carry           |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

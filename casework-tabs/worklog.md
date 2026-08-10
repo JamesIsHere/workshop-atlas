@@ -888,3 +888,30 @@ exhaustion, not usability -- the fix rounds were each locally
 right and globally wrong. The one-decision-per-click design
 (quick path primary, editor advanced) is what the
 interaction-cost thesis demanded from the start.
+
+## 2026-08-10 -- s6 pause: P4b gate IN PROGRESS, break declared
+
+James paused mid-gate, energy spent, after r8 landed ("break
+time commit and push"). P4b verdict PENDING; his resume drive
+is 3 clicks (state.md). His parting feedback, ACCEPTED: "I feel
+like you could have caught some of that and saved me time."
+
+METHOD (the s6 retro, owed to that feedback): of the eight fix
+rounds, at least FOUR were machine-discoverable and should never
+have reached him -- the empty send (r5), the field-less vacuous
+signature (r6), the duplicate-signer pileup (r8), and the
+box-less sign page were all reachable by deliberately driving
+WRONG paths: skip a step, double-click, submit empty. The rail
+drove only the happy path; James was this build's first
+adversarial driver, and that inverts the whole division of
+labor -- the human gate should judge feel and fit, not find
+mechanical holes. The orientation defects (r7 "where is my
+URL", r8 flow shape) needed a naive-user walkthrough of the
+screens, also doable before handing over. RULE going forward
+(plan.md rhythm amended, step 4): before EVERY hands-on gate, a
+MISUSE PASS -- per new flow, drive wrong-order / double-submit
+/ empty-submit / skip-a-step and assert refusal or safe
+handling -- plus a written naive walkthrough ("the thing the
+user wants: how many clicks, and is it visible from where they
+stand?"). Cost: minutes of agent time. Saves: exactly what it
+cost James today.

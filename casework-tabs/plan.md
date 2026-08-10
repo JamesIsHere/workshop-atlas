@@ -42,8 +42,13 @@ Settings layout at P6 -- avoids P6 blocking P1-P3.
 1. Extend run_tabs_walk.py with the tab's steps; drive RED.
 2. Build screens/readers to green; sweeps green.
 3. Standing suites rerun green, quoted.
-4. [Q] ruling queue to the gate; James hands-on drives; verdict.
-5. Receipt in verify/gate-receipts/; worklog + state.md.
+4. MISUSE PASS (s6 retro rule): per new flow, deliberately drive
+   wrong-order / double-submit / empty-submit / skip-a-step and
+   assert refusal or safe handling; write the naive walkthrough
+   (clicks-to-goal, visibility from where the user stands).
+   Machine-findable holes never reach the human gate.
+5. [Q] ruling queue to the gate; James hands-on drives; verdict.
+6. Receipt in verify/gate-receipts/; worklog + state.md.
 
 ## Unit queue (current)
 
@@ -85,6 +90,11 @@ Settings layout at P6 -- avoids P6 blocking P1-P3.
   rail steps (prepare POST + editor, live client_base links,
   sign-through on the frozen client surface, produced custody);
   2 RED drives caught; sha c44c5e31 x2; suites green; 8500 up.
-- U4.4 P4b gate: hands-on e-sign drive (prepare the g28 draft,
-  send, open the live link, sign, see the auto-filed copy);
-  verdict + receipt closes P4.
+- U4.4 P4b gate IN PROGRESS 2026-08-10 (s6, PAUSED -- James's
+  energy spent): 8 fix rounds landed and rail-proven (r1
+  preview/print collapse, r2 field remove + coord hint, r3
+  RATIFIED typed-name amendment, r4 void/redo, r5 empty-send
+  guard, r6 field-less guard + vacuous-signature catch, r7 link
+  orientation, r8 ONE-CLICK Request signature + dup guard);
+  sha 698eca26 x2. Resume: his 3-click drive (state.md),
+  verdict + receipt (r1-r8 table) closes P4.
