@@ -28,7 +28,7 @@ import run_fiduciary as fid  # noqa: E402
 
 def checks(conn):
     """Yield (name, ok, detail) per walk-sheet leg (atomic-sheet
-    step range in parentheses; 32-step sheet, parts A-J). Amounts
+    step range in parentheses; 40-step sheet, parts A-K). Amounts
     are the sheet's, verbatim."""
     def one(sql, args=()):
         row = conn.execute(sql, args).fetchone()
@@ -115,6 +115,23 @@ def checks(conn):
            and (edited or 0) == 1,
            f"{reversal} reversal(s), {repost} repost(s), consult"
            f" payment dated 2026-08-02")
+
+    # Part K (seventh amendment, 2026-08-09): the July coda bill
+    # and the sealed close. The coda is the only 07/01-issued bill;
+    # strict-order closing makes 2026-07 the only closed period.
+    coda = one("SELECT id FROM invoices WHERE invoice_type='bill'"
+               " AND issued_date='2026-07-01'")
+    coda_paid = (coda is not None and
+                 billing.invoice_status(conn, coda) == "paid")
+    closes = conn.execute(
+        "SELECT period, status, prepared_by, approved_by FROM"
+        " period_closes WHERE status='closed'").fetchall()
+    sealed = (len(closes) == 1 and closes[0]["period"] == "2026-07"
+              and closes[0]["prepared_by"] is not None
+              and closes[0]["approved_by"] is not None)
+    yield ("july coda closed (33-40)", coda_paid and sealed,
+           f"coda bill {coda} paid; closed periods"
+           f" {[r['period'] for r in closes]}")
 
     actors = {r[0] for r in conn.execute(
         "SELECT DISTINCT actor_type FROM audit_log")}

@@ -2406,3 +2406,75 @@ the code shown on-screen.
 
 Next: attempt-5 prep -- James's call on the demo-sheet close act
 (precondition 5), then the standard attempt protocol.
+
+## 2026-08-09 -- s13 cont: ATTEMPT-PREP RULED -- the sheet gains the
+## close act (Part K) and the lock re-syncs
+
+RULING (James, precondition 5): "I think we should include a
+period close step and re-sync. I think that is the right way to
+do this to be thorough." The demo sheet gains the period-close
+act; the sheet-lock re-sync protocol applies.
+
+BUILT (seventh sheet amendment, recorded in the sheet's header):
+Part K, steps 33-40, mirroring walk-verifier step 20's July coda
+-- the walk's story is August (still running; a month closes
+only after it ends), so Part K first has the driver bill and
+collect one 100.00 July consult (07/01/2026, the Part-D moves),
+making July the closable month; then the act: prepare (clean
+carried state), approve, the permanent record page (same-signer
+disclosure), and the PC1 lock proven from the driver's chair --
+a July-dated 1.00 disbursement typed on purpose, refused on
+screen, Vera's 800.00 unmoved. Marks: M7 added (step 40 is now
+"done"); the 20:00 soft budget stays defined over M1->M6 so
+attempts stay comparable, M1->M7 recorded as data -- judgment
+call, flagged for re-rule. Close-out: check_demo_walk.py gains
+the Part-K receipt (the 07/01-issued bill paid + exactly one
+closed period 2026-07, both signers recorded); smoke-tested
+against the attempt-4 walked db -- fails ONLY the new receipt
+(that db predates the act), exit 1.
+
+METHOD: the drive's injected stray (attempt-3 regression, step
+21) caught my first draft red-handed: the sheet pinned the coda
+bill as B0003, a code predicted for a FUTURE invoice -- exactly
+the failure class item B taught for numbers. Codes are stable
+once STAMPED, never as predictions. The sheet now has the driver
+NOTE the code from the crumb at creation (B0003 on a clean walk)
+and steps 34-35 locate by the noted code; the drive reads the
+crumb the same way and its coda lands on B0004 behind the stray,
+proving the rule. The regression paid for itself twice.
+
+Also caught by the oracles: four Part-K quotes were COMPUTED
+strings (month headings, the signer line, the core refusal
+message) -- the label audit requires quoted text to be literal
+in rendering source; re-phrased unquoted per the sheet's own
+Collect $500.00 precedent. Judgment call, flagged: the refusal
+error renders the period as 2026-07 (ISO-style, core-owned text
+in casework/app/period.py) inside an otherwise MM/DD/YYYY
+surface; the sheet quotes it verbatim with a translation line.
+James may re-rule the message's wording (period.py is inside the
+standing close amendment's write surface).
+
+SHEET LOCK: f7f821edb1e9 -> 85e4e4633a37 (re-synced via the
+protocol: drive extended first, sheet verified against it,
+EXPECTED_SHEET_SHA updated; two intra-session intermediates as
+the draft hardened).
+
+SUITES (all rerun after the amendment, quoted):
+- drive-sheet: "27/27 groups pass; verdict GREEN" (was 24
+  groups; +3 Part-K groups).
+- labels: "91 labels checked, 0 not found" (was 82).
+- billing-ui walk: "20 pass, 0 pending, 0 fail; float-sweep
+  pass; verdict GREEN"; report_sha.py = 30301f88 UNCHANGED (no
+  app code touched this round).
+- ui-walk (frozen): "13 pass, 0 pending, 0 fail; sweeps pass;
+  verdict GREEN".
+- spine: "107 green, 0 red, 0 pending; checks pass".
+- billing: "25 green, 0 red, 0 pending, 0 parked; checks pass;
+  verdict: GREEN".
+- fiduciary --seeded: "9 pass, 0 red, 0 stub; verdict: GREEN".
+- anchor-billing: "PASS (1.294s of 900s budget)".
+
+Attempt-5 preconditions are now ALL MET. Next: the standard
+attempt protocol -- agent seeds a fresh dated db behind 8500,
+runs the walk verifier green, hands over the URL and the sheet;
+James drives all 40 steps; close-out; three-part verdict.

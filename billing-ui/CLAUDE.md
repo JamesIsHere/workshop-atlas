@@ -20,18 +20,17 @@ contract; this file is a signpost.
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
 | Status       | P4 open after attempt 4 (FAIL b/c, (a) PASS).      |
-|              | Item 12 objects-COMPLETE (s10-s12); FINISH PASS    |
-|              | DONE (s13): James ruled his pass good, agent pass  |
-|              | fixed step-29 ledger links, checkbox float, and    |
-|              | undated seed charges -- all verified on-screen     |
-| Last session | 2026-08-09 s13 -- finish pass: two queued defects  |
-|              | + one sweep catch fixed, full close act driven in  |
-|              | the browser, firm-local dates verified live; ALL   |
-|              | suites green, sha 30301f88 unchanged, sheet lock   |
-|              | unchanged                                          |
-| Next action  | Attempt-5 prep: James's call on a demo-sheet close |
-|              | act, then the standard attempt protocol. See       |
-|              | state.md cold-start pointer                        |
+|              | ALL attempt-5 preconditions MET: item 12 built,    |
+|              | finish pass done, and the sheet's seventh          |
+|              | amendment adds Part K (period-close act, steps     |
+|              | 33-40) with the lock re-synced                     |
+| Last session | 2026-08-09 s13 cont -- James ruled the close act   |
+|              | into the sheet; Part K built mirroring walk step   |
+|              | 20; sheet lock f7f821edb1e9 -> 85e4e4633a37;       |
+|              | drive-sheet 27/27, labels 91/0, ALL suites green;  |
+|              | report sha 30301f88 unchanged                      |
+| Next action  | ATTEMPT 5 -- standard protocol, 40 steps, James    |
+|              | picks the moment. See state.md cold-start pointer  |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

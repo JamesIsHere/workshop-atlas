@@ -135,6 +135,24 @@ Crumb checks pin exact codes now; the stray-invoice regression
 stays and proves codes cannot shift. Data values and step
 semantics unchanged; no steps renumbered.
 
+AMENDED 2026-08-09 seventh time (attempt-5 prep, ordered by
+James: "we should include a period close step and re-sync...
+to be thorough"): the walk gains Part K (steps 33-40) -- the
+period-close act. The walk's story lives in August, which is
+still running, and a month closes only after it ends; so Part K
+opens with a July coda (one 100.00 consult billed and paid
+direct, dated 07/01/2026) that gives the walk an ended month,
+then runs the two-signature act -- prepare, approve, the
+permanent record -- and PROVES the hard lock from the driver's
+chair: a July-dated disbursement refuses on screen and moves
+nothing. Mirrors walk-verifier step 20 (the July coda built and
+ratified s12); every quoted label verified against the live
+screens this session. M7 added to the marks; the M1->M6 soft
+budget is UNCHANGED so attempts stay comparable, with M1->M7
+recorded as data (agent judgment call, flagged for re-rule).
+The close-out checker gains the close receipt. Data values and
+semantics of steps 1-32 untouched; no steps renumbered.
+
 Contract hooks (goal.md): James drives the full billing lifecycle
 entirely through screens on a FRESH database -- no terminal, no
 SQL, no dev tools mid-walk. The fiduciary suite must run green
@@ -535,6 +553,97 @@ identity tying bank to books to client claims.
     client funds. System-made correction entries are labeled
     (system correction).
 
+Part K -- close the month: July, sealed by two signatures
+
+Goal: the month-end close, the audit-grade seal. The walk's
+story lives in August, and a month can be closed only after it
+ends -- so this part first writes ONE small July fact (a 100.00
+consult, billed and paid exactly the way Part D taught),
+making July the month the app offers to close. Then the act:
+prepare freezes the numbers, approve locks July forever, and
+the record page keeps both signatures. The last two steps prove
+the lock is real: try to write a check INTO the closed month
+and watch the app refuse. There is no reopen.
+
+33. New invoice (Go: menu "Billing" -> "New invoice"), the TOP
+    card "New bill":
+    - "Client" = Vera Synthetic
+    - leave "Matter" at No matter (bill the client directly)
+    - "Issue date" = 07/01/2026 (starts on today -- change it)
+    End: click "Create bill" -> the new bill's page. Its crumb
+    line reads Billing / Bill B0003 on a clean walk -- but
+    whatever code the crumb shows, THAT code is this bill's
+    name (codes are stamped at creation; an accidental extra
+    invoice earlier in the walk shifts the prediction, never a
+    stamped code). NOTE the code. This is the JULY bill.
+34. The July bill's page, the "Add a charge" form in the
+    Charges card (If lost: menu "Billing" -> tab "All" -> the
+    row whose INVOICE column shows the July bill's code from
+    step 33; click that link)
+    - "Description" = SYNTH July consult
+    - "Amount" = 100.00
+    - "Type" = Service
+    - "Date" = already shows 07/01/2026, copied from the issue
+      date -- leave it
+    End: click "Add charge". A card titled Collect $100.00
+    appears.
+35. The July bill's page, the Collect $100.00 card (If lost:
+    menu "Billing" -> tab "All" -> the July bill's code from
+    step 33)
+    - click the fold line "Record a direct payment (check,
+      cash, wire)" to expand it
+    - "Amount" = leave at 100.00
+    - "Date" = 07/01/2026 (starts on today's date -- change it)
+    - "Deposit to" = SYNTH Operating
+    End: click "Record payment". The bill's title now carries
+    a Paid pill.
+36. Period close (Go: menu "Billing" -> button "Period close"),
+    headed Close July 2026 -- the app itself picked July: the
+    oldest month with money in it that has already ended.
+    Observe first: the card "The tie" lists both accounts, each
+    row ending in a HOLDS badge; the "Carried items" heading
+    under it reads "Nothing carried. The month is clean."
+    End: click "Prepare close".
+37. Period close, step 2 (you are still on the same address;
+    If lost: menu "Billing" -> button "Period close")
+    Observe: the page now says Step 2 of 2 -- approve, names
+    Demo Driver as preparer with today's date, and warns that
+    approving locks July 2026 permanently. "Carried items"
+    still reads "Nothing carried. The month is clean."
+    End: click "Approve close" -> the close record page.
+38. The close record page, headed Closed: July 2026 (If
+    lost: menu "Billing" -> button "Period close" -> in the
+    "Closed months" card, click "record" on the July 2026 row)
+    Observe: the top line calls itself the permanent close
+    record -- frozen at prepare, verified unchanged at approve
+    -- names Demo Driver as BOTH preparer and approver with
+    today's date, and says outright "Prepared and approved by
+    the same person." The month's story line reads Billed
+    $100.00 | Collected $100.00. This page never changes again.
+39. Disburse funds -- proving the seal (Go: menu "Billing" ->
+    "Trust accounting" -> "Disburse funds"). This step writes a
+    check dated INTO the closed month ON PURPOSE; the app must
+    refuse it.
+    - "From trust account" = SYNTH IOLTA
+    - "Funds held for client" = Vera Synthetic
+    - leave "Funds held for matter" at No matter (funds are
+      client-level)
+    - "Amount" = 1.00
+    - "Date" = 07/05/2026 (starts on today -- change it: the
+      wrong month is the point)
+    - "Pay to" = SYNTH late vendor
+    - leave "Memo" blank
+    End: click "Disburse". Observe: a red error box refuses,
+    reading: period 2026-07 is closed (hard close through
+    2026-07): post the fact current-dated in the open month.
+    (2026-07 is the app's internal name for July 2026.) If the
+    page shows anything but that refusal -- STOP and record it.
+40. Trust accounting (Go: menu "Billing" -> "Trust
+    accounting")
+    Observe: the "Client funds" table still shows Vera
+    Synthetic 800.00 -- the refused check moved nothing. The
+    seal held.
+
 Say "done" out loud.
 
 ## Timing marks (recorder; budget is SOFT, M1 -> M6)
@@ -547,7 +656,12 @@ Say "done" out loud.
 | M3   | Settlement run (step 18)                            |
 | M4   | Earn-out bill paid (step 23)                        |
 | M5   | Correction trail seen (step 28)                     |
-| M6   | Recon holds, both accounts (step 32, "done")        |
+| M6   | Recon holds, both accounts (step 32)                |
+| M7   | July closed and the lock proven (step 40, "done")   |
+
+The 20:00 soft budget stays defined over M1 -> M6 so attempts
+stay comparable; M1 -> M7 is recorded as data with no budget
+(agent judgment call 2026-08-09, flagged for re-rule).
 
 ## Close-out (untimed; the AGENT runs 1, quoting output -- James
 ## only looks and rules)
@@ -555,7 +669,9 @@ Say "done" out loud.
 1. Agent runs `check_demo_walk.py` against the walked db in the
    session and quotes the output: story receipts (accounts, paid
    invoices, settlement, earn-out, disbursement, correction
-   trail) plus the fiduciary suite in place. Exit 0 required.
+   trail, the July close) plus the fiduciary suite in place --
+   which now includes F9, recomputing the closed month
+   byte-for-byte. Exit 0 required.
 2. James eyeballs: the PDF opens and carries the charges; the
    ledger shows 800.00 client funds; recon says holds.
 3. Verdict sheet below, James, all three up/down.
@@ -566,8 +682,9 @@ Say "done" out loud.
 WALK ------------------------------------------------------------
 Date (UTC):            ____________
 Db file:               data/demo-walk-________.db  (fresh: Y/N)
-Marks M0..M6:          ____________________________________
+Marks M0..M7:          ____________________________________
 Elapsed M1->M6:        ____________  (soft budget 20:00)
+Elapsed M1->M7:        ____________  (data; no budget)
 Dev-tools touched mid-walk (voids): Y/N
 
 FRICTION LOG (demo-readiness data)

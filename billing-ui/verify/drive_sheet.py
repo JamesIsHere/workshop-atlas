@@ -65,7 +65,9 @@ from run_billing_ui_walk import Browser, ui_server  # noqa: E402
 REPORT = HERE / "drive-sheet-report.txt"
 SHEET = HERE / "demo-walk-protocol.md"
 
-EXPECTED_SHEET_SHA = "f7f821edb1e9"
+EXPECTED_SHEET_SHA = "85e4e4633a37"  # re-synced 2026-08-09: Part K
+# (period-close act, steps 33-40) added at James's attempt-5 prep
+# order; supersedes f7f821edb1e9
 
 CODE_RE = re.compile(r"class='code-display'>(\d{6})<")
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -115,6 +117,7 @@ class Drive:
         self.consult_inv = None
         self.trust_inv = None
         self.work_inv = None
+        self.july_inv = None
 
 
 def _see(page, *needles):
@@ -592,6 +595,85 @@ def s32_recon(d):
             " cleared/in-transit/outstanding mix on the period")
 
 
+# --- Part K: the period close ------------------------------------------
+
+def s33_35_july_coda(d):
+    page = enter(d, *NEW_INVOICE)
+    _see(page, "New bill", "No matter (bill the client directly)")
+    assert f"value='{today()}'" in page, \
+        "sheet claims the issue date starts on today; it does not"
+    _s, url, page = d.b.post("/billing/invoices/new", {
+        "invoice_type": "bill", "contact_id": str(d.contact_id),
+        "issued_date": "2026-07-01"})
+    m = re.search(r"/billing/invoices/(\d+)$", url)
+    assert m, url
+    d.july_inv = int(m.group(1))
+    # the sheet's rule: whatever code the crumb shows IS the July
+    # bill's name (B0003 on a clean walk; this drive's injected
+    # stray from step 21 makes it B0004 -- proving the rule)
+    m = re.search(r"Billing</a> / Bill (B\d{4,})", page)
+    assert m, "coda bill crumb missing its stamped code"
+    july_code = m.group(1)
+    iid, page = enter_invoice(d, july_code, tab="all",
+                              expect=d.july_inv)
+    _see(page, "Add a charge")
+    assert "value='2026-07-01'" in page, \
+        "sheet claims the charge date copies the issue date"
+    _s, _u, page = d.b.post(f"/billing/invoices/{iid}/charges", {
+        "charge_type": "service", "description": "SYNTH July consult",
+        "amount": "100.00", "charge_date": "2026-07-01"})
+    _see(page, "Collect $100.00",
+         "Record a direct payment (check, cash, wire)")
+    _s, _u, page = d.b.post(f"/billing/invoices/{iid}/pay", {
+        "method": "direct", "amount": "100.00",
+        "payment_date": "2026-07-01",
+        "destination_account_id": str(d.op)})
+    _see(page, "Paid")
+    return (f"July coda: {july_code} billed and paid direct on"
+            f" 07/01 (stamped code survives the injected stray)")
+
+
+def s36_38_close_act(d):
+    page = enter(d, *BILLING, ("Period close", "/billing/close"))
+    _see(page, "Close July 2026", "Step 1 of 2", "The tie",
+         "Carried items", "Nothing carried. The month is clean.",
+         "Prepare close")
+    assert page.count("HOLDS") >= 2, "tie badges missing"
+    _s, _u, page = d.b.post("/billing/close/prepare", {})
+    _see(page, "Step 2 of 2", "Prepared by Demo Driver",
+         "Nothing carried. The month is clean.", "Approve close")
+    _s, url, page = d.b.post("/billing/close/approve", {})
+    assert url.endswith("/billing/close/2026-07"), url
+    _see(page, "Closed: July 2026",
+         "Prepared and approved by the same person.",
+         "Billed $100.00", "Collected $100.00")
+    # step 38's If lost route: Period close -> Closed months -> record
+    page = enter(d, *BILLING, ("Period close", "/billing/close"))
+    _see(page, "Closed months", "July 2026", ">record<")
+    return "two-step close by the sheet's route; record page holds"
+
+
+def s39_40_lock_proof(d):
+    page = enter(d, *TRUST,
+                 ("Disburse funds", "/billing/trust/disburse"))
+    _see(page, "From trust account", "Funds held for client",
+         "No matter (funds are client-level)", "Pay to", "Memo",
+         "Disburse")
+    assert f"value='{today()}'" in page, \
+        "sheet claims the disburse date starts on today"
+    _s, _u, page = d.b.post("/billing/trust/disburse", {
+        "account_id": str(d.iolta), "amount": "1.00",
+        "disburse_date": "2026-07-05",
+        "contact_id": str(d.contact_id),
+        "counterparty": "SYNTH late vendor"})
+    _see(page, "period 2026-07 is closed (hard close through"
+               " 2026-07): post the fact current-dated in the open"
+               " month")
+    page = enter(d, *TRUST)
+    _see(page, "Client funds", "Vera Synthetic", "800.00")
+    return "July-dated check refused on screen; 800.00 unmoved"
+
+
 STEPS = [
     ("steps 1-3   first run", s01_03_first_run),
     ("steps 4-5   new client", s04_05_new_client),
@@ -617,6 +699,9 @@ STEPS = [
     ("step 29     pdf", s29_pdf),
     ("steps 30-31 ledger", s30_31_ledger),
     ("step 32     recon", s32_recon),
+    ("steps 33-35 july coda", s33_35_july_coda),
+    ("steps 36-38 close act", s36_38_close_act),
+    ("steps 39-40 lock proof", s39_40_lock_proof),
 ]
 
 

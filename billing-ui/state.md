@@ -1,90 +1,92 @@
 # state.md -- billing-ui (session cache, overwritten each wind-down)
 
-## COLD-START POINTER (s13, 2026-08-09)
+## COLD-START POINTER (s13 cont, 2026-08-09)
 
-THE FINISH PASS IS DONE, both halves: James ruled "I think it
-looks good" on his own pass; the agent pass fixed the two queued
-defects and swept every billing screen live. Fixes, all verified
-on-screen: step-29 ledger links promoted to the .go button
-affordance (text + hrefs byte-identical, sheet lock and pins
-untouched); carried-item checkbox float killed by a BILLING_STYLE
-override (base input width:100% was the cause; .pick rows covered
-too); seed_demo now dates all six seeded charges (blank DATE cell
-on invoice Charges, per gated item C's write-path convention).
-Full close act driven in-browser on the preview db: prepare ->
-approve -> record, firm-local signature dates verified 08/09.
-ALL suites green and quoted in worklog s13; report_sha 30301f88
-UNCHANGED (rendering-only; no supersession). Sheet lock
-f7f821edb1e9 UNCHANGED.
+ATTEMPT 5 IS FULLY PREPPED. The finish pass is done both halves
+(James: "I think it looks good"; agent pass fixed step-29 ledger
+links, the checkbox float, and undated seed charges -- all
+verified on-screen). James then RULED the attempt-prep decision:
+the demo sheet gains the period-close act. BUILT as the sheet's
+seventh amendment: Part K, steps 33-40 (July coda -- 100.00
+consult billed+paid 07/01 -- then prepare, approve, the
+permanent record, and the PC1 lock proven on screen by a refused
+July-dated disbursement). SHEET LOCK RE-SYNCED: f7f821edb1e9 ->
+85e4e4633a37. drive_sheet extended (+3 groups, 27/27 GREEN);
+labels 91/0; check_demo_walk gains the Part-K receipt (smoke-
+tested: pre-close dbs fail exactly that receipt). ALL suites
+green and quoted in worklog s13/s13 cont; report_sha 30301f88
+UNCHANGED.
 
 ## Status
 
-P4 OPEN after attempt 4 (verdict FAIL b/c, (a) PASS, 2026-08-08).
-Item 12: all four objects built (s10-s12); finish pass DONE
-(s13). Remaining: the attempt-prep decision, then attempt 5.
+P4 OPEN after attempt 4 (FAIL b/c, (a) PASS, 2026-08-08). All
+attempt-5 preconditions MET: item 12 built (s10-s12), finish
+pass done (s13), close act in the sheet + lock re-synced
+(s13 cont). NEXT: attempt 5 itself, whenever James is ready.
 
-## Attempt 5 preconditions (updated s13)
+## Attempt 5 protocol (the standard one; sheet now 40 steps)
 
-1. DONE (s11): objects 1-3 of gated item 12.
-2. DONE (s12): period-close act designed with James and built.
-3. DONE (s13): finish pass -- James's eyes + agent sweep, two
-   queued defects fixed, one sweep catch fixed.
-4. DONE (s13): step-29 ledger-link visibility fix.
-5. Attempt-prep decision: does the demo sheet gain a close act?
-   The fresh demo db seeds July dates (seed_demo NOW=07-20), so
-   July is closable live at the attempt; a sheet amendment needs
-   the sheet-lock re-sync protocol. James's call at prep.
-6. Then the standard attempt protocol: fresh dated db behind
-   8500, sheet drive, three-part verdict.
+1. Agent seeds a FRESH data/demo-walk-<today>.db behind 8500
+   (empty -- James creates everything; NOT seed_demo, which is
+   the preview/gate-review db), confirms /setup answers, runs
+   the walk verifier and quotes it GREEN before handover.
+2. James receives exactly two things: http://127.0.0.1:8500 and
+   the sheet (verify/demo-walk-protocol.md). Two browser
+   windows: normal + incognito blank. He drives all 40 steps
+   (Part K closes July at the end).
+3. Close-out: check_demo_walk.py on the walked db (now includes
+   the close receipt; fiduciary in place includes F9), James's
+   PDF/ledger/recon eyeball, then the three-part verdict sheet.
+   Marks M0..M7; soft budget still M1->M6 at 20:00.
 
 ## Watch items and caveats
 
 - Server UP at close of s13 on 8500 over the PREVIEW db
-  billing-ui/data/demo-billing.db (reseeded at close: dated
-  charges in, July OPEN and closable; James's s12 live close was
-  wiped with the reseed -- clicking is consequence-free, it
-  regenerates). Reseeds wipe sessions: login is
+  billing-ui/data/demo-billing.db (dated charges in, July OPEN
+  and closable; clicking is consequence-free -- it regenerates
+  via verify/seed_demo.py). Reseeds wipe sessions: login
   demo.reviewer@synthetic.test / demo-seed-pass, code shown
-  on-screen. The migrated walk db (demo-walk-2026-08-08.db,
-  all-August facts) is the alternate; swap dbs behind the port,
-  never the port. Restart after ANY app_ui or casework/app
-  change. Launcher: python billing-ui/serve.py --db <ABS path>.
-- NEW FLAGS from the s13 sweep, both on frozen casework-ui
-  screens (gate decisions, not billing-ui code changes): contact
-  detail card shows raw machine keys as labels (bio.family_name,
-  bio.given_name, contact.email); contact Matters card prints
-  ISO dates vs the MM/DD/YYYY convention. James may gate them in
-  for attempt 5 or leave them.
-- FIRM-LOCAL DATES RULING (2026-08-09, s12 cont): business dates
-  stamp firm-local (system clock), timestamps stay UTC. Verified
-  live on the close signatures this session. A new date surface
-  must follow the ruling.
+  on-screen. Swap dbs behind the port, never the port. Restart
+  after ANY app_ui or casework/app change. Launcher:
+  python billing-ui/serve.py --db <ABS path>.
+- JUDGMENT CALLS FLAGGED THIS SESSION (James may re-rule):
+  (1) marks -- M7 added, soft budget kept at M1->M6 for
+  cross-attempt comparability, M1->M7 recorded as data;
+  (2) the PC1 refusal error renders the period ISO-style
+  ("period 2026-07 is closed...") in an otherwise MM/DD/YYYY
+  surface -- core-owned text in casework/app/period.py, inside
+  the standing close amendment's write surface if he wants it
+  reworded; the sheet quotes it verbatim with a translation.
+- FLAGS from the s13 sweep, both on frozen casework-ui screens
+  (gate decisions): contact detail card shows raw machine keys
+  as labels (bio.family_name etc.); contact Matters card prints
+  ISO dates vs MM/DD/YYYY.
+- FIRM-LOCAL DATES RULING (s12 cont): business dates stamp
+  firm-local, timestamps stay UTC; verified live on the close
+  signatures. A new date surface must follow it.
 - Pre-close dbs (all retained walk dbs except -08) FAIL LOUD on
-  any ledger write and on /billing/close (missing period_closes
-  table -- deliberate). Run migrate_period_close.py before
-  serving one. Pre--08 dbs are PRE-ENGINE; pre-07c ones also
-  need migrate_invoice_codes.py.
-- s11 double-bind incident protocol still applies: netstat
-  before blaming the db (followed at every s13 relaunch; single
-  bind verified each time).
-- Close judgment calls flagged, unruled (worklog s12): month
-  closable only after it ends; ranking rows unlinked plain
-  text; approve-on-stale commits the void; one closable month,
-  never a choice. James may re-rule any.
-- Flow-marker flags from s11 still open: dashboard settling
-  segment has no firm-wide backing list; overdue beats sent on
-  chipnotes; chip colors reuse pill families.
-- The no-logic lint counts the WORD "SELECT" in app_ui prose --
-  keep SQL words out of comments/docstrings outside reads.py.
+  ledger writes and /billing/close (missing period_closes --
+  deliberate). migrate_period_close.py before serving one;
+  pre--08 dbs are PRE-ENGINE; pre-07c also need
+  migrate_invoice_codes.py. check_demo_walk now FAILS any
+  pre-Part-K walked db on the close receipt -- correct, not a
+  bug.
+- s11 double-bind protocol: netstat before blaming the db;
+  single bind verified at every s13 relaunch.
+- Close judgment calls flagged, unruled (s12): month closable
+  only after it ends; ranking rows plain text; approve-on-stale
+  commits the void; one closable month, never a choice.
+- Flow-marker flags (s11) still open: dashboard settling has no
+  firm-wide backing list; overdue beats sent on chipnotes; chip
+  colors reuse pill families.
+- The no-logic lint counts the WORD "SELECT" in app_ui prose.
 - billing + fiduciary + anchor-billing run from
   ../casework-billing/; spine from ../casework/; core touches
   trigger the reciprocal guard (ALL suites). period.py imports
-  the recon oracle LAZILY (spine keeps zero cross-child
-  imports at import time).
+  the recon oracle LAZILY.
 - Retained walk dbs (delete=archive): -04, -04b, -07, -07b,
   -07c, -08 (migrated), -09 (empty, incident artifact).
-- atlas/gated-items.md current as of s12 (item 12 all four
-  objects recorded built).
+- atlas/gated-items.md current as of s12.
 - Anti-stall ledgers: P2 1/2, P3 0/2, F-1 1/2 used. Firm
   question still unasked: flat-fee vs hourly mix.
 
@@ -104,12 +106,13 @@ Item 12: all four objects built (s10-s12); finish pass DONE
 
 ## Open decisions
 
-- Attempt-prep: demo-sheet close act (precondition 5 above) --
-  NEXT, James's call.
-- Contact-screen flags from s13 (raw labels, ISO dates): gate in
-  for attempt 5 or leave; James's call.
+- ATTEMPT 5: ready to run; James picks the moment.
+- Marks judgment call (M7/budget) and the refusal-message
+  wording: flagged above; James may re-rule.
+- Contact-screen flags from s13 (raw labels, ISO dates): gate
+  in or leave; James's call.
 - Dashboard settling backing list: flagged, unruled.
-- Close judgment calls: see watch items; James may re-rule.
+- Close judgment calls (s12): James may re-rule.
 - E-item select wording: James may re-rule any line.
 - Empty-invoice list behavior (gated item 3): unchanged.
 - Demo-login prefill + no-expiry (gated item 5): queued.

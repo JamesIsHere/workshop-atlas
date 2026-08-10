@@ -1,30 +1,30 @@
 # billing-ui-walk-report -- verifier 1
 
-run started: 2026-08-10T02:57:06Z
+run started: 2026-08-10T03:18:12Z
 
-PASS    setup + login                      0.349s  fresh db; admin created; MFA enrolled; dashboard reached
-PASS    client + matter (existing UI)      0.010s  contact 1 + matter 1 via existing screens
-PASS    billing landing + nav              0.020s  billing area reachable; nav carries Billing
-PASS    bank accounts by click             0.012s  trust bank 1 + operating 2 created by click
-PASS    consult bill paid direct           0.021s  consult bill 1 paid direct; operating funded
-PASS    trust request paid online          0.051s  retainer 5,000.00 paid by the client over the frozen client surface; firm sees Paid + card status line
-PASS    settlement by click                0.012s  settled by click: gross 5,000.00 to trust; fee 150.30
-PASS    time entry                         0.046s  2h at 250.00/h entered by click; bare '2' at 100.00/h accepted as hours (200.00)
-PASS    bill import + earn-out             0.068s  bill 3,000.00 (saved charge + imported 2h) earned out
-PASS    disbursement                       0.057s  1,200.00 disbursed to SYNTH-USCIS; client funds 800.00
-PASS    payment edit = reversal trail      0.061s  payment date edited via UI; screen shows original + reversing + repost -- no posted row mutated
-PASS    invoice PDF                        0.029s  invoice PDF downloaded (1439 bytes), read back
-PASS    ledger drill-down                  0.019s  ledger drill-down: account -> sub-ledger -> journal detail with debit/credit legs; negatives parenthesized; unconfirmed rows chipped Clearing
-PASS    reconciliation screen              0.014s  three-way reconciliation screen renders; identity holds
-PASS    home status page                   0.016s  home status page: chips hold, attention empty + in-flight mix, money activity with actors, practice row absorbed
-PASS    client money band                  0.014s  client Money band: 800.00 held, 0 outstanding, 8,500.00 collected, 200.00 unbilled scoped to the client; invoices listed; clearing absent as ruled; payments listing foots to the headline
-PASS    tier-3 fence                       0.034s  8 deferred routes correctly absent
+PASS    setup + login                      0.327s  fresh db; admin created; MFA enrolled; dashboard reached
+PASS    client + matter (existing UI)      0.041s  contact 1 + matter 1 via existing screens
+PASS    billing landing + nav              0.012s  billing area reachable; nav carries Billing
+PASS    bank accounts by click             0.045s  trust bank 1 + operating 2 created by click
+PASS    consult bill paid direct           0.072s  consult bill 1 paid direct; operating funded
+PASS    trust request paid online          0.054s  retainer 5,000.00 paid by the client over the frozen client surface; firm sees Paid + card status line
+PASS    settlement by click                0.037s  settled by click: gross 5,000.00 to trust; fee 150.30
+PASS    time entry                         0.032s  2h at 250.00/h entered by click; bare '2' at 100.00/h accepted as hours (200.00)
+PASS    bill import + earn-out             0.084s  bill 3,000.00 (saved charge + imported 2h) earned out
+PASS    disbursement                       0.020s  1,200.00 disbursed to SYNTH-USCIS; client funds 800.00
+PASS    payment edit = reversal trail      0.011s  payment date edited via UI; screen shows original + reversing + repost -- no posted row mutated
+PASS    invoice PDF                        0.015s  invoice PDF downloaded (1439 bytes), read back
+PASS    ledger drill-down                  0.003s  ledger drill-down: account -> sub-ledger -> journal detail with debit/credit legs; negatives parenthesized; unconfirmed rows chipped Clearing
+PASS    reconciliation screen              0.002s  three-way reconciliation screen renders; identity holds
+PASS    home status page                   0.026s  home status page: chips hold, attention empty + in-flight mix, money activity with actors, practice row absorbed
+PASS    client money band                  0.003s  client Money band: 800.00 held, 0 outstanding, 8,500.00 collected, 200.00 unbilled scoped to the client; invoices listed; clearing absent as ruled; payments listing foots to the headline
+PASS    tier-3 fence                       0.027s  8 deferred routes correctly absent
 PASS    billing audit chain                0.000s  billing audit legs present, story-ordered ([57, 59, 61])
 PASS    fiduciary on walked db             0.002s  fiduciary suite on the UI-walked db: fiduciary: 9 pass, 0 red, 0 stub; verdict: GREEN
-PASS    period close: July coda            0.061s  July coda closed by click: prepare + approve (same signer, shown), record page frozen, lock refuses backdated writes; fiduciary: 9 pass, 0 red, 0 stub; verdict: GREEN
+PASS    period close: July coda            0.108s  July coda closed by click: prepare + approve (same signer, shown), record page frozen, lock refuses backdated writes; fiduciary: 9 pass, 0 red, 0 stub; verdict: GREEN
 
 # supporting sweeps
 PASS float-sweep: no float() and no true /100 in app_ui
 
-steps: 20 pass, 0 pending, 0 fail; total 0.897s
+steps: 20 pass, 0 pending, 0 fail; total 0.924s
 verdict: GREEN
