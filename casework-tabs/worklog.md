@@ -436,3 +436,12 @@ RECIPROCAL GUARD rerun after the core touch, all quoted: "spine:
 gains a visible completed task ("SYNTH confirm biometrics
 attendance" -- the prior completed one rides into trash) as the
 gate's Reopen target; demo regenerated (11 tasks), 8500 up.
+
+P2 gate feedback r4 (from James's snaps -- his drive, my catch,
+his "yes"): the tasks Linked column carried the redundant
+matter+client pair the P1 calendar gate killed; cut to the
+matter-first single link (_linked_one) on the tasks index and
+task detail. Files/notes indexes keep the old two-link cell until
+their own phases rebuild them (scoped discipline, same as the
+typography rulings). Rail 11 pass/0 fail, sha ae9bdf90 unchanged
+(no asserted strings moved); ui-walk GREEN; server restarted.

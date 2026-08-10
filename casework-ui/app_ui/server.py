@@ -1321,6 +1321,19 @@ class Handler(BaseHTTPRequestHandler):
                 f"<input type='hidden' name='back' value='{back}'>"
                 f"<button class='small'>Reopen</button></form>")
 
+    @staticmethod
+    def _linked_one(matter_id, contact_id, mnames, cnames):
+        """Matter-first, ONE link (the P1 calendar ruling, extended
+        to tasks at the P2 gate): the matter name already names the
+        client; the pair was the crowding James flagged twice."""
+        if matter_id:
+            return html.link(f"/matters/{matter_id}",
+                             mnames.get(matter_id, "matter"))
+        if contact_id:
+            return html.link(f"/contacts/{contact_id}",
+                             cnames.get(contact_id, "client"))
+        return "<span class='hint'>-</span>"
+
     def _tasks_index(self, conn, user, query):
         scope = ("firm" if query.get("scope", [None])[0] == "firm"
                  else "mine")
@@ -1341,9 +1354,8 @@ class Handler(BaseHTTPRequestHandler):
         for t in rows_src:
             cells = [html.link(f"/tasks/{t['id']}", t["title"]),
                      html.mdy(t["due_date"]) if t["due_date"] else "-",
-                     self._linked_cell(conn, t["matter_id"],
-                                       t["contact_id"], mnames,
-                                       cnames),
+                     self._linked_one(t["matter_id"], t["contact_id"],
+                                      mnames, cnames),
                      html.esc(anames.get(t["id"], "-"))]
             cells.append(
                 html.mdy(t["completed_at"]) + " "
@@ -1401,8 +1413,8 @@ class Handler(BaseHTTPRequestHandler):
         if t is None:
             raise _NotFound()
         mnames, cnames = self._name_maps(conn)
-        linked = self._linked_cell(conn, t["matter_id"], t["contact_id"],
-                                   mnames, cnames)
+        linked = self._linked_one(t["matter_id"], t["contact_id"],
+                                  mnames, cnames)
         holders = ", ".join(
             html.esc(u["name"]) for uid in tasks.assignees(conn, tid)
             if (u := reads.get_user(conn, uid)) is not None)
