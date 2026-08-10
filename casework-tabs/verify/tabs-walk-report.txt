@@ -1,41 +1,41 @@
 # tabs-walk-report -- verifier 1
 
-run started: 2026-08-10T13:54:58Z
+run started: 2026-08-10T14:02:11Z
 
 PASS    setup + login                            0.093s  fresh db; admin created; MFA enrolled; dashboard reached
 PENDING empty states designed (fresh db)         0.004s  designed empty states absent: ['/files']
-PASS    client + matter (existing UI)            0.009s  contact 1 + matter 1 via existing screens
-PASS    calendar: new appointment                0.005s  appointment 1 by click; MM/DD/YYYY; end time
+PASS    client + matter (existing UI)            0.010s  contact 1 + matter 1 via existing screens
+PASS    calendar: new appointment                0.006s  appointment 1 by click; MM/DD/YYYY; end time
 PASS    calendar: new deadline                   0.005s  deadline created via its lean pre-shaped form
 PASS    calendar: unified view + kind filter     0.002s  unified view: both kinds rendered; single-kind filter
-PASS    calendar: agenda/month toggle            0.004s  two-button toggle; month grid; sticky per user
+PASS    calendar: agenda/month toggle            0.005s  two-button toggle; month grid; sticky per user
 PENDING calendar: derived kinds [Q]              0.001s  derived calendar kinds not built (marker "class='kind kind-expiry'" absent)
-PASS    calendar: provenance links               0.013s  derived rows carry provenance links to their source
-PASS    tasks: quick-add + due date              0.007s  quick-add by Enter (due rides the form); on the calendar
-PASS    tasks: my-open default + toggles         0.002s  index opens on MY OPEN; firm + completed one click away
-PASS    tasks: confirm-complete                  0.017s  check-then-Done from the row; completed view; Reopen undoes, audited
-PASS    tasks: lists builder + import            0.019s  list built in its Settings home; imported onto matter
+PASS    calendar: provenance links               0.001s  derived rows carry provenance links to their source
+PASS    tasks: quick-add + due date              0.006s  quick-add by Enter (due rides the form); on the calendar
+PASS    tasks: my-open default + toggles         0.019s  index opens on MY OPEN; firm + completed one click away
+PASS    tasks: confirm-complete                  0.015s  check-then-Done from the row; completed view; Reopen undoes, audited
+PASS    tasks: lists builder + import            0.021s  list built in its Settings home; imported onto matter
 PASS    notes: categories home                   0.005s  note categories managed in their Settings home
-PASS    notes: minimal capture + expanded        0.010s  quick capture = body + save; expanded form for the rest
-PASS    notes: matter timeline + pin             0.010s  timeline newest-first; pinning the older memo lifts it
+PASS    notes: minimal capture + expanded        0.028s  quick capture = body + save; expanded form for the rest
+PASS    notes: matter timeline + pin             0.012s  timeline newest-first; pinning the older memo lifts it
 PASS    notes: index defaults + filters          0.002s  defaults ALL + pinned first; category + mine chips work
-PASS    notes: PDF export                        0.002s  notes PDF exported (840 bytes)
+PASS    notes: PDF export                        0.003s  notes PDF exported (840 bytes); on note page
 PENDING files: upload + custody                  0.001s  upload from the files tab not built (marker "action='/files/upload'" absent)
 PENDING files: matter section + index filters    0.000s  upstream not walked yet (uploaded file)
 PENDING files: rename/preview/print/bulk         0.000s  upstream not walked yet (uploaded file)
 PENDING files: e-sign flow                       0.000s  upstream not walked yet (PDF candidate)
 PENDING search: chrome bar everywhere            0.001s  chrome-level search bar not built (marker 'chrome-search' absent)
 PENDING search: coverage + grouped results       0.000s  upstream not walked yet (uploaded file)
-PENDING search: recents                          0.002s  recents on the search page not built (marker 'Recent' absent)
+PENDING search: recents                          0.003s  recents on the search page not built (marker 'Recent' absent)
 PENDING settings: users admin                    0.001s  /settings/users not built
 PENDING settings: permissions groups             0.001s  /settings/permissions not built
 PENDING settings: trash + restore                0.001s  View-trash link on lists not built (marker '/settings/trash' absent)
-PENDING settings: notifications + firm basics    0.001s  /settings/notifications not built
+PENDING settings: notifications + firm basics    0.013s  /settings/notifications not built
 PENDING settings: machinery homes collected      0.001s  machinery homes in the Settings layout not built (marker '/settings/task-lists' absent)
 
 # supporting sweeps (empty-state sweep = step 2)
 PASS float-sweep: no float() and no true /100 in app_ui
-PASS iso-stray-sweep: no visible ISO dates on 51 tab pages
+PASS iso-stray-sweep: no visible ISO dates on 52 tab pages
 
-steps: 16 pass, 14 pending, 0 fail; total 0.216s
+steps: 16 pass, 14 pending, 0 fail; total 0.259s
 verdict: ON TRACK (pending screens)

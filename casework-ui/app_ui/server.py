@@ -1087,7 +1087,8 @@ class Handler(BaseHTTPRequestHandler):
         if e["contact_id"]:
             links += html.link(f"/contacts/{e['contact_id']}",
                                "Client")
-        body = (f"<div class='card'><h1>{html.esc(e['title'])}</h1>"
+        body = (f"<div class='card tab-detail'>"
+                f"<h1>{html.esc(e['title'])}</h1>"
                 f"<p><span class='kind kind-{kind}'>{kind}</span></p>"
                 f"{desc}"
                 f"<dl class='kv'><dt>When</dt><dd>{when}</dd>"
@@ -1449,7 +1450,8 @@ class Handler(BaseHTTPRequestHandler):
             status = "<span class='pill'>open</span>"
             act = self._complete_button(tid, f"/tasks/{tid}")
         due = html.mdy(t["due_date"]) if t["due_date"] else "-"
-        body = (f"<div class='card'><h1>{html.esc(t['title'])}</h1>"
+        body = (f"<div class='card tab-detail'>"
+                f"<h1>{html.esc(t['title'])}</h1>"
                 f"<dl class='kv'>"
                 f"<dt>Status</dt><dd>{status} {act}"
                 f"</dd><dt>Due</dt><dd>{due}"
@@ -1902,9 +1904,22 @@ class Handler(BaseHTTPRequestHandler):
                 f"<dt>Linked</dt><dd>{linked}</dd>"
                 f"<dt>Assigned to</dt><dd>{holders or '-'}</dd>"
                 f"<dt>Created</dt><dd>{html.mdy(n['created_at'])}"
-                f"</dd></dl><p>{text}</p>"
-                f"<div class='actions'><a class='quiet' href='/notes'>"
-                f"Back to notes</a></div></div>")
+                f"</dd></dl><p>{text}</p>")
+        # export from the note itself (P3 gate r2, James: the pdf
+        # option lived only on the linked-to page). The core export
+        # is scope-based, so the button names whose notes it makes.
+        if n["matter_id"]:
+            body += (f"<form class='inline' method='get' action="
+                     f"'/matters/{n['matter_id']}/notes.pdf'>"
+                     f"<button class='small'>Export this matter's"
+                     f" notes (PDF)</button></form>")
+        elif n["contact_id"]:
+            body += (f"<form class='inline' method='get' action="
+                     f"'/contacts/{n['contact_id']}/notes.pdf'>"
+                     f"<button class='small'>Export this client's"
+                     f" notes (PDF)</button></form>")
+        body += (f"<div class='actions'><a class='quiet'"
+                 f" href='/notes'>Back to notes</a></div></div>")
         self._send_page(200, html.page(n["title"] or "Note", body,
                                        user_name=user["name"],
                                        active_href="/notes"))

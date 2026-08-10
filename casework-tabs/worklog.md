@@ -529,3 +529,16 @@ restarted. His questions (PDF / attachments) answered from corpus
 + schema ground truth: notes.notes-export exists and is built;
 NO attachment capability anywhere in corpus/notes.md and no
 note-file linkage in the schema -- answer stands on both reads.
+
+P3 gate feedback r2 (James's snaps): (a) the pdf option lived
+only on the linked-to page -- the note detail now carries the
+export scoped to its linkage, button labeled with whose notes it
+produces (matter first, else client; unassociated notes get no
+button -- the core export is scope-based and a single-note PDF
+stays a core-amendment question). Rail pins the note-page export
+(driven RED via suppressed-button sabotage). (b) His task-detail
+snap showed the same visited-purple kv link queued at r1 -- the
+tab-detail blue extends to task detail AND calendar event detail
+(both gate-passed screens; extension disclosed here for the
+receipt). Sha d2c65ac8 x2 (supersedes 157f5ac1: new assert +
+detail message); ui-walk GREEN; server restarted.

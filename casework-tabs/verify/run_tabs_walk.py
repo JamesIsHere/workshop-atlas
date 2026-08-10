@@ -641,7 +641,12 @@ def step_notes_export(w):
                   "PDF export on the matter section")
     content = w.browser.get_bytes(f"/matters/{w.matter_id}/notes.pdf")
     assert content[:5] == b"%PDF-", content[:16]
-    return f"notes PDF exported ({len(content)} bytes)"
+    # gate r2 (James): the export must also be reachable from the
+    # individual note's page, scoped to its linkage
+    _s, _u, page = w.browser.get(f"/notes/{w.full_note_id}")
+    assert f"/matters/{w.matter_id}/notes.pdf" in page, \
+        "note page missing its linkage-scoped export"
+    return f"notes PDF exported ({len(content)} bytes); on note page"
 
 
 # --- P4 files (Appendix A: matter-centric, custody, e-sign) ---
