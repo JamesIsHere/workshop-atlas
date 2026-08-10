@@ -125,6 +125,17 @@ button.small:hover { background: #dfe6f0; }
 .tasks-table table.data a { color: #2456a6; }
 form.inline input[type='checkbox'] { width: auto;
     vertical-align: middle; margin-right: 0.35rem; }
+/* casework-tabs P3: notes capture + matter/contact timelines */
+textarea { width: 100%; padding: 0.45rem 0.6rem; font-size: 1rem;
+           border: 1px solid #c3c9d2; border-radius: 4px;
+           font-family: inherit; resize: vertical; }
+.notes-timeline .note-entry { border-left: 3px solid #d9dde3;
+    padding: 0.1rem 0 0.3rem 0.9rem; margin: 0.6rem 0; }
+.notes-timeline .note-entry.pinned { border-left-color: #2456a6; }
+.note-meta { color: #6a7383; font-size: 0.85rem; margin: 0 0 0.15rem; }
+.note-meta a { color: #2456a6; }
+.note-body { margin: 0; white-space: pre-line; }
+.actions-row { margin: 0.8rem 0 0; }
 """
 
 NAV_ITEMS = [("Dashboard", "/"),  # item-12 R2; kills gated item 4

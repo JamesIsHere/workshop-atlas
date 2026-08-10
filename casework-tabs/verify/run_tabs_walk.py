@@ -583,17 +583,36 @@ def step_notes_capture(w):
 
 
 def step_notes_timeline_pin(w):
+    """Refined 2026-08-10 s5 (verify-the-verifier, the P2 sabotage-4
+    lesson applied up front): the P0 check only found the memo
+    SOMEWHERE in the timeline -- true before the pin too, so a
+    broken pin passed. A second, newer matter note makes ordering
+    observable: newest-first before the pin, and pinning the OLDER
+    memo must lift it above the newer entry."""
     need(w.full_note_id, "expanded note")
+    _s, _u, page = w.browser.post("/notes/new", {
+        "title": "SYNTH later filing note",
+        "body": "SYNTH RFE response window opens next week.",
+        "matter_id": str(w.matter_id)})
     _s, _u, page = w.browser.get(f"/matters/{w.matter_id}")
     expect_marker(page, "notes-timeline", "matter Notes timeline")
-    assert "SYNTH strategy memo" in page
+    tl = page[page.find("notes-timeline"):]
+    memo = tl.find("SYNTH strategy memo")
+    later = tl.find("SYNTH later filing note")
+    assert memo >= 0, "memo missing from the timeline"
+    assert 0 <= later < memo, \
+        "timeline not newest-first before the pin"
     _s, _u, page = w.browser.post(
         f"/notes/{w.full_note_id}/pin", {})
     _s, _u, page = w.browser.get(f"/matters/{w.matter_id}")
-    tl = re.search(r"notes-timeline.*", page, re.S).group(0)
+    tl = page[page.find("notes-timeline"):]
     memo = tl.find("SYNTH strategy memo")
-    assert memo >= 0, "pinned note left the timeline"
-    return "chronological timeline on the matter; pinned on top"
+    later = tl.find("SYNTH later filing note")
+    assert 0 <= memo < later, "pinned note not lifted to the top"
+    row = w.conn.execute("SELECT pinned FROM notes WHERE id=?",
+                         (w.full_note_id,)).fetchone()
+    assert row["pinned"] == 1, "pin did not reach the core"
+    return "timeline newest-first; pinning the older memo lifts it"
 
 
 def step_notes_index_filters(w):

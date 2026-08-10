@@ -509,6 +509,50 @@ def task_list_automations(conn):
     return out
 
 
+# --- casework-tabs P3 display reads (notes) ---
+
+def notes_rows(conn, contact_id=None, matter_id=None,
+               category_id=None, assignee_id=None):
+    """Note rows with linkage + category names, pinned first then
+    newest (the core list_notes order, joined for display)."""
+    q = ("SELECT n.id, n.title, n.body, n.pinned, n.created_at,"
+         " n.notify_all, n.category_id, n.contact_id, n.matter_id,"
+         " c.display_name AS contact_name, m.name AS matter_name,"
+         " nc.name AS category_name"
+         " FROM notes n"
+         " LEFT JOIN contacts c ON c.id = n.contact_id"
+         " LEFT JOIN matters m ON m.id = n.matter_id"
+         " LEFT JOIN note_categories nc ON nc.id = n.category_id"
+         " WHERE n.deleted_at IS NULL")
+    params = []
+    if contact_id is not None:
+        q += " AND n.contact_id=?"
+        params.append(contact_id)
+    if matter_id is not None:
+        q += " AND n.matter_id=?"
+        params.append(matter_id)
+    if category_id is not None:
+        q += " AND n.category_id=?"
+        params.append(category_id)
+    if assignee_id is not None:
+        q += (" AND EXISTS (SELECT 1 FROM note_assignees na"
+              " WHERE na.note_id = n.id AND na.user_id = ?)")
+        params.append(assignee_id)
+    return conn.execute(
+        q + " ORDER BY n.pinned DESC, n.created_at DESC, n.id DESC",
+        params).fetchall()
+
+
+def note_categories_rows(conn):
+    """Categories with live-note counts for the Settings home."""
+    return conn.execute(
+        "SELECT nc.id, nc.name, nc.builtin,"
+        " (SELECT COUNT(*) FROM notes n WHERE n.category_id = nc.id"
+        "  AND n.deleted_at IS NULL) AS note_count"
+        " FROM note_categories nc WHERE nc.deleted_at IS NULL"
+        " ORDER BY nc.name").fetchall()
+
+
 def contact_date_fact_defs(conn):
     """Contact-level date/expiry fact definitions -- the reference
     choices tasks.add_list_item accepts (its own validation rule)."""

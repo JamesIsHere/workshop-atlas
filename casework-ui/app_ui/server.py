@@ -203,9 +203,19 @@ class Handler(BaseHTTPRequestHandler):
                 return self._task_list_detail(conn, user,
                                               _id(segs[2]))
             if segs == ["notes"]:
-                return self._notes_index(conn, user)
+                return self._notes_index(conn, user, query)
+            if segs == ["notes", "new"]:
+                return self._note_new(conn, user, query)
             if len(segs) == 2 and segs[0] == "notes":
                 return self._note_detail(conn, user, _id(segs[1]))
+            if segs == ["settings", "note-categories"]:
+                return self._note_categories(conn, user)
+            if len(segs) == 3 and segs[0] == "matters" \
+                    and segs[2] == "notes.pdf":
+                return self._notes_pdf(conn, matter_id=_id(segs[1]))
+            if len(segs) == 3 and segs[0] == "contacts" \
+                    and segs[2] == "notes.pdf":
+                return self._notes_pdf(conn, contact_id=_id(segs[1]))
             if segs == ["search"]:
                 return self._search(conn, user, query)
             if segs == ["settings"]:
@@ -274,6 +284,15 @@ class Handler(BaseHTTPRequestHandler):
                     and segs[2] == "import-task-list":
                 return self._import_task_list(conn, now, uid,
                                               contact_id=_id(segs[1]))
+            if segs == ["notes", "quick"]:
+                return self._note_quick_create(conn, now, uid)
+            if segs == ["notes", "new"]:
+                return self._note_full_create(conn, now, uid)
+            if len(segs) == 3 and segs[0] == "notes" \
+                    and segs[2] == "pin":
+                return self._note_pin_toggle(conn, _id(segs[1]))
+            if segs == ["settings", "note-categories"]:
+                return self._note_category_create(conn)
         raise _NotFound()
 
     # --- first-run setup ---
@@ -511,6 +530,8 @@ class Handler(BaseHTTPRequestHandler):
                 + money
                 + f"<div class='card'><h1>Matters</h1>{mtable}</div>"
                 + self._tasks_card(conn, "contacts", cid,
+                                   f"/contacts/{cid}")
+                + self._notes_card(conn, "contacts", cid,
                                    f"/contacts/{cid}"))
         self._send_page(200, html.page(row["display_name"], body,
                                        user_name=user["name"]))
@@ -608,6 +629,8 @@ class Handler(BaseHTTPRequestHandler):
                 f"{row['primary_contact_id']}'>New deadline</a></div>"
                 f"</div>"
                 + self._tasks_card(conn, "matters", mid,
+                                   f"/matters/{mid}")
+                + self._notes_card(conn, "matters", mid,
                                    f"/matters/{mid}")
                 + f"<div class='card'><h1>Form packages</h1>{ftable}"
                   f"</div>"
@@ -1665,52 +1688,309 @@ class Handler(BaseHTTPRequestHandler):
         return (f"<div class='card'><h1>Tasks</h1>{table}{imp}"
                 f"</div>")
 
-    def _notes_index(self, conn, user):
+    # --- notes tab (rebuilt by casework-tabs P3 under the 2026-08-10
+    # program amendment: minimal capture + expandable form, ALL
+    # default pinned-first, category + mine chips, matter/contact
+    # timelines, categories home, PDF export. SQL in reads.py;
+    # writes ride casework's notes module) ---
+
+    @staticmethod
+    def _note_label(n):
+        if n["title"]:
+            return n["title"]
+        return (n["body"][:48] + "..." if len(n["body"]) > 48
+                else n["body"])
+
+    @staticmethod
+    def _pin_button(n, back):
+        """Pin lifts a note to the top of every list it lives in;
+        the same button unpins."""
+        word = "Unpin" if n["pinned"] else "Pin"
+        return (f"<form class='inline' method='post'"
+                f" action='/notes/{n['id']}/pin'>"
+                f"<input type='hidden' name='back' value='{back}'>"
+                f"<button class='small'>{word}</button></form>")
+
+    @staticmethod
+    def _quick_note_form(back, matter_id=None, contact_id=None):
+        """Minimal capture (Appendix A): body + Save. Hidden scope
+        fields make the same form work on the index (unassociated,
+        spec's dashboard scoping) and on matter/contact sections."""
+        hidden = f"<input type='hidden' name='back' value='{back}'>"
+        if matter_id is not None:
+            hidden += (f"<input type='hidden' name='matter_id'"
+                       f" value='{matter_id}'>")
+        if contact_id is not None:
+            hidden += (f"<input type='hidden' name='contact_id'"
+                       f" value='{contact_id}'>")
+        return (f"<form class='quick-add' method='post'"
+                f" action='/notes/quick'>{hidden}"
+                f"<div class='grow'><label>Add a note</label>"
+                f"<textarea name='body' rows='2' required></textarea>"
+                f"</div><button class='primary'>Save</button></form>")
+
+    def _notes_index(self, conn, user, query):
+        cat = query.get("category", [None])[0]
+        cat = int(cat) if cat and cat.isdigit() else None
+        mine = query.get("mine", [None])[0] == "1"
+        rows_src = reads.notes_rows(
+            conn, category_id=cat,
+            assignee_id=user["id"] if mine else None)
         mnames, cnames = self._name_maps(conn)
         rows = []
-        for nid in notes.list_notes(conn):
-            n = reads.note_row(conn, nid)
-            label = n["title"] or (n["body"][:48] + "..."
-                                   if len(n["body"]) > 48 else n["body"])
+        for n in rows_src:
             pin = ("<span class='pill'>pinned</span>" if n["pinned"]
                    else "<span class='hint'>-</span>")
-            rows.append([html.link(f"/notes/{nid}", label), pin,
-                         self._linked_cell(conn, n["matter_id"],
-                                           n["contact_id"], mnames,
-                                           cnames),
-                         html.esc(n["created_at"][:10])])
-        inner = (html.table(["Note", "Pinned", "Linked to", "Created"],
-                            rows)
-                 if rows else html.empty_state(
-                     "No notes yet. Notes hold the reasoning a form"
-                     " never captures."))
-        body = f"<div class='card'><h1>Notes</h1>{inner}</div>"
+            rows.append([html.link(f"/notes/{n['id']}",
+                                   self._note_label(n)),
+                         pin,
+                         html.esc(n["category_name"] or "-"),
+                         self._linked_one(n["matter_id"],
+                                          n["contact_id"], mnames,
+                                          cnames),
+                         html.mdy(n["created_at"])])
+        mineq = "&mine=1" if mine else ""
+        catq = f"&category={cat}" if cat is not None else ""
+        chips = (f"<a class='chip{' on' if cat is None and not mine else ''}'"
+                 f" href='/notes'>All</a>"
+                 f"<a class='chip{' on' if mine else ''}'"
+                 f" href='/notes?mine=1{catq}'>Mine</a>")
+        for c in reads.note_categories_rows(conn):
+            on = " on" if cat == c["id"] else ""
+            chips += (f"<a class='chip{on}' href='/notes?category="
+                      f"{c['id']}{mineq}'>{html.esc(c['name'])}</a>")
+        chips = f"<div class='chips'>{chips}</div>"
+        expand = ("<p class='hint'>Need a title, category, client"
+                  " link, or firm-wide notify? "
+                  + html.link("/notes/new", "Open the full note form")
+                  + ".</p>")
+        if rows:
+            inner = ("<div class='tasks-table'>"
+                     + html.table(["Note", "Pinned", "Category",
+                                   "Linked to", "Created"], rows)
+                     + "</div>")
+        else:
+            what = ("in this view" if (cat is not None or mine)
+                    else "yet")
+            inner = html.designed_empty(
+                f"No notes {what}. Notes hold the reasoning a form"
+                f" never captures -- type one above and Save.",
+                "<a class='quiet' href='/notes/new'>Full note form"
+                "</a>")
+        body = (f"<div class='card'><h1>Notes</h1>"
+                + self._quick_note_form("/notes")
+                + expand + chips + inner
+                + "<div class='actions'><a class='quiet'"
+                  " href='/settings/note-categories'>Note categories"
+                  "</a></div></div>")
         self._send_page(200, html.page("Notes", body,
-                                       user_name=user["name"]))
+                                       user_name=user["name"],
+                                       active_href="/notes"))
+
+    def _note_new(self, conn, user, query, error=None):
+        pre_m = query.get("matter", [""])[0]
+        mopts = "".join(
+            f"<option value='{m['id']}'"
+            f"{' selected' if str(m['id']) == pre_m else ''}>"
+            f"{html.esc(m['name'])} -- {html.esc(m['display_name'])}"
+            f"</option>" for m in reads.list_matters(conn))
+        copts = "".join(
+            f"<option value='{c['id']}'>"
+            f"{html.esc(c['display_name'])}</option>"
+            for c in reads.list_contacts(conn))
+        catopts = "".join(
+            f"<option value='{c['id']}'>{html.esc(c['name'])}"
+            f"</option>" for c in reads.note_categories_rows(conn))
+        uopts = "".join(
+            f"<option value='{u['id']}'>{html.esc(u['name'])}"
+            f"</option>" for u in reads.list_users(conn)
+            if not u["deactivated_at"] and u["id"] != user["id"])
+        body = (f"<div class='card narrow'><h1>New note</h1>"
+                f"{html.error_box(error)}"
+                f"<form method='post' action='/notes/new'>"
+                + html.field("Title", "title", autofocus=True,
+                             required=False)
+                + f"<label>Note</label>"
+                  f"<textarea name='body' rows='5' required>"
+                  f"</textarea>"
+                + f"<label>Category</label>"
+                  f"<select name='category_id'>"
+                  f"<option value=''>-- none --</option>{catopts}"
+                  f"</select>"
+                + f"<label>Matter</label><select name='matter_id'>"
+                  f"<option value=''>-- no matter --</option>{mopts}"
+                  f"</select>"
+                + f"<label>Client</label><select name='contact_id'>"
+                  f"<option value=''>-- no client --</option>{copts}"
+                  f"</select>"
+                + (f"<label>Also assign to</label>"
+                   f"<select name='assignee_ids' multiple>{uopts}"
+                   f"</select>" if uopts else "")
+                + "<label><input type='checkbox' name='notify_all'"
+                  " style='width:auto'> Notify the whole firm</label>"
+                + "<button class='primary'>Save note</button>"
+                  "</form></div>")
+        self._send_page(200, html.page("New note", body,
+                                       user_name=user["name"],
+                                       active_href="/notes"))
+
+    def _note_quick_create(self, conn, now, uid):
+        f = self._form_body()
+        body = f.get("body", "").strip()
+        back = f.get("back", "")
+        if body:
+            notes.create_note(
+                conn, body, now, uid,
+                matter_id=int(f["matter_id"])
+                if f.get("matter_id") else None,
+                contact_id=int(f["contact_id"])
+                if f.get("contact_id") else None)
+            conn.commit()
+        return self._redirect(back if back.startswith("/") else "/notes")
+
+    def _note_full_create(self, conn, now, uid):
+        f = self._form_body_multi()
+        one = {k: v[0] for k, v in f.items()}
+        body = one.get("body", "").strip()
+        if not body:
+            return self._redirect("/notes/new")
+        nid = notes.create_note(
+            conn, body, now, uid,
+            title=one.get("title", "").strip() or None,
+            category_id=int(one["category_id"])
+            if one.get("category_id") else None,
+            matter_id=int(one["matter_id"])
+            if one.get("matter_id") else None,
+            contact_id=int(one["contact_id"])
+            if one.get("contact_id") else None,
+            notify_all=1 if one.get("notify_all") else 0)
+        for aid in f.get("assignee_ids", []):
+            if aid.isdigit() and int(aid) != uid:
+                notes.assign(conn, nid, int(aid))
+        conn.commit()
+        return self._redirect(f"/notes/{nid}")
+
+    def _note_pin_toggle(self, conn, nid):
+        n = reads.note_row(conn, nid)
+        if n is None:
+            raise _NotFound()
+        notes.pin(conn, nid, pinned=not n["pinned"])
+        conn.commit()
+        back = self._form_body().get("back", "")
+        return self._redirect(back if back.startswith("/") else "/notes")
 
     def _note_detail(self, conn, user, nid):
         n = reads.note_row(conn, nid)
         if n is None:
             raise _NotFound()
         mnames, cnames = self._name_maps(conn)
-        linked = self._linked_cell(conn, n["matter_id"], n["contact_id"],
-                                   mnames, cnames)
+        linked = self._linked_one(n["matter_id"], n["contact_id"],
+                                  mnames, cnames)
         cats = {c["id"]: c["name"] for c in reads.note_categories(conn)}
         cat = cats.get(n["category_id"], "-")
+        holders = ", ".join(
+            html.esc(u["name"]) for uid in notes.assignees(conn, nid)
+            if (u := reads.get_user(conn, uid)) is not None)
+        pinned = ("<span class='pill'>pinned</span> " if n["pinned"]
+                  else "")
         text = html.esc(n["body"]).replace("\n", "<br>")
         body = (f"<div class='card'><h1>"
                 f"{html.esc(n['title'] or 'Note')}</h1>"
+                f"<p>{pinned}{self._pin_button(n, f'/notes/{nid}')}</p>"
                 f"<dl class='kv'>"
                 f"<dt>Category</dt><dd>{html.esc(cat)}</dd>"
-                f"<dt>Pinned</dt><dd>{'yes' if n['pinned'] else '-'}</dd>"
                 f"<dt>Linked</dt><dd>{linked}</dd>"
-                f"<dt>Created</dt><dd>"
-                f"{html.esc(n['created_at'][:16].replace('T', ' '))}"
+                f"<dt>Assigned to</dt><dd>{holders or '-'}</dd>"
+                f"<dt>Created</dt><dd>{html.mdy(n['created_at'])}"
                 f"</dd></dl><p>{text}</p>"
                 f"<div class='actions'><a class='quiet' href='/notes'>"
                 f"Back to notes</a></div></div>")
         self._send_page(200, html.page(n["title"] or "Note", body,
-                                       user_name=user["name"]))
+                                       user_name=user["name"],
+                                       active_href="/notes"))
+
+    def _note_categories(self, conn, user):
+        rows = [[html.esc(c["name"]),
+                 "builtin" if c["builtin"] else "custom",
+                 str(c["note_count"])]
+                for c in reads.note_categories_rows(conn)]
+        inner = ("<div class='tasks-table'>"
+                 + html.table(["Category", "Kind", "Notes"], rows)
+                 + "</div>"
+                 if rows else html.designed_empty(
+                     "No categories yet. A category is a label the"
+                     " notes index can filter by -- create the first"
+                     " below.",
+                     "<a class='quiet' href='/notes'>Back to notes"
+                     "</a>"))
+        form = (f"<form method='post'"
+                f" action='/settings/note-categories'>"
+                + html.field("New category name", "name",
+                             autofocus=True)
+                + "<button class='primary'>Create category</button>"
+                  "</form>")
+        body = (f"<div class='card'><h1>Note categories</h1>{form}"
+                f"{inner}<div class='actions'><a class='quiet'"
+                f" href='/notes'>Back to notes</a></div></div>")
+        self._send_page(200, html.page("Note categories", body,
+                                       user_name=user["name"],
+                                       active_href="/settings"))
+
+    def _note_category_create(self, conn):
+        name = self._form_body().get("name", "").strip()
+        if name:
+            notes.create_category(conn, name)
+            conn.commit()
+        return self._redirect("/settings/note-categories")
+
+    def _notes_card(self, conn, kind, ent_id, back):
+        """The matter/contact Notes timeline (Appendix A): pinned on
+        top then newest, minimal capture, PDF export. Rendering
+        only."""
+        scope = {"matter_id" if kind == "matters" else "contact_id":
+                 ent_id}
+        entries = ""
+        for n in reads.notes_rows(conn, **scope):
+            cls = "note-entry pinned" if n["pinned"] else "note-entry"
+            pin_pill = ("<span class='pill'>pinned</span> "
+                        if n["pinned"] else "")
+            cat = (f"{html.esc(n['category_name'])} -- "
+                   if n["category_name"] else "")
+            entries += (
+                f"<div class='{cls}'>"
+                f"<p class='note-meta'>{html.mdy(n['created_at'])}"
+                f" -- {cat}{pin_pill}"
+                + html.link(f"/notes/{n['id']}",
+                            self._note_label(n))
+                + f" {self._pin_button(n, back)}</p>"
+                f"<p class='note-body'>{html.esc(n['body'])}</p>"
+                f"</div>")
+        if not entries:
+            entries = ("<p class='hint'>No notes here yet -- the"
+                       " first one starts this timeline.</p>")
+        export = (f"<form class='inline' method='get'"
+                  f" action='{back}/notes.pdf'>"
+                  f"<button class='small'>Export notes PDF</button>"
+                  f"</form>")
+        return (f"<div class='card'><h1>Notes</h1>"
+                f"<div class='notes-timeline'>{entries}</div>"
+                + self._quick_note_form(
+                    back,
+                    matter_id=ent_id if kind == "matters" else None,
+                    contact_id=ent_id if kind == "contacts" else None)
+                + f"<div class='actions-row'>{export}</div>"
+                  f"</div>")
+
+    def _notes_pdf(self, conn, matter_id=None, contact_id=None):
+        if matter_id is not None \
+                and reads.matter_row(conn, matter_id) is None:
+            raise _NotFound()
+        if contact_id is not None \
+                and reads.contact_row(conn, contact_id) is None:
+            raise _NotFound()
+        content = notes.export_notes_pdf(conn, matter_id=matter_id,
+                                         contact_id=contact_id)
+        self._send_file(content, "notes.pdf")
 
     # --- search + settings (U2.3 / U2.4) ---
 

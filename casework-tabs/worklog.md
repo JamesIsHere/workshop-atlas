@@ -462,3 +462,55 @@ queue's role is confirmed as safety net, not agenda. His snaps
 also earned a new role: r4's defect (redundant link pair) was
 visible ONLY in his screenshots -- the rail asserts markup
 presence, not visual redundancy.
+
+## 2026-08-10 -- s5: P3 NOTES built to the rail, gate staged
+
+Rhythm held: rail refined first, build to green, five RED drives,
+suites, gate staged.
+
+Rail refinement (the P2 sabotage-4 lesson applied BEFORE building
+this time): step_notes_timeline_pin's P0 check only found the memo
+somewhere in the timeline -- true before the pin too, so a broken
+pin would have passed. Refined: a second newer matter note makes
+ordering observable (newest-first pre-pin; pinning the OLDER memo
+must lift it above the newer entry; core pinned=1 asserted). The
+pin-no-op RED drive then proved exactly that catch.
+
+Build (writes ride casework's notes module; SQL in reads.py):
+- /notes rebuilt: minimal capture (body textarea + Save; no
+  type-and-Enter -- Enter is newline in a textarea, capture is
+  body+save per Appendix A), link to the full form (/notes/new:
+  title, body, category, matter/client, extra assignees,
+  notify-all); ALL default pinned-first; All/Mine + per-category
+  chips; ruled table style (0.85rem, blue links, matter-first
+  single link, MM/DD/YYYY).
+- Matter + contact pages grow a Notes TIMELINE card (pinned on
+  top then newest, left-rule accent on pinned), an in-place quick
+  capture (hidden scope fields; matter capture associates matter
+  + primary contact via the core's own scoping), Pin/Unpin per
+  entry, and Export notes PDF as a form BUTTON deliberately --
+  an <a href> would put binary bytes in the frozen walk's BFS
+  crawl path.
+- /settings/note-categories home (machinery home, re-homes at
+  P6): create by Enter, table with kind + live note counts.
+- Note detail rebuilt: pin toggle, single link, assignees,
+  MM/DD/YYYY.
+
+RED drives (five, all reverted): category-create no-op -> FAIL;
+quick-capture no-op -> FAIL; pin no-op -> FAIL (the refined
+ordering assert; P0's would have passed); category-filter
+ignored -> FAIL; fake PDF bytes -> FAIL.
+
+Rail: "tabs-walk: 16 pass, 14 pending, 0 fail; sweeps pass",
+sha 157f5ac1 x2 (supersedes ae9bdf90). Standing suites all green,
+quoted: "spine: 107 green, 0 red, 0 pending; checks pass" /
+"billing: 25 green ... GREEN" / "fiduciary: 9 pass ... GREEN" /
+"ui-walk: 13 pass, 0 pending, 0 fail; sweeps pass; verdict
+GREEN". Demo regenerated fresh (James's P2 test artifacts wiped
+per demos-from-fresh-dbs rule), server restarted on 8500.
+
+[Q] for the P3 gate (joins carried [Q1]-[Q11]):
+- [Q13] the notes PDF (frozen core export_notes_pdf) prints raw
+  ISO timestamps inside the document -- a user-facing date-format
+  defect that would need a core amendment (same shape as Reopen)
+  or stays as-is; capability bar is met either way.
