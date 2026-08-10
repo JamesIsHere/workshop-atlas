@@ -1,14 +1,14 @@
 # tabs-walk-report -- verifier 1
 
-run started: 2026-08-10T11:23:25Z
+run started: 2026-08-10T11:32:09Z
 
-PASS    setup + login                            0.096s  fresh db; admin created; MFA enrolled; dashboard reached
+PASS    setup + login                            0.117s  fresh db; admin created; MFA enrolled; dashboard reached
 PENDING empty states designed (fresh db)         0.004s  designed empty states absent: ['/files', '/tasks', '/notes']
 PASS    client + matter (existing UI)            0.009s  contact 1 + matter 1 via existing screens
 PASS    calendar: new appointment                0.005s  appointment 1 by click; MM/DD/YYYY; end time
-PASS    calendar: new deadline                   0.006s  deadline created via its lean pre-shaped form
+PASS    calendar: new deadline                   0.005s  deadline created via its lean pre-shaped form
 PASS    calendar: unified view + kind filter     0.002s  unified view: both kinds rendered; single-kind filter
-PASS    calendar: agenda/month toggle            0.021s  two-button toggle; month grid; sticky per user
+PASS    calendar: agenda/month toggle            0.004s  two-button toggle; month grid; sticky per user
 PENDING calendar: derived kinds [Q]              0.001s  derived calendar kinds not built (marker "class='kind kind-expiry'" absent)
 PASS    calendar: provenance links               0.001s  derived rows carry provenance links to their source
 PENDING tasks: quick-add + due date              0.001s  type-and-Enter quick-add not built (marker "action='/tasks/quick'" absent)
@@ -24,7 +24,7 @@ PENDING files: upload + custody                  0.001s  upload from the files t
 PENDING files: matter section + index filters    0.000s  upstream not walked yet (uploaded file)
 PENDING files: rename/preview/print/bulk         0.000s  upstream not walked yet (uploaded file)
 PENDING files: e-sign flow                       0.000s  upstream not walked yet (PDF candidate)
-PENDING search: chrome bar everywhere            0.002s  chrome-level search bar not built (marker 'chrome-search' absent)
+PENDING search: chrome bar everywhere            0.001s  chrome-level search bar not built (marker 'chrome-search' absent)
 PENDING search: coverage + grouped results       0.000s  upstream not walked yet (uploaded file)
 PENDING search: recents                          0.002s  recents on the search page not built (marker 'Recent' absent)
 PENDING settings: users admin                    0.001s  /settings/users not built
@@ -37,5 +37,5 @@ PENDING settings: machinery homes collected      0.001s  machinery homes in the 
 PASS float-sweep: no float() and no true /100 in app_ui
 PASS iso-stray-sweep: no visible ISO dates on 24 tab pages
 
-steps: 7 pass, 23 pending, 0 fail; total 0.156s
+steps: 7 pass, 23 pending, 0 fail; total 0.158s
 verdict: ON TRACK (pending screens)

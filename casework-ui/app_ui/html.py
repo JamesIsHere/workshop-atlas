@@ -95,7 +95,8 @@ table.month-grid td { vertical-align: top; height: 5.5rem;
                       padding: 0.3rem; font-size: 0.8rem; }
 table.month-grid .day { color: #6a7383; font-weight: 600; }
 table.month-grid a { text-decoration: none; display: block;
-                     margin-top: 0.15rem; }
+                     margin-top: 0.15rem; white-space: nowrap;
+                     overflow: hidden; text-overflow: ellipsis; }
 """
 
 NAV_ITEMS = [("Dashboard", "/"),  # item-12 R2; kills gated item 4

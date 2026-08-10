@@ -898,11 +898,14 @@ class Handler(BaseHTTPRequestHandler):
                     cells += "<td></td>"
                     continue
                 date = f"{year:04d}-{mon:02d}-{day:02d}"
+                # full title in the markup; the CELL clips it with a
+                # real ellipsis (Outlook-style one-liners, P1 gate
+                # feedback r2) and hover carries the details
                 entries = "".join(
                     f"<a href='{r['href']}' title='{html.esc(r['title'])}"
                     f"{' ' + r['time'] if r['time'] else ''}'>"
                     f"<span class='dot kind-{r['kind']}'></span>"
-                    f"{html.esc(r['title'][:20])}</a>"
+                    f"{html.esc(r['title'])}</a>"
                     for r in by_date.get(date, []))
                 cells += (f"<td><span class='day'>{day}</span>"
                           f"{entries}</td>")
