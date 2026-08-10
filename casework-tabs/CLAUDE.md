@@ -17,13 +17,13 @@ is the contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P1 BUILT 2026-08-10, gate pending -- calendar tab  |
-|              | live, rail 7 pass/0 fail (sha d1a45962 x2)         |
-| Last session | 2026-08-10 s3 -- P1 build: unified calendar, two   |
-|              | create forms, detail + attendees; 3 rail defects   |
-|              | found+fixed driving RED; all suites green quoted   |
-| Next action  | P1 gate: James drives Calendar on port 8500 over   |
-|              | the seeded db; [Q1]-[Q8] clear serialized there.   |
+| Status       | P1 CALENDAR PASSED 2026-08-10 (receipt in          |
+|              | verify/gate-receipts/); rail 7 pass/0 fail         |
+| Last session | 2026-08-10 s3 -- P1 built, gate driven live by     |
+|              | James, 4 fix rounds (spacing + typography), PASS   |
+|              | signed; pushed to origin                           |
+| Next action  | P2 Tasks: drive the four tasks rail steps RED,     |
+|              | build to green. [Q1]-[Q8] carry to the P2 gate.    |
 |              | See state.md                                       |
 
 Keep this table honest at every wind-down. A stale State section is

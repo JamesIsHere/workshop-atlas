@@ -48,10 +48,10 @@ Method observations belong in child worklogs with a `METHOD:` prefix.
 |                 | verdict PASS/PASS/PASS,   | (ratified 2026-08-04);      |
 |                 | all suites green,         | result.md is the authority  |
 |                 | result.md on disk         |                             |
-| casework-tabs   | RATIFIED 2026-08-10,      | casework-tabs/goal.md       |
-|                 | pre-P0 -- six designed    | (ratified 2026-08-10)       |
-|                 | tab surfaces; phase-gated |                             |
-|                 | hybrid                    |                             |
+| casework-tabs   | IN BUILD -- P1 Calendar   | casework-tabs/goal.md       |
+|                 | PASSED 2026-08-10 at a    | (ratified 2026-08-10)       |
+|                 | hands-on gate; P2-P6 +    |                             |
+|                 | final walk remain         |                             |
 
 ## Spikes
 

@@ -269,3 +269,32 @@ direction -- the rail cannot see CSS-rendering truth (it asserts
 markup, not layout), so gate snaps are the only oracle for visual
 defects. The hands-on gate medium rule (screenshots support,
 James drives) earned its keep three times in one hour.
+
+## 2026-08-10 -- s3 close: P1 GATE PASSED
+
+Two more gate exchanges after the spacing close: (1) James asked
+what the month-cell text IS -- answered from code (item title per
+kind, never the matter; matter/client rides agenda Linked +
+detail only); the matter-in-cell idea was already parked. (2) He
+asked for the full font inventory -- answered from the STYLE
+block; the table surfaced that in-table links were the only
+UNSTYLED text on the page (browser-default blue/purple). His
+ruling: one text size for the whole table (the Linked size,
+0.85rem) and links firm blue always -- built as r4 (6903336),
+scoped to calendar surfaces; app-wide extension flagged as
+touching billing-ui's signed tables, not taken.
+
+VERDICT: PASS, signed "Yes we are done." Receipt with the FULL
+step table at verify/gate-receipts/p1-calendar.md. [Q1]-[Q8]
+carry forward to the P2 gate by his wrap-up call -- all are
+implemented defaults that stand unless re-ruled.
+
+First push to the GitHub remote (origin) rides this close at
+James's explicit request.
+
+METHOD: the gate produced FOUR ruled outcomes without ever
+touching the prepared [Q] queue -- live product questions
+("what is this text", "what are the fonts") turned into rulings
+faster than the queued abstractions would have. The queue's
+value may be as a safety net behind a hands-on drive, not the
+agenda for it.
