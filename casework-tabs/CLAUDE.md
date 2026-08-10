@@ -17,14 +17,14 @@ is the contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P1 CALENDAR PASSED 2026-08-10 (receipt in          |
-|              | verify/gate-receipts/); rail 7 pass/0 fail         |
-| Last session | 2026-08-10 s3 -- P1 built, gate driven live by     |
-|              | James, 4 fix rounds (spacing + typography), PASS   |
-|              | signed; pushed to origin                           |
-| Next action  | P2 Tasks: drive the four tasks rail steps RED,     |
-|              | build to green. [Q1]-[Q8] carry to the P2 gate.    |
-|              | See state.md                                       |
+| Status       | P2 TASKS BUILT 2026-08-10, gate PENDING; rail 11   |
+|              | pass/0 fail, sha eb4fc42e x2; all suites green     |
+| Last session | 2026-08-10 s4 -- rail refined (no core due setter; |
+|              | vacuous-assert catch), tasks screens + builder     |
+|              | built, 5 RED drives, demo reseeded, 8500 up        |
+| Next action  | P2 gate: James drives tasks on 8500; [Q9]-[Q11]    |
+|              | new + [Q1]-[Q8] carried. Then P3 Notes. See        |
+|              | state.md                                           |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

@@ -106,6 +106,18 @@ table.month-grid .day { color: #6a7383; font-weight: 600; }
 table.month-grid a { text-decoration: none; display: block;
                      margin-top: 0.15rem; white-space: nowrap;
                      overflow: hidden; text-overflow: ellipsis; }
+/* casework-tabs P2: tasks quick-add, row actions, builder notes */
+.quick-add { display: flex; gap: 0.8rem; align-items: flex-end; }
+.quick-add .grow { flex: 1; }
+.quick-add .due { width: 11rem; }
+.quick-add button.primary { margin-top: 0; padding: 0.5rem 1.1rem; }
+form.inline { display: inline; }
+button.small { background: #eef1f5; color: #2456a6;
+               border: 1px solid #c3c9d2; border-radius: 4px;
+               padding: 0.15rem 0.7rem; font-size: 0.8rem;
+               cursor: pointer; }
+button.small:hover { background: #dfe6f0; }
+.automations { font-size: 0.85rem; color: #6a7383; }
 """
 
 NAV_ITEMS = [("Dashboard", "/"),  # item-12 R2; kills gated item 4

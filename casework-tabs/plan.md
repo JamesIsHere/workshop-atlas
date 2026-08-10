@@ -53,4 +53,10 @@ Settings layout at P6 -- avoids P6 blocking P1-P3.
   steps green + driven RED, sha d1a45962 x2, suites green.
 - U1.4 P1 gate: port-8500 swap (James's call), hands-on verdict,
   [Q1]-[Q8] serialized, receipt in verify/gate-receipts/.
-- U2.x Tasks phase queues after the gate.
+- U2.1 DONE 2026-08-10 (s4): tasks rail refined (due-setter gap,
+  vacuous-assert catch) + four steps green, 5 RED drives incl the
+  empty-state FAIL arm, sha eb4fc42e x2, suites green, demo
+  reseeded (automation linkage content), 8500 up.
+- U2.2 P2 gate: hands-on verdict, [Q9]-[Q11] + carried [Q1]-[Q8]
+  serialized, receipt in verify/gate-receipts/p2-tasks.md.
+- U3.x Notes phase queues after the gate.

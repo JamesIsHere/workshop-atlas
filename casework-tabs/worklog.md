@@ -298,3 +298,89 @@ touching the prepared [Q] queue -- live product questions
 faster than the queued abstractions would have. The queue's
 value may be as a safety net behind a hands-on drive, not the
 agenda for it.
+
+## 2026-08-10 -- s4: P2 TASKS built to the rail, gate staged
+
+Per-phase rhythm held: rail refined first, driven RED per step,
+screens built to green, suites rerun.
+
+Rail refinements (verify-the-verifier, both recorded in-step):
+- step_tasks_quick_add: the sketched POST /tasks/<id>/due is
+  IMPOSSIBLE rendering-only -- the frozen core has no due-date
+  setter (tasks.create_task takes due_date at creation; nothing
+  updates it). The quick-add form carries an OPTIONAL due date
+  instead; the step now asserts the form field, MM/DD/YYYY render,
+  ISO storage, and the calendar ride. [Q9]
+- step_tasks_lists: the old closing assert (list name on the matter
+  page as "automation linkage") was VACUOUS -- the Import select
+  renders every list name, so it passed with zero linkage rendered;
+  and tasks store no source-list column, so a task cannot name its
+  list post-import (schema truth). Automation linkage per the
+  schema is matter_statuses.auto_task_list_id -> rendered in the
+  BUILDER (Automations column + per-list note); the step probes the
+  class='automations' marker, asserts the imported items and the
+  missing-ref-fact -> no-due-date behavior instead. [Q10]
+
+Build (all writes ride casework's tasks module; SQL in reads.py):
+- /tasks rebuilt: my-open default, Mine/Firm + Open/Completed chips
+  (one click, never partitioned), type-and-Enter quick-add with
+  optional due date, one-click Done per row (back-field returns the
+  driver to the page they pressed it on), assignees column, due
+  MM/DD/YYYY, designed empty states per view.
+- /settings/task-lists builder (machinery home; re-homes into the
+  Settings layout at P6): create list, list detail with add-item
+  form (position, duration OR reference rule from contact date
+  facts, default assignee), rules written in words ("due 30 days
+  before EAD expiry"), Automations column + per-list note.
+- Matter + contact pages grow a Tasks card: open tasks + Import
+  Task List select (form absent until a list exists -- marker
+  stays honest). Task detail: Done button, completed pill with
+  date, due MM/DD/YYYY.
+- Matter detail's other dates (Form packages Created, Deadlines
+  When) went MM/DD/YYYY in the same pass -- an existing-screen
+  sibling-defect extension under the goal.md date constraint
+  (contact-card precedent, gate ruling 2026-08-10); disclosed for
+  re-rule. [Q11] The ISO sweep now covers the matter page (fetched
+  by step_tasks_lists) and passes because of it.
+
+RED drives (five, all reverted): ISO due render -> step FAIL +
+ISO-sweep FAIL (caught twice); Completed chip removed -> FAIL;
+complete no-op -> FAIL; raw fact key in the rule -> NOT CAUGHT
+(the item title contains "EAD" -- the assert was vacuous), rail
+tightened to pin the full rule phrase, sabotage rerun -> FAIL;
+bare /tasks empty state -> step-2 FAIL (the owed empty-state FAIL
+arm, now proven).
+
+METHOD: sabotage 4 is the session's verify-the-verifier lesson --
+a green-first build hides vacuous asserts; only the RED drive
+exposed that "EAD" lived in the item title. The deliberate-RED
+owed-per-phase rule caught a rail defect that two clean x2 runs
+never would have.
+
+Rail after build: "tabs-walk: 11 pass, 19 pending, 0 fail; sweeps
+pass; verdict ON TRACK (pending screens)", sha eb4fc42e x2
+(supersedes d1a45962). Standing suites all green, quoted:
+"spine: 107 green, 0 red, 0 pending" / "billing: 25 green, 0 red,
+0 pending, 0 parked; checks pass; verdict: GREEN" / "fiduciary:
+9 pass, 0 red, 0 stub; verdict: GREEN" / "ui-walk: 13 pass,
+0 pending, 0 fail; sweeps pass; verdict GREEN".
+
+Gate staging: stale P1 demo server (PID 12364, our own) killed;
+seed extended with a workflow automation demo (Evgenia Synthetic:
+matter type "SYNTH I-130 Family", status "SYNTH Opened"
+auto-imports the checklist at matter creation -> unassigned tasks
+show the Mine/Firm split live; her EAD fact drives the computed
+reference due date); demo-tabs.db regenerated (3 users, 5
+contacts, 5 matters, 10 tasks); server restarted on port 8500,
+answering.
+
+[Q] queue for the P2 gate (join carried [Q1]-[Q8]):
+- [Q9] due date is create-time only (quick-add field); editing an
+  existing task's due date/title/assignees needs a core amendment
+  -- seek one or accept create-time-only?
+- [Q10] automation linkage renders in the builder (schema truth);
+  workflows have no UI (config-depth kill), so linkage content
+  appears only on seeded dbs -- accept, or does that argue for a
+  workflows surface some phase?
+- [Q11] matter-page date format extension (existing screen) --
+  ratify or revert.

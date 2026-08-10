@@ -193,9 +193,15 @@ class Handler(BaseHTTPRequestHandler):
             if len(segs) == 2 and segs[0] == "files":
                 return self._file_detail(conn, user, _id(segs[1]))
             if segs == ["tasks"]:
-                return self._tasks_index(conn, user)
+                return self._tasks_index(conn, user, query)
             if len(segs) == 2 and segs[0] == "tasks":
                 return self._task_detail(conn, user, _id(segs[1]))
+            if segs == ["settings", "task-lists"]:
+                return self._task_lists(conn, user)
+            if len(segs) == 3 and segs[0] == "settings" \
+                    and segs[1] == "task-lists":
+                return self._task_list_detail(conn, user,
+                                              _id(segs[2]))
             if segs == ["notes"]:
                 return self._notes_index(conn, user)
             if len(segs) == 2 and segs[0] == "notes":
@@ -246,6 +252,25 @@ class Handler(BaseHTTPRequestHandler):
             if len(segs) == 3 and segs[0] == "calendar" \
                     and segs[2] == "attendees":
                 return self._event_attendee_add(conn, _id(segs[1]))
+            if segs == ["tasks", "quick"]:
+                return self._task_quick_create(conn, now, uid)
+            if len(segs) == 3 and segs[0] == "tasks" \
+                    and segs[2] == "complete":
+                return self._task_complete(conn, now, _id(segs[1]))
+            if segs == ["settings", "task-lists"]:
+                return self._task_list_create(conn)
+            if len(segs) == 4 and segs[0] == "settings" \
+                    and segs[1] == "task-lists" and segs[3] == "items":
+                return self._task_list_item_create(conn, user,
+                                                   _id(segs[2]))
+            if len(segs) == 3 and segs[0] == "matters" \
+                    and segs[2] == "import-task-list":
+                return self._import_task_list(conn, now, uid,
+                                              matter_id=_id(segs[1]))
+            if len(segs) == 3 and segs[0] == "contacts" \
+                    and segs[2] == "import-task-list":
+                return self._import_task_list(conn, now, uid,
+                                              contact_id=_id(segs[1]))
         raise _NotFound()
 
     # --- first-run setup ---
@@ -481,7 +506,9 @@ class Handler(BaseHTTPRequestHandler):
                 f" this client</a></div>"
                 f"<dl class='kv'>{kv}</dl></div>"
                 + money
-                + f"<div class='card'><h1>Matters</h1>{mtable}</div>")
+                + f"<div class='card'><h1>Matters</h1>{mtable}</div>"
+                + self._tasks_card(conn, "contacts", cid,
+                                   f"/contacts/{cid}"))
         self._send_page(200, html.page(row["display_name"], body,
                                        user_name=user["name"]))
 
@@ -533,13 +560,18 @@ class Handler(BaseHTTPRequestHandler):
         if row is None:
             raise _NotFound()
         contact = reads.contact_row(conn, row["primary_contact_id"])
+        # dates on this frozen screen go MM/DD/YYYY with the P2 tasks
+        # section (goal.md date constraint; sibling-defect extension,
+        # disclosed for the P2 gate re-rule)
         frows = [[html.link(f"/forms/{s['id']}", s["title"]),
-                  html.esc(s["created_at"][:10])]
+                  html.mdy(s["created_at"])]
                  for s in reads.matter_smart_forms(conn, mid)]
         ftable = (html.table(["Form package", "Created"], frows) if frows
                   else "<p class='hint'>No form packages yet.</p>")
         erows = [[html.link(f"/calendar/{e['id']}", e["title"]),
-                  html.esc(e["starts_at"][:16].replace("T", " "))]
+                  html.mdy(e["starts_at"])
+                  + ("" if e["starts_at"].endswith("T00:00:00Z")
+                     else " " + e["starts_at"][11:16])]
                  for e in reads.matter_events(conn, mid)]
         etable = (html.table(["Deadline / event", "When"], erows)
                   if erows else "<p class='hint'>No deadlines yet.</p>")
@@ -572,8 +604,11 @@ class Handler(BaseHTTPRequestHandler):
                 f"</a><a href='/calendar/new?matter={mid}&contact="
                 f"{row['primary_contact_id']}'>New deadline</a></div>"
                 f"</div>"
-                f"<div class='card'><h1>Form packages</h1>{ftable}</div>"
-                f"<div class='card'><h1>Deadlines</h1>{etable}</div>")
+                + self._tasks_card(conn, "matters", mid,
+                                   f"/matters/{mid}")
+                + f"<div class='card'><h1>Form packages</h1>{ftable}"
+                  f"</div>"
+                  f"<div class='card'><h1>Deadlines</h1>{etable}</div>")
         self._send_page(200, html.page(row["name"], body,
                                        user_name=user["name"]))
 
@@ -1253,24 +1288,91 @@ class Handler(BaseHTTPRequestHandler):
                         ctype=f["content_type"]
                         or "application/octet-stream")
 
-    def _tasks_index(self, conn, user):
+    # --- tasks tab (rebuilt by casework-tabs P2 under the 2026-08-10
+    # program amendment: my-open default, type-and-Enter quick-add,
+    # one-click complete, task-list builder + import. SQL in
+    # reads.py; every write rides casework's tasks module) ---
+
+    @staticmethod
+    def _complete_button(tid, back):
+        """One-click complete from a row; 'back' returns the driver
+        to the page they pressed it on."""
+        return (f"<form class='inline' method='post'"
+                f" action='/tasks/{tid}/complete'>"
+                f"<input type='hidden' name='back' value='{back}'>"
+                f"<button class='small'>Done</button></form>")
+
+    def _tasks_index(self, conn, user, query):
+        scope = ("firm" if query.get("scope", [None])[0] == "firm"
+                 else "mine")
+        done = query.get("done", [None])[0] == "1"
+        rows_src = reads.tasks_rows(
+            conn,
+            assignee_id=None if scope == "firm" else user["id"],
+            completed=done)
         mnames, cnames = self._name_maps(conn)
+        anames = reads.task_assignee_names(conn)
         rows = []
-        for t in tasks.list_tasks(conn, include_completed=True):
-            status = "done" if t["completed_at"] else "open"
-            rows.append([html.link(f"/tasks/{t['id']}", t["title"]),
-                         html.esc(t["due_date"] or "-"),
-                         self._linked_cell(conn, t["matter_id"],
-                                           t["contact_id"], mnames,
-                                           cnames),
-                         f"<span class='pill'>{status}</span>"])
-        inner = (html.table(["Task", "Due", "Linked to", "Status"], rows)
-                 if rows else html.empty_state(
-                     "No tasks yet. Tasks arrive from task-list"
-                     " imports and teammates."))
-        body = f"<div class='card'><h1>Tasks</h1>{inner}</div>"
+        for t in rows_src:
+            cells = [html.link(f"/tasks/{t['id']}", t["title"]),
+                     html.mdy(t["due_date"]) if t["due_date"] else "-",
+                     self._linked_cell(conn, t["matter_id"],
+                                       t["contact_id"], mnames,
+                                       cnames),
+                     html.esc(anames.get(t["id"], "-"))]
+            cells.append(html.mdy(t["completed_at"]) if done
+                         else self._complete_button(t["id"], "/tasks"))
+            rows.append(cells)
+        mine_href = "/tasks" + ("?done=1" if done else "")
+        firm_href = "/tasks?scope=firm" + ("&done=1" if done else "")
+        open_href = "/tasks" + ("?scope=firm" if scope == "firm"
+                                else "")
+        done_href = ("/tasks?done=1"
+                     + ("&scope=firm" if scope == "firm" else ""))
+        chips = (
+            "<div class='chips'>"
+            f"<a class='chip{' on' if scope == 'mine' else ''}'"
+            f" href='{mine_href}'>Mine</a>"
+            f"<a class='chip{' on' if scope == 'firm' else ''}'"
+            f" href='{firm_href}'>Firm</a>"
+            f"<a class='chip{' on' if not done else ''}'"
+            f" href='{open_href}'>Open</a>"
+            f"<a class='chip{' on' if done else ''}'"
+            f" href='{done_href}'>Completed</a></div>")
+        quick = (
+            "<form class='quick-add' method='post'"
+            " action='/tasks/quick'>"
+            "<div class='grow'><label>Add a task</label>"
+            "<input name='title' autofocus required></div>"
+            "<div class='due'><label>Due (optional)</label>"
+            "<input type='date' name='due_date'></div>"
+            "<button class='primary'>Add</button></form>"
+            "<p class='hint'>Type and press Enter -- the task lands"
+            " in your open list, assigned to you.</p>")
+        if rows:
+            head = ["Task", "Due", "Linked to", "Assigned to",
+                    "Completed" if done else ""]
+            inner = html.table(head, rows)
+        elif done:
+            inner = html.designed_empty(
+                "Nothing completed here yet. A task's Done button"
+                " moves it to this view.",
+                f"<a class='quiet' href='{open_href}'>Open tasks</a>")
+        else:
+            who = ("in the firm" if scope == "firm"
+                   else "assigned to you")
+            inner = html.designed_empty(
+                f"No open tasks {who}. Add one above and press"
+                f" Enter, or import a task list onto a matter.",
+                "<a class='quiet' href='/settings/task-lists'>Task"
+                " lists</a>")
+        body = (f"<div class='card'><h1>Tasks</h1>{quick}{chips}"
+                f"{inner}<div class='actions'>"
+                f"<a class='quiet' href='/settings/task-lists'>Task"
+                f" lists</a></div></div>")
         self._send_page(200, html.page("Tasks", body,
-                                       user_name=user["name"]))
+                                       user_name=user["name"],
+                                       active_href="/tasks"))
 
     def _task_detail(self, conn, user, tid):
         t = reads.task_row(conn, tid)
@@ -1282,17 +1384,240 @@ class Handler(BaseHTTPRequestHandler):
         holders = ", ".join(
             html.esc(u["name"]) for uid in tasks.assignees(conn, tid)
             if (u := reads.get_user(conn, uid)) is not None)
-        status = "done" if t["completed_at"] else "open"
+        if t["completed_at"]:
+            status = (f"<span class='pill returned'>completed"
+                      f" {html.mdy(t['completed_at'])}</span>")
+            act = ""
+        else:
+            status = "<span class='pill'>open</span>"
+            act = self._complete_button(tid, f"/tasks/{tid}")
+        due = html.mdy(t["due_date"]) if t["due_date"] else "-"
         body = (f"<div class='card'><h1>{html.esc(t['title'])}</h1>"
                 f"<dl class='kv'>"
-                f"<dt>Status</dt><dd><span class='pill'>{status}</span>"
-                f"</dd><dt>Due</dt><dd>{html.esc(t['due_date'] or '-')}"
+                f"<dt>Status</dt><dd>{status} {act}"
+                f"</dd><dt>Due</dt><dd>{due}"
                 f"</dd><dt>Linked</dt><dd>{linked}</dd>"
                 f"<dt>Assigned to</dt><dd>{holders or '-'}</dd></dl>"
                 f"<div class='actions'><a class='quiet' href='/tasks'>"
                 f"Back to tasks</a></div></div>")
         self._send_page(200, html.page(t["title"], body,
-                                       user_name=user["name"]))
+                                       user_name=user["name"],
+                                       active_href="/tasks"))
+
+    def _task_quick_create(self, conn, now, uid):
+        f = self._form_body()
+        title = f.get("title", "").strip()
+        if title:
+            tasks.create_task(conn, title, now, uid,
+                              due_date=f.get("due_date") or None)
+            conn.commit()
+        return self._redirect("/tasks")
+
+    def _task_complete(self, conn, now, tid):
+        if reads.task_row(conn, tid) is None:
+            raise _NotFound()
+        tasks.complete_task(conn, tid, now)
+        conn.commit()
+        back = self._form_body().get("back", "")
+        return self._redirect(back if back.startswith("/") else "/tasks")
+
+    # --- task lists (built here at P2; re-homed into the Settings
+    # layout at P6 -- plan.md machinery-home note) ---
+
+    def _task_lists(self, conn, user):
+        autos = reads.task_list_automations(conn)
+        rows = [[html.link(f"/settings/task-lists/{tl['id']}",
+                           tl["name"]),
+                 str(tl["item_count"]),
+                 f"<span class='automations'>"
+                 f"{html.esc('; '.join(autos.get(tl['id'], [])) or '-')}"
+                 f"</span>"]
+                for tl in reads.task_lists_rows(conn)]
+        inner = (html.table(["Task list", "Items", "Automations"],
+                            rows)
+                 if rows else html.designed_empty(
+                     "No task lists yet. A task list is a reusable"
+                     " checklist -- build it once, then import it"
+                     " onto any matter or client in one click.",
+                     "<a class='quiet' href='/tasks'>Back to tasks"
+                     "</a>"))
+        form = (f"<form method='post' action='/settings/task-lists'>"
+                + html.field("New task list name", "name",
+                             autofocus=True)
+                + "<button class='primary'>Create list</button>"
+                  "</form>")
+        note = ("<p class='hint'>Automations show which matter"
+                " workflow statuses import a list on their own.</p>")
+        body = (f"<div class='card'><h1>Task lists</h1>{form}{inner}"
+                f"{note}<div class='actions'><a class='quiet'"
+                f" href='/tasks'>Back to tasks</a></div></div>")
+        self._send_page(200, html.page("Task lists", body,
+                                       user_name=user["name"],
+                                       active_href="/settings"))
+
+    def _task_list_create(self, conn):
+        name = self._form_body().get("name", "").strip()
+        if not name:
+            return self._redirect("/settings/task-lists")
+        lid = tasks.create_task_list(conn, name)
+        conn.commit()
+        return self._redirect(f"/settings/task-lists/{lid}")
+
+    def _task_list_detail(self, conn, user, lid, error=None):
+        tl = reads.task_list_row(conn, lid)
+        if tl is None:
+            raise _NotFound()
+        labels = reads.fact_labels(conn)
+        items = reads.task_list_items(conn, lid)
+        rows = []
+        for i in items:
+            if i["ref_fact_key"]:
+                what = labels.get(i["ref_fact_key"]) or i["ref_fact_key"]
+                rule = (f"due {i['ref_days']} days"
+                        f" {i['ref_direction']} {what}")
+            elif i["duration_days"] is not None:
+                rule = f"due {i['duration_days']} days after import"
+            else:
+                rule = "no due date"
+            rows.append([str(i["position"]), html.esc(i["title"]),
+                         html.esc(rule),
+                         html.esc(i["assignee_name"] or "importer")])
+        table = (html.table(["#", "Item", "Due rule", "Assigned to"],
+                            rows)
+                 if rows else html.designed_empty(
+                     "No items yet. Each item becomes one real task"
+                     " when this list is imported onto a matter or"
+                     " client -- add the first below.",
+                     "<a class='quiet' href='/settings/task-lists'>"
+                     "All task lists</a>"))
+        fopts = "".join(
+            f"<option value='{d['key']}'>{html.esc(d['label'])}"
+            f"</option>"
+            for d in reads.contact_date_fact_defs(conn))
+        uopts = "".join(
+            f"<option value='{u['id']}'>{html.esc(u['name'])}"
+            f"</option>"
+            for u in reads.list_users(conn)
+            if not u["deactivated_at"])
+        form = (
+            f"<h2>Add an item</h2>{html.error_box(error)}"
+            f"<form method='post'"
+            f" action='/settings/task-lists/{lid}/items'>"
+            + html.field("Item title", "title")
+            + html.field("Position", "position",
+                         value=str(len(items) + 1))
+            + html.field("Due days after import", "duration_days",
+                         required=False,
+                         hint="Leave empty for no due date, or use a"
+                              " reference date below instead.")
+            + f"<label>Reference date (client fact)</label>"
+              f"<select name='ref_fact_key'>"
+              f"<option value=''>-- none --</option>{fopts}</select>"
+            + f"<label>Before or after it</label>"
+              f"<select name='ref_direction'>"
+              f"<option value='before'>before</option>"
+              f"<option value='after'>after</option></select>"
+            + html.field("Days before/after", "ref_days",
+                         required=False)
+            + f"<label>Assign to</label>"
+              f"<select name='default_assignee_id'>"
+              f"<option value=''>-- whoever imports --</option>"
+              f"{uopts}</select>"
+            + "<button class='primary'>Add item</button></form>")
+        autos = reads.task_list_automations(conn).get(lid, [])
+        note = (f"<p class='hint'><span class='automations'>Imported"
+                f" automatically by: {html.esc('; '.join(autos))}"
+                f"</span></p>" if autos else
+                "<p class='hint'><span class='automations'>No matter"
+                " workflow imports this list automatically; import"
+                " it from any matter or client page.</span></p>")
+        body = (f"<div class='card'><h1>{html.esc(tl['name'])}</h1>"
+                f"{table}{note}{form}"
+                f"<div class='actions'><a class='quiet'"
+                f" href='/settings/task-lists'>All task lists</a>"
+                f"</div></div>")
+        self._send_page(200, html.page(tl["name"], body,
+                                       user_name=user["name"],
+                                       active_href="/settings"))
+
+    def _task_list_item_create(self, conn, user, lid):
+        if reads.task_list_row(conn, lid) is None:
+            raise _NotFound()
+        f = self._form_body()
+        ref_key = f.get("ref_fact_key") or None
+        try:
+            tasks.add_list_item(
+                conn, lid, f.get("title", "").strip(),
+                int(f.get("position") or 0),
+                duration_days=(int(f["duration_days"])
+                               if f.get("duration_days") else None),
+                default_assignee_id=(int(f["default_assignee_id"])
+                                     if f.get("default_assignee_id")
+                                     else None),
+                ref_fact_key=ref_key,
+                ref_direction=(f.get("ref_direction")
+                               if ref_key else None),
+                ref_days=(int(f["ref_days"])
+                          if ref_key and f.get("ref_days") else None))
+        except ValueError as e:
+            return self._task_list_detail(conn, user, lid,
+                                          error=str(e))
+        conn.commit()
+        return self._redirect(f"/settings/task-lists/{lid}")
+
+    def _import_task_list(self, conn, now, uid, matter_id=None,
+                          contact_id=None):
+        if matter_id is not None:
+            if reads.matter_row(conn, matter_id) is None:
+                raise _NotFound()
+            back = f"/matters/{matter_id}"
+        else:
+            if reads.contact_row(conn, contact_id) is None:
+                raise _NotFound()
+            back = f"/contacts/{contact_id}"
+        f = self._form_body()
+        tlid = int(f["task_list_id"]) if f.get("task_list_id") else None
+        if tlid is None or reads.task_list_row(conn, tlid) is None:
+            raise _NotFound()
+        tasks.import_task_list(conn, tlid, now, uid,
+                               matter_id=matter_id,
+                               contact_id=contact_id)
+        conn.commit()
+        return self._redirect(back)
+
+    def _tasks_card(self, conn, kind, ent_id, back):
+        """The matter/contact Tasks section (Appendix A): open tasks
+        + Import Task List. Rendering only; rows via the tasks
+        module, names via reads."""
+        anames = reads.task_assignee_names(conn)
+        open_tasks = tasks.list_tasks(
+            conn, matter_id=ent_id if kind == "matters" else None,
+            contact_id=ent_id if kind == "contacts" else None)
+        rows = [[html.link(f"/tasks/{t['id']}", t["title"]),
+                 html.mdy(t["due_date"]) if t["due_date"] else "-",
+                 html.esc(anames.get(t["id"], "-")),
+                 self._complete_button(t["id"], back)]
+                for t in open_tasks]
+        table = (html.table(["Task", "Due", "Assigned to", ""], rows)
+                 if rows else "<p class='hint'>No open tasks here"
+                 " yet.</p>")
+        lists = reads.task_lists_rows(conn)
+        if lists:
+            opts = "".join(
+                f"<option value='{tl['id']}'>{html.esc(tl['name'])}"
+                f"</option>" for tl in lists)
+            imp = (f"<form class='quick-add' method='post'"
+                   f" action='{back}/import-task-list'>"
+                   f"<div class='grow'><label>Import a task list"
+                   f"</label><select name='task_list_id'>{opts}"
+                   f"</select></div>"
+                   f"<button class='primary'>Import</button></form>")
+        else:
+            imp = ("<p class='hint'>No task lists yet -- <a"
+                   " href='/settings/task-lists'>build one</a> and"
+                   " its items land here as tasks in one click.</p>")
+        return (f"<div class='card'><h1>Tasks</h1>{table}{imp}"
+                f"</div>")
 
     def _notes_index(self, conn, user):
         mnames, cnames = self._name_maps(conn)

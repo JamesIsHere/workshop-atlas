@@ -393,26 +393,37 @@ def step_cal_provenance(w):
 # --- P2 tasks (Appendix A: my-open first, quick-add, one-click) ---
 
 def step_tasks_quick_add(w):
+    """[Q] P2 gate: the frozen core has NO due-date setter --
+    tasks.create_task takes due_date at creation only, and nothing
+    updates it. Rendering-only forbids an UPDATE from app_ui, so the
+    quick-add form carries an OPTIONAL due date instead of the
+    set-due-later route this step first sketched (/tasks/<id>/due,
+    refined 2026-08-10 s4); editing an existing task's due date
+    would need a core amendment -- the gate rules whether to seek
+    one."""
     _s, _u, page = w.browser.get("/tasks")
     expect_marker(page, "action='/tasks/quick'", "type-and-Enter"
                   " quick-add")
+    assert "name='due_date'" in page, \
+        "quick-add missing its optional due date"
     _s, _u, page = w.browser.post("/tasks/quick", {
-        "title": "SYNTH draft I-130 cover letter"})
+        "title": "SYNTH draft I-130 cover letter",
+        "due_date": "2026-08-25"})
     assert "SYNTH draft I-130 cover letter" in page, \
         "quick-added task not visible after Enter"
+    assert "08/25/2026" in page, "due date not MM/DD/YYYY"
     row = w.conn.execute(
-        "SELECT id FROM tasks WHERE title=?",
+        "SELECT id, due_date FROM tasks WHERE title=?",
         ("SYNTH draft I-130 cover letter",)).fetchone()
     assert row is not None
+    assert row["due_date"] == "2026-08-25", \
+        f"stored due date not ISO: {row['due_date']!r}"
     w.task_id = row["id"]
-    _s, _u, page = w.browser.post(f"/tasks/{w.task_id}/due", {
-        "due_date": "2026-08-25"})
-    assert "08/25/2026" in page, "due date not set or not MM/DD/YYYY"
     _s, _u, page = w.browser.get("/calendar")
     assert "class='kind kind-task'" in page \
         and "SYNTH draft I-130" in page, \
         "task due date missing from the unified calendar"
-    return "quick-add by Enter; due date set; rides the calendar"
+    return "quick-add by Enter (due rides the form); on the calendar"
 
 
 def step_tasks_my_open(w):
@@ -448,6 +459,17 @@ def step_tasks_complete(w):
 
 
 def step_tasks_lists(w):
+    """Refined 2026-08-10 s4 (verify-the-verifier): the old closing
+    assert -- list NAME visible on the matter page as 'automation
+    linkage' -- was vacuous: the Import Task List select renders
+    every list's name, so it passed with zero linkage rendered. And
+    the tasks table stores no source-list column, so a task CANNOT
+    name its list post-import (schema truth). Automation linkage per
+    the schema is matter_statuses.auto_task_list_id -> the BUILDER
+    shows which statuses auto-import each list; no UI creates
+    workflows (config-depth kill), so the rail can only probe the
+    column marker -- content renders on the seeded demo db at the
+    gate. [Q] P2 gate."""
     page = probe(w, "/settings/task-lists")
     _s, _u, page = w.browser.post("/settings/task-lists", {
         "name": "SYNTH I-130 checklist"})
@@ -465,7 +487,16 @@ def step_tasks_lists(w):
             "ref_fact_key": "imm.ead_expiry",
             "ref_direction": "before", "ref_days": "30"})
     assert "SYNTH gather civil documents" in page
-    assert "EAD" in page, "reference-date rule not surfaced"
+    # the FULL rule phrase, label included -- a bare "EAD" assert was
+    # vacuous (the item title contains it; RED drive s4 caught the
+    # rail passing with the raw fact key rendered)
+    assert "due 30 days before EAD expiry" in page, \
+        "reference rule not written out (label + direction + days)"
+    assert "due 7 days after import" in page, \
+        "duration rule not written out"
+    _s, _u, page = w.browser.get("/settings/task-lists")
+    expect_marker(page, "class='automations'",
+                  "automation linkage on the builder")
     _s, _u, page = w.browser.get(f"/matters/{w.matter_id}")
     expect_marker(page, "import-task-list", "Import Task List on the"
                   " matter page")
@@ -474,8 +505,13 @@ def step_tasks_lists(w):
             "task_list_id": str(w.list_id)})
     assert "SYNTH gather civil documents" in page, \
         "imported task missing from the matter page"
-    assert "SYNTH I-130 checklist" in page, \
-        "automation linkage (source list) not visible"
+    assert "SYNTH file before EAD expiry" in page, \
+        "second imported task missing from the matter page"
+    ref = w.conn.execute(
+        "SELECT due_date FROM tasks WHERE title=?",
+        ("SYNTH file before EAD expiry",)).fetchone()
+    assert ref is not None and ref["due_date"] is None, \
+        "missing reference fact must yield no due date, not a guess"
     return "list built in its Settings home; imported onto matter"
 
 

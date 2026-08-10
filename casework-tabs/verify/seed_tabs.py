@@ -198,6 +198,27 @@ def main():
                             ref_direction="before", ref_days=30)
         tasks.import_task_list(conn, tl, NOW, admin,
                                matter_id=m["anya"])
+        # workflow automation (P2 gate: the builder's Automations
+        # column renders this linkage; no UI creates workflows --
+        # config-depth kill, so it exists only on seeded dbs).
+        # Evgenia's matter enters "SYNTH Opened" at creation, the
+        # status auto-imports the checklist: her tasks arrive
+        # UNASSIGNED (firm scope shows them, my-open does not) and
+        # the EAD reference item computes its due date from her
+        # fact.
+        c["Evgenia"] = contacts.create_contact(
+            conn, "person", NOW, admin, given_name="Evgenia",
+            family_name="Synthetic",
+            email="evgenia.client@synthetic.test")
+        expiry.set_expiry_date(conn, c["Evgenia"], "imm.ead_expiry",
+                               SEP[29], NOW)
+        mt_i130 = matters.create_matter_type(conn, "SYNTH I-130"
+                                             " Family")
+        st_open = matters.add_status(conn, mt_i130, "SYNTH Opened",
+                                     1, auto_task_list_id=tl)
+        m["evgenia"] = matters.create_matter(
+            conn, "Evgenia Synthetic I-130", c["Evgenia"], NOW,
+            admin, matter_type_id=mt_i130, matter_status_id=st_open)
 
         # --- notes: categories, pins, notify-all ---
         cat_strategy = notes.create_category(conn, "SYNTH Strategy")

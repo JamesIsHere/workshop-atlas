@@ -432,6 +432,93 @@ def event_attendees(conn, event_id):
         " WHERE a.event_id=? ORDER BY a.id", (event_id,)).fetchall()
 
 
+# --- casework-tabs P2 display reads (tasks; program amendment
+# 2026-08-10: SQL stays here, rendering in server.py, writes ride
+# casework modules) ---
+
+def tasks_rows(conn, assignee_id=None, completed=False):
+    """Task rows for the tab with linkage names: open or completed,
+    optionally narrowed to one assignee (the my-open default,
+    Appendix A)."""
+    q = ("SELECT t.id, t.title, t.due_date, t.completed_at,"
+         " t.contact_id, t.matter_id,"
+         " c.display_name AS contact_name, m.name AS matter_name"
+         " FROM tasks t"
+         " LEFT JOIN contacts c ON c.id = t.contact_id"
+         " LEFT JOIN matters m ON m.id = t.matter_id"
+         " WHERE t.deleted_at IS NULL AND t.completed_at IS "
+         + ("NOT NULL" if completed else "NULL"))
+    params = []
+    if assignee_id is not None:
+        q += (" AND EXISTS (SELECT 1 FROM task_assignees ta"
+              " WHERE ta.task_id = t.id AND ta.user_id = ?)")
+        params.append(assignee_id)
+    return conn.execute(
+        q + " ORDER BY t.due_date IS NULL, t.due_date, t.id",
+        params).fetchall()
+
+
+def task_assignee_names(conn):
+    """{task_id: 'name, name'} across live tasks -- one query, the
+    index composes cells from it."""
+    out = {}
+    for r in conn.execute(
+            "SELECT ta.task_id, u.name FROM task_assignees ta"
+            " JOIN users u ON u.id = ta.user_id ORDER BY ta.task_id,"
+            " ta.user_id"):
+        out.setdefault(r["task_id"], []).append(r["name"])
+    return {tid: ", ".join(names) for tid, names in out.items()}
+
+
+def task_lists_rows(conn):
+    return conn.execute(
+        "SELECT tl.id, tl.name,"
+        " (SELECT COUNT(*) FROM task_list_items i"
+        "  WHERE i.task_list_id = tl.id) AS item_count"
+        " FROM task_lists tl WHERE tl.deleted_at IS NULL"
+        " ORDER BY tl.id").fetchall()
+
+
+def task_list_row(conn, task_list_id):
+    return conn.execute(
+        "SELECT * FROM task_lists WHERE id=? AND deleted_at IS NULL",
+        (task_list_id,)).fetchone()
+
+
+def task_list_items(conn, task_list_id):
+    return conn.execute(
+        "SELECT i.*, u.name AS assignee_name FROM task_list_items i"
+        " LEFT JOIN users u ON u.id = i.default_assignee_id"
+        " WHERE i.task_list_id=? ORDER BY i.position, i.id",
+        (task_list_id,)).fetchall()
+
+
+def task_list_automations(conn):
+    """{task_list_id: ['type / status', ...]} -- the matter statuses
+    that auto-import each list (matter_statuses.auto_task_list_id is
+    the automation linkage the schema stores)."""
+    out = {}
+    for r in conn.execute(
+            "SELECT s.auto_task_list_id AS tl, mt.name AS type_name,"
+            " s.name AS status_name FROM matter_statuses s"
+            " JOIN matter_types mt ON mt.id = s.matter_type_id"
+            " WHERE s.auto_task_list_id IS NOT NULL"
+            " AND s.deleted_at IS NULL ORDER BY mt.name, s.position"):
+        out.setdefault(r["tl"], []).append(
+            f"{r['type_name']} / {r['status_name']}")
+    return out
+
+
+def contact_date_fact_defs(conn):
+    """Contact-level date/expiry fact definitions -- the reference
+    choices tasks.add_list_item accepts (its own validation rule)."""
+    return conn.execute(
+        "SELECT key, label FROM fact_definitions"
+        " WHERE subject_type='contact'"
+        " AND value_type IN ('date','expiry')"
+        " ORDER BY label").fetchall()
+
+
 def trust_sub_accounts_of_contact(conn, contact_id):
     """Trust sub-ledger account ids belonging to a contact: their
     client-level funds plus funds held for their matters (gated
