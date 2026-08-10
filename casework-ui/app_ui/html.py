@@ -92,6 +92,10 @@ select { padding: 0.45rem 0.5rem; border: 1px solid #c3c9d2;
 .legend { margin: 0.6rem 0 0; }
 .legend span.item { margin-right: 1.1rem; white-space: nowrap; }
 main.wide { max-width: 92rem; }
+/* calendar tables: one text size (the Linked size), links always
+   the firm blue -- gate ruling 2026-08-10 */
+.agenda table.data td { font-size: 0.85rem; }
+.agenda table.data a, table.month-grid a { color: #2456a6; }
 .empty-state { text-align: center; padding: 1.2rem 0 0.6rem; }
 table.month-grid { table-layout: fixed; }
 table.month-grid td { vertical-align: top; height: 5.5rem;

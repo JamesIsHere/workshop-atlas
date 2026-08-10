@@ -839,8 +839,10 @@ class Handler(BaseHTTPRequestHandler):
                      f"{r['kind']}</span>",
                      html.link(r["href"], r["title"]), r["linked"]]
                     for r in shown]
-            inner = html.table(["When", "Kind", "Item", "Linked"],
-                               rows)
+            inner = ("<div class='agenda'>"
+                     + html.table(["When", "Kind", "Item", "Linked"],
+                                  rows)
+                     + "</div>")
         else:
             inner = html.designed_empty(
                 "Nothing scheduled yet. Appointments, deadlines,"
