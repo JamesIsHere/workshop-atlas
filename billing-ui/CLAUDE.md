@@ -19,23 +19,18 @@ contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P4 open. ATTEMPT 5 DRIVEN 2026-08-10 (all 40       |
-|              | steps, James solo): close-out verifier 13/13 PASS  |
-|              | exit 0, fiduciary 9/0/0 GREEN on the walked db,    |
-|              | M1->M6 16:56 (under budget, first time). VERDICT   |
-|              | PENDING -- James is sitting with it; the three     |
-|              | sub-verdicts are unsigned                          |
-| Last session | 2026-08-10 s16 -- judgment-call sweep: budget      |
-|              | ruled 25:00 over the full walk M1->M7 (coupling    |
-|              | preflight built), close calls 2a-2d ruled (ranking |
-|              | rows now link), sibling wording + E-item lines +   |
-|              | flow markers ruled (chips got own colors). PC      |
-|              | froze pre-wind-down; recovery reran ALL suites     |
-|              | green, committed, restarted server on walked db    |
-| Next action  | Take James's three-part verdict when his review    |
-|              | is done; P4 closes on his signed sheet only.       |
-|              | Sixth sweep cluster unverified -- re-offer the     |
-|              | map. See state.md cold-start pointer               |
+| Status       | COMPLETE 2026-08-10 -- three-part verdict signed   |
+|              | PASS/PASS/PASS on attempt 5; completion proof met; |
+|              | result.md written and it is the authority          |
+| Last session | 2026-08-10 s16 close -- verdict taken at the gate  |
+|              | after every ledger judgment call was ruled;        |
+|              | demo-walk-report.md + result.md written; all       |
+|              | eight suites green quoted; walk report sha         |
+|              | b3aa0a03 x2                                        |
+| Next action  | None owed. Successor decisions (firm meeting,      |
+|              | cold-driver demo, portal, payments/rake) are new   |
+|              | conversations. Server on 8500 stays up as a demo   |
+|              | asset until James takes it down. See state.md      |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

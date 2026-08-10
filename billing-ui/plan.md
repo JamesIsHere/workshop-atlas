@@ -1,5 +1,9 @@
 # plan.md -- billing-ui (agent's strategy; rewritten freely)
 
+CONTRACT COMPLETE 2026-08-10 -- verdict signed, result.md is the
+authority. This plan is retained as history; no phase below is
+live.
+
 Pre-ratification draft. Phases start only after goal.md is ratified.
 Hybrid mode: each phase is agent-unattended against verifier 1; each
 GATE is James reviewing rendered screens + all standing suites green

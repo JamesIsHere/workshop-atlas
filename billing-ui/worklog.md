@@ -3216,3 +3216,48 @@ HTTP 303) -- the unified label is live for review.
 With these six, EVERY flagged judgment call in the ledgers is
 ruled. The decision map is now: the attempt-5 verdict, then
 the parked/gated pool. Nothing else queues.
+
+## 2026-08-10 -- s16 close: THE VERDICT SIGNED -- PASS/PASS/PASS;
+## project COMPLETE
+
+James asked to keep moving to what was open; the only thing
+open was the gate. The plain program map was re-issued (gate
+rule) and the three-part verdict taken, each up/down:
+
+  (a) FIDUCIARY STORY LANDS: PASS
+  (b) NOTHING EMBARRASSING:  PASS
+  (c) BOOKABLE:              PASS
+
+P4 CLOSED on the signature. Completion proof then executed in
+contract order:
+
+- billing-ui-walk rerun x2 this session: "21 pass, 0 pending,
+  0 fail; float-sweep pass; verdict GREEN" both runs,
+  report_sha.py = b3aa0a03 both runs (x2 byte-identical proof).
+- verify/demo-walk-report.md WRITTEN: attempt-5 record, marks,
+  friction log with resolutions, post-walk work summary, the
+  signed verdict table.
+- result.md WRITTEN, last, per contract: outcome clauses 1-3
+  met and quoted; completion-proof table checked on disk;
+  final suite state (all eight, this session's quotes);
+  boundaries (no cold-run claim, no real-money claim, portal
+  out of scope); successor decisions named as new
+  conversations.
+
+Deviation note, disclosed: the contract says fiduciary F1-F8;
+the suite is F1-F9 today via the ruled F7/F9 strengthenings --
+recorded in result.md as growth, checks never weakened.
+
+Server left UP on 8500 over the walked -09b db deliberately --
+the build is now a demo asset; James decides when it comes
+down.
+
+METHOD: supervised-mode close-out. The verdict protocol from
+state.md (ask nothing until he volunteers; take the three-part
+sheet when offered) executed as designed across a PC-freeze
+recovery, two whittling rounds, and the gate -- the four-file
+harness carried continuity through a hard crash with zero
+lost work. Sequential one-call-per-turn whittling (James's
+own cadence) emptied the entire judgment-call ledger before
+the verdict, so the signature bound a fully-ruled artifact,
+not a pile of standing agent judgment.
