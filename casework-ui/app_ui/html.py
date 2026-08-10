@@ -86,6 +86,9 @@ select { padding: 0.45rem 0.5rem; border: 1px solid #c3c9d2;
 .kind-vmax { background: #6a3fa0; }
 .kind-invoice { background: #0e7c86; }
 .provenance { font-size: 0.85rem; color: #6a7383; }
+.nowrap { white-space: nowrap; }
+.dot { display: inline-block; width: 0.55rem; height: 0.55rem;
+       border-radius: 50%; margin-right: 0.3rem; }
 .empty-state { text-align: center; padding: 1.2rem 0 0.6rem; }
 table.month-grid td { vertical-align: top; height: 5.5rem;
                       width: 14.28%; border: 1px solid #e7eaee;

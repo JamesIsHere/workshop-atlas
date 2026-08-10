@@ -735,47 +735,45 @@ class Handler(BaseHTTPRequestHandler):
         """The unified date view (Appendix A): six kinds assembled
         from their own readers into one dated list."""
         def linked(cid, cname, mid, mname, prefix=""):
-            parts = []
+            # matter-first, one link only: the matter name already
+            # names the client, and two wrapped links per row was
+            # the crowding James flagged at the P1 gate
             if mid:
-                parts.append(html.link(f"/matters/{mid}",
-                                       mname or "matter"))
-            if cid:
-                parts.append(html.link(f"/contacts/{cid}",
-                                       cname or "client"))
-            if not parts:
+                part = html.link(f"/matters/{mid}", mname or "matter")
+            elif cid:
+                part = html.link(f"/contacts/{cid}",
+                                 cname or "client")
+            else:
                 return "-"
-            return (f"<span class='provenance'>{prefix}"
-                    + " -- ".join(parts) + "</span>")
+            return f"<span class='provenance'>{prefix}{part}</span>"
 
         items = []
         for e in reads.calendar_events(conn):
             kind = self._event_kind(e)
             date = e["starts_at"][:10]
-            when = html.mdy(date)
+            time_range = ""
             if kind == "appointment":
-                when += " " + e["starts_at"][11:16]
+                time_range = e["starts_at"][11:16]
                 if e["ends_at"]:
-                    when += "-" + e["ends_at"][11:16]
+                    time_range += "-" + e["ends_at"][11:16]
             prefix = "from " if kind == "expiry" else ""
             items.append({
-                "kind": kind, "date": date, "when": when,
+                "kind": kind, "date": date, "time": time_range,
                 "title": e["title"], "href": f"/calendar/{e['id']}",
                 "linked": linked(e["contact_id"], e["contact_name"],
                                  e["matter_id"], e["matter_name"],
                                  prefix)})
         for v in reads.calendar_vmax(conn):
             items.append({
-                "kind": "vmax", "date": v["due_on"],
-                "when": html.mdy(v["due_on"]),
+                "kind": "vmax", "date": v["due_on"], "time": "",
                 "title": f"VMAX date -- {v['contact_name']}",
                 "href": f"/contacts/{v['contact_id']}",
                 "linked": linked(v["contact_id"], v["contact_name"],
                                  None, None, "from ")})
         for t in reads.calendar_task_dues(conn):
             items.append({
-                "kind": "task", "date": t["due_date"],
-                "when": html.mdy(t["due_date"]), "title": t["title"],
-                "href": f"/tasks/{t['id']}",
+                "kind": "task", "date": t["due_date"], "time": "",
+                "title": t["title"], "href": f"/tasks/{t['id']}",
                 "linked": linked(t["contact_id"], t["contact_name"],
                                  t["matter_id"], t["matter_name"])})
         for i in reads.calendar_invoice_dues(conn):
@@ -783,13 +781,12 @@ class Handler(BaseHTTPRequestHandler):
                 continue  # a paid bill's due date is history, not
                 # a calendar obligation ([Q] gate ruling pending)
             items.append({
-                "kind": "invoice", "date": i["due_date"],
-                "when": html.mdy(i["due_date"]),
+                "kind": "invoice", "date": i["due_date"], "time": "",
                 "title": f"{i['display_code']} due",
                 "href": f"/billing/invoices/{i['id']}",
                 "linked": linked(i["contact_id"], i["contact_name"],
                                  None, None)})
-        items.sort(key=lambda r: (r["date"], r["when"], r["title"]))
+        items.sort(key=lambda r: (r["date"], r["time"], r["title"]))
         return items
 
     def _calendar(self, conn, user, query):
@@ -831,7 +828,13 @@ class Handler(BaseHTTPRequestHandler):
         if view == "month":
             inner = self._cal_month(query, shown)
         elif shown:
-            rows = [[r["when"],
+            # date and time stack deliberately: the date line stays
+            # one line, the time rides under it muted (P1 gate
+            # feedback: the mid-range wrap read as clutter)
+            rows = [[f"<span class='nowrap'>{html.mdy(r['date'])}"
+                     f"</span>"
+                     + (f"<br><span class='hint nowrap'>{r['time']}"
+                        f"</span>" if r["time"] else ""),
                      f"<span class='kind kind-{r['kind']}'>"
                      f"{r['kind']}</span>",
                      html.link(r["href"], r["title"]), r["linked"]]
@@ -896,9 +899,10 @@ class Handler(BaseHTTPRequestHandler):
                     continue
                 date = f"{year:04d}-{mon:02d}-{day:02d}"
                 entries = "".join(
-                    f"<a href='{r['href']}'><span class='kind"
-                    f" kind-{r['kind']}'>{r['kind']}</span>"
-                    f" {html.esc(r['title'][:24])}</a>"
+                    f"<a href='{r['href']}' title='{html.esc(r['title'])}"
+                    f"{' ' + r['time'] if r['time'] else ''}'>"
+                    f"<span class='dot kind-{r['kind']}'></span>"
+                    f"{html.esc(r['title'][:20])}</a>"
                     for r in by_date.get(date, []))
                 cells += (f"<td><span class='day'>{day}</span>"
                           f"{entries}</td>")
