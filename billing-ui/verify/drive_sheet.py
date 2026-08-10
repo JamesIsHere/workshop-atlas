@@ -96,7 +96,9 @@ def sheet_sha():
 
 
 def today():
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    # FIRM-LOCAL (ruling 2026-08-09): the sheet's "today" is the
+    # human driver's today; the app prefills firm-local dates.
+    return datetime.now().strftime("%Y-%m-%d")
 
 
 class Drive:

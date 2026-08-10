@@ -604,6 +604,24 @@ TABLES = [
         ("cleared_at", "TEXT"),
         ("statement_ref", "TEXT"),
     ], False, True),
+    # period_closes: the hard month-end close (billing-ui
+    # period-close.md, ratified 2026-08-09; program amendment same
+    # date). One live (non-void) row per period, enforced in
+    # app/period.py; months close in strict order. snapshot is the
+    # canonical-JSON close record frozen at prepare and verified
+    # unchanged at approve (PC2 stale-prepare control).
+    ("period_closes", [
+        ("id", "INTEGER PRIMARY KEY"),
+        ("period", "TEXT NOT NULL CHECK (period GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]')"),
+        ("status", "TEXT NOT NULL CHECK (status IN ('prepared','closed','void'))"),
+        ("prepared_by", "INTEGER NOT NULL REFERENCES users(id)"),
+        ("prepared_at", "TEXT NOT NULL"),
+        ("approved_by", "INTEGER REFERENCES users(id)"),
+        ("approved_at", "TEXT"),
+        ("snapshot", "TEXT NOT NULL"),
+        ("created_at", "TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))"),
+        ("", "CHECK (status != 'closed' OR (approved_by IS NOT NULL AND approved_at IS NOT NULL))"),
+    ], False, True),
     ("time_entries", [
         ("id", "INTEGER PRIMARY KEY"),
         ("user_id", "INTEGER NOT NULL REFERENCES users(id)"),

@@ -336,8 +336,53 @@ def check_f8(con):
             % ("held" if probes_ok else "FAILED", len(bad)))
 
 
+def check_f9(con):
+    """F9 CLOSED-PERIOD IMMUTABILITY (billing-ui period-close.md PC1;
+    program amendment 2026-08-09 -- a STRENGTHENING, F1-F8 untouched):
+    every closed period's ledger-side snapshot must recompute
+    byte-equal today. The app-layer lock guards the recipe surface;
+    this check catches ANY writer -- a money fact snuck into a closed
+    month by any path shifts the recompute and goes RED. Compares the
+    tie fields and reconciling items only (never display names); the
+    billing-document fields are deliberately outside the lock (sheet
+    element 9)."""
+    try:
+        rows = con.execute("SELECT period, snapshot FROM period_closes"
+                           " WHERE status='closed' ORDER BY period"
+                           ).fetchall()
+    except sqlite3.OperationalError:
+        rows = []  # pre-close schema: nothing closed, vacuously green
+    import json
+
+    import reconcile
+    TIE_FIELDS = ("bank_balance_cents", "deposits_in_transit_cents",
+                  "outstanding_disbursements_cents",
+                  "corrections_net_cents", "book_balance_cents",
+                  "sub_ledger_sum_cents", "identity_holds")
+    drifted = []
+    for period, snap_text in rows:
+        snap = json.loads(snap_text)
+        for a in snap["accounts"]:
+            r = reconcile.three_way(con, a["bank_account_id"],
+                                    snap["period_end"])
+            live = {k: r[k] for k in TIE_FIELDS}
+            live["identity_holds"] = bool(live["identity_holds"])
+            frozen = {k: a[k] for k in TIE_FIELDS}
+            live_items = sorted(
+                ({"cause": i["cause"], "direction": i["direction"],
+                  "amount_cents": i["amount_cents"], "date": i["date"],
+                  "entry_id": i["entry_id"]} for i in r["items"]),
+                key=lambda i: (i["date"], i["entry_id"], i["cause"]))
+            if live != frozen or live_items != a["items"]:
+                drifted.append("%s a%d" % (period, a["bank_account_id"]))
+    return (not drifted,
+            "F9 CLOSED PERIODS: %d closed, %d drifted%s"
+            % (len(rows), len(drifted),
+               "" if not drifted else " " + repr(drifted)))
+
+
 CHECKS = [check_f1, check_f2, check_f3, check_f4, check_f5, check_f6,
-          check_f7, check_f8]
+          check_f7, check_f8, check_f9]
 
 
 def run_suite(con):
@@ -426,9 +471,33 @@ def selftest():
     except sqlite3.DatabaseError:
         pass
 
-    print("selftest: draft DDL instantiated; empty ledger %d/6 non-stub "
+    # F9: a closed period whose frozen snapshot disagrees with the
+    # live recompute must go RED (the drift IS the violation).
+    con.executescript("""
+      CREATE TABLE period_closes (
+        id INTEGER PRIMARY KEY, period TEXT NOT NULL,
+        status TEXT NOT NULL, prepared_by INTEGER, prepared_at TEXT,
+        approved_by INTEGER, approved_at TEXT, snapshot TEXT NOT NULL);
+    """)
+    import json as _json
+    _bogus = _json.dumps({"period": "2026-01", "period_end": "2026-01-31",
+                          "accounts": [{"bank_account_id": 1,
+                                        "bank_balance_cents": 999999,
+                                        "deposits_in_transit_cents": 0,
+                                        "outstanding_disbursements_cents": 0,
+                                        "corrections_net_cents": 0,
+                                        "book_balance_cents": 999999,
+                                        "sub_ledger_sum_cents": 999999,
+                                        "identity_holds": True,
+                                        "items": []}]})
+    con.execute("INSERT INTO period_closes (period, status, snapshot)"
+                " VALUES ('2026-01','closed',?)", (_bogus,))
+    if check_f9(con)[0]:
+        failures.append("F9 failed to flag a drifted closed period")
+
+    print("selftest: draft DDL instantiated; empty ledger %d/7 non-stub "
           "checks pass; calibration scenarios: %s"
-          % (6, "all behaved" if not failures else "FAILURES"))
+          % (7, "all behaved" if not failures else "FAILURES"))
     for f in failures:
         print("  FAIL: " + f)
     return 0 if not failures else 1

@@ -2194,3 +2194,136 @@ f7f821edb1e9 unchanged. report_sha.py = c59b8e9d SUPERSEDES
 Server restarted; live listing quoted: three payments
 (500 direct / 3,000 earn-out / 5,000 card) footing to
 $8,500.00 = the band headline.
+
+## 2026-08-09 -- s12: period-close act -- designed, ratified, BUILT
+
+DESIGN GATE (the last item-12 object). Three rulings signed in
+conversation before the sheet:
+- PC1 HARD CLOSE: closing locks the month; the engine refuses
+  postings dated into it; late facts post current-dated.
+- PC2 TWO-STEP, SAME PERSON ALLOWED AND SHOWN: prepare -> approve,
+  recorded signers; one person may sign both, the record says so.
+- PC3 TIE REQUIRED, EXCEPTIONS CARRIED: every account's three-way
+  identity must HOLD; each reconciling item individually
+  acknowledged and printed on the record.
+Sheet: period-close.md, 12 numbered elements, SIGNED as drafted
+("The sheet looks good as drafted"); flags 9 (billing documents
+not locked in v1) and 10 (no reopen, ever) accepted as flagged.
+One red-pen round: element 1 was present-tense fact about an
+unbuilt route; James hunted for a page that existed only on paper.
+Evidence-discipline class, s7 lineage; corrected to proposal
+phrasing with verified ground facts. PROGRAM AMENDMENT recorded in
+../CLAUDE.md (2026-08-09, ratified via the signed sheet): scoped
+casework write surface for the close.
+
+BUILT, all layers:
+- Schema: period_closes via gen_schema.py (audited, no soft
+  delete, canonical-JSON snapshot column); schema.sql regenerated.
+- Core: casework/app/period.py (closable_month strict-order,
+  compute over the recon oracle, prepare/approve with PC2
+  stale-void, assert_open); lock guard called from ledger._post
+  (posted_at + co-written events) and create_external_event.
+- UI: /billing/close (step-1 ack checkboxes each required, step-2
+  approve, broken-tie block linking Reconcile), record page
+  /billing/close/<YYYY-MM>, closed-months card, dashboard
+  period-line + billing action-row links. Rendering only; the two
+  writes route through period.prepare/approve.
+- Verifiers: fiduciary check F9 (closed periods must recompute
+  byte-equal; calibration scenario added, selftest counts 7/7);
+  unit_period_close.py 6/6 (unit_ convention -- parity discovery
+  is corpus-map-bound); walk step 20 "period close: July coda".
+
+CROSS-PROJECT FIX (flagged prominent): reconcile._sub_ledger_sum
+computed client claims AS OF NOW while bank and book legs were as
+of period_end -- latent, because suites only reconciled at period
+ends covering all activity; any retrospective recompute (closing
+July from August; F9's drift check) falsely broke the tie. Fixed
+to as-of-period_end under the standing F7 amendment (recon-model
+file, strengthen-only); current-period recons byte-unchanged, all
+suites requoted below.
+
+WALK DESIGN CALL: the walk's amount story is August-dated and
+August is still running, so the close step is a JULY CODA created
+at walk END (one 100.00 consult billed + paid direct 07/01) --
+the ratified August story stays exactly as the anchor mirrors it,
+and July closes through the UI: prepare (clean carried state),
+approve, record page (same-signer disclosure asserted), then PC1
+proven UI-level (July-dated disbursement refuses visibly, moves
+no money) and at the bank-record choke point; fiduciary rerun on
+the closed walked db inside the step.
+
+Judgment calls flagged, unruled: a month is closable only after
+it ENDS (not in the sheet; accounting default); ranking rows are
+plain text, no contact links in v1; approve-on-stale COMMITS the
+void before rendering the error (the void must survive);
+closable_month returns one month (strict order) -- the close page
+never offers a choice.
+
+SUITES (all rerun this session, quoted):
+- billing-ui walk: "20 pass, 0 pending, 0 fail; float-sweep
+  pass; verdict GREEN".
+- ui-walk (frozen): "13 pass, 0 pending, 0 fail; sweeps pass;
+  verdict GREEN".
+- spine: "107 green, 0 red, 0 pending; checks pass".
+- billing: "25 green, 0 red, 0 pending, 0 parked; checks pass;
+  verdict: GREEN".
+- fiduciary --seeded: "9 pass, 0 red, 0 stub; verdict: GREEN"
+  (F9 live); --selftest: "calibration scenarios: all behaved".
+- anchor-billing: "PASS (1.275s of 900s budget)".
+- drive-sheet: "24/24 groups pass; verdict GREEN"; labels: "82
+  labels checked, 0 not found"; sheet lock UNCHANGED.
+report_sha.py = 30301f88 SUPERSEDES c59b8e9d (history:
+... 5ba384cc -> c59b8e9d -> 30301f88).
+
+OPS: migrate_period_close.py written (lifts DDL from generated
+schema.sql, fail-loud); run on demo-walk-2026-08-08.db ("added,
+0 rows, 3 audit triggers"). Stale s11 server killed (single bind
+verified by netstat before and after), restarted on 8500 over the
+migrated db. Demo-db ground truth quoted: all money facts are
+August 2026, so /billing/close shows the honest empty state until
+September; the attempt-5 fresh db seeds July dates (seed_demo
+NOW=2026-07-20), so James can drive the close live at the
+attempt. Sheet amendment for a close act in the drive is an
+attempt-prep decision, queued in state.md.
+
+## 2026-08-09 -- s12 cont: live eyeball + firm-local dates ruling
+
+EYEBALL LANDED: James swapped to a July-seeded preview db
+(regenerated demo-billing.db on the new schema -- July closable,
+both ties HOLD, two genuine carried items) and drove the FULL act
+himself: prepare with both acknowledgments, approve, record page.
+Verdict on the populated page: "seems pretty good".
+
+Two defects off his snaps:
+1. Carried-item CHECKBOXES float away from their text on the
+   prepare page (label layout). Mechanical; queued for the finish
+   pass alongside step-29.
+2. His close record read "Prepared on 08/10/2026" -- TOMORROW.
+   Cause verified: _today() stamped business dates in UTC, which
+   rolls at 8pm Eastern; app-wide (every form default), first
+   prominent on the close signature line. RULING (James): business
+   dates stamp FIRM-LOCAL. Applied at both sites: billing_ui
+   _today() and the client pay date in casework/app/server.py
+   (same business-date class, rides the ruling -- disclosed;
+   audit/session TIMESTAMPS stay UTC). Judgment call flagged:
+   firm-local = server system clock, not the users.timezone
+   column.
+
+Reciprocal guard (casework/app touched), ALL suites requoted:
+spine "107 green, 0 red, 0 pending; checks pass"; billing "25
+green ... verdict: GREEN"; fiduciary --seeded "9 pass, 0 red,
+0 stub; verdict: GREEN"; anchor-billing "PASS (1.295s of 900s
+budget)"; ui-walk (frozen) "verdict: GREEN"; billing-ui walk
+"20 pass, 0 pending, 0 fail; float-sweep pass; verdict GREEN";
+labels "82 checked, 0 not found". drive-sheet first went 23/24
+FAIL -- its own today() helper was still UTC while the app went
+firm-local; the sheet's "issue date starts on today" means the
+human driver's today, so the DRIVER was aligned to the ruling
+(sheet text untouched, lock intact) -> "24/24 groups pass;
+verdict GREEN". report_sha.py = 30301f88 UNCHANGED (walk report
+is date-free; no supersession).
+
+Server restarted on 8500 over data/demo-billing.db (single bind
+verified). NOTE for cold resume: 8500 currently serves the
+PREVIEW db, not a walk db; James may click Prepare/Approve
+freely -- it regenerates via verify/seed_demo.py.

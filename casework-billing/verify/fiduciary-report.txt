@@ -6,4 +6,5 @@ F5 SEGREGATION: 15 entries checked, 0 violations  [PASS]
 F6 GROSS-VS-NET: 0 fee-into-trust entries, 0 batch arithmetic errors, 0 net-mode trust batches, 0 event-linkage mismatches  [PASS]
 F7 THREE-WAY-RECON: 2 accounts x 2 periods, 7 reconciling items enumerated, 0 identity breaks; strengthened: 0 unknown-cause items, 0 timing items surviving all-cleared, 0 payments with fabricated/missing bank events  [PASS]
 F8 IMMUTABILITY: probe held, 0 forbidden audit rows  [PASS]
-fiduciary: 8 pass, 0 red, 0 stub; verdict: GREEN
+F9 CLOSED PERIODS: 0 closed, 0 drifted  [PASS]
+fiduciary: 9 pass, 0 red, 0 stub; verdict: GREEN

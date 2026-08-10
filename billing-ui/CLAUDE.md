@@ -20,17 +20,18 @@ contract; this file is a signpost.
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
 | Status       | P4 open after attempt 4 (FAIL b/c, (a) PASS).      |
-|              | Item-12 objects 1-3 BUILT and James-seen: home     |
-|              | page, flow markers (dollars-in-buckets), client    |
-|              | Money band + footed payments drill                 |
-| Last session | 2026-08-09 s11 -- audience + build-order rulings;  |
-|              | flow markers designed and built; client summary    |
-|              | designed and built; footed drill added on James's  |
-|              | live catch; walk 19 steps, ALL suites green, sha   |
-|              | c59b8e9d; sheet lock unchanged                     |
-| Next action  | PERIOD-CLOSE ACT design pass with James (carries   |
-|              | maker-checker + deferred rankings), then the       |
-|              | finish pass. See state.md cold-start pointer       |
+|              | Item 12 objects-COMPLETE: home page, flow markers, |
+|              | client Money band + drill, and the period-close    |
+|              | act (PC1 hard close / PC2 two-step / PC3 carried   |
+|              | exceptions; period-close.md ratified 2026-08-09)   |
+| Last session | 2026-08-09 s12 -- close act designed, ratified,    |
+|              | built end to end (schema, period.py, lock guard,   |
+|              | /billing/close, F9, walk step 20); recon claims    |
+|              | leg fixed as-of-period_end; ALL suites green, sha  |
+|              | 30301f88; sheet lock unchanged                     |
+| Next action  | FINISH PASS against "not beautiful" (step-29 fix   |
+|              | rides it), then attempt-5 prep. See state.md       |
+|              | cold-start pointer                                 |
 
 Keep this table honest at every wind-down. A stale State section is
 worse than none -- it tells a cold resume confident lies.

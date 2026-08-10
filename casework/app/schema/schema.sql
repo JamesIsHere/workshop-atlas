@@ -1509,6 +1509,33 @@ CREATE TRIGGER trg_journal_postings_ad AFTER DELETE ON journal_postings BEGIN
 END;
 
 
+CREATE TABLE period_closes (
+  id INTEGER PRIMARY KEY,
+  period TEXT NOT NULL CHECK (period GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]'),
+  status TEXT NOT NULL CHECK (status IN ('prepared','closed','void')),
+  prepared_by INTEGER NOT NULL REFERENCES users(id),
+  prepared_at TEXT NOT NULL,
+  approved_by INTEGER REFERENCES users(id),
+  approved_at TEXT,
+  snapshot TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  CHECK (status != 'closed' OR (approved_by IS NOT NULL AND approved_at IS NOT NULL))
+);
+
+CREATE TRIGGER trg_period_closes_ai AFTER INSERT ON period_closes BEGIN
+  INSERT INTO audit_log (actor_type, actor_id, action, entity_type, entity_id, changes)
+  VALUES (casework_actor_type(), casework_actor_id(), 'insert', 'period_closes', NEW.id, json_object('id', NEW.id, 'period', NEW.period, 'status', NEW.status, 'prepared_by', NEW.prepared_by, 'prepared_at', NEW.prepared_at, 'approved_by', NEW.approved_by, 'approved_at', NEW.approved_at, 'snapshot', NEW.snapshot, 'created_at', NEW.created_at));
+END;
+CREATE TRIGGER trg_period_closes_au AFTER UPDATE ON period_closes BEGIN
+  INSERT INTO audit_log (actor_type, actor_id, action, entity_type, entity_id, changes)
+  VALUES (casework_actor_type(), casework_actor_id(), 'update', 'period_closes', NEW.id, json_object('old', json_object('id', OLD.id, 'period', OLD.period, 'status', OLD.status, 'prepared_by', OLD.prepared_by, 'prepared_at', OLD.prepared_at, 'approved_by', OLD.approved_by, 'approved_at', OLD.approved_at, 'snapshot', OLD.snapshot, 'created_at', OLD.created_at), 'new', json_object('id', NEW.id, 'period', NEW.period, 'status', NEW.status, 'prepared_by', NEW.prepared_by, 'prepared_at', NEW.prepared_at, 'approved_by', NEW.approved_by, 'approved_at', NEW.approved_at, 'snapshot', NEW.snapshot, 'created_at', NEW.created_at)));
+END;
+CREATE TRIGGER trg_period_closes_ad AFTER DELETE ON period_closes BEGIN
+  INSERT INTO audit_log (actor_type, actor_id, action, entity_type, entity_id, changes)
+  VALUES (casework_actor_type(), casework_actor_id(), 'delete', 'period_closes', OLD.id, json_object('id', OLD.id, 'period', OLD.period, 'status', OLD.status, 'prepared_by', OLD.prepared_by, 'prepared_at', OLD.prepared_at, 'approved_by', OLD.approved_by, 'approved_at', OLD.approved_at, 'snapshot', OLD.snapshot, 'created_at', OLD.created_at));
+END;
+
+
 CREATE TABLE time_entries (
   id INTEGER PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id),

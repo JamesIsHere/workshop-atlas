@@ -148,6 +148,14 @@ def _post(conn, kind, legs, posted_by, posted_at, memo=None,
           invoice_id=None, payment_id=None, external_events=(),
           reverses_entry_id=None, replaces_entry_id=None,
           allowed_kinds=None, external_event_id=None):
+    # PC1 hard close (period-close.md 2026-08-09): no entry or
+    # co-written bank event may be dated into a closed month --
+    # reversals included; corrections post current-dated. Lazy
+    # import: period imports billing which imports this module.
+    from app import period as _period
+    _period.assert_open(conn, posted_at)
+    for _ev in external_events:
+        _period.assert_open(conn, _ev["occurred_on"])
     debits = sum(c for _a, s, c in legs if s == "debit")
     credits = sum(c for _a, s, c in legs if s == "credit")
     if debits != credits:
@@ -329,6 +337,10 @@ def ensure_expense_account(conn, kind):
 def create_external_event(conn, event_type, bank_account_id, occurred_on,
                           amount_cents, direction, counterparty=None,
                           memo=None, invoice_id=None, payment_id=None):
+    # PC1 hard close: the bank record of a closed month is frozen; a
+    # late bank fact is entered on the date the bank showed it.
+    from app import period as _period
+    _period.assert_open(conn, occurred_on)
     return conn.execute(
         "INSERT INTO external_events (event_type, bank_account_id,"
         " occurred_on, amount_cents, direction, counterparty, memo,"

@@ -196,6 +196,20 @@ once, worked. To fix a locked file NOW instead of dragging it:
     item 12: period-close act (carries the maker-checker
     question + deferred firm-wide rankings), then the
     attempt-5 finish pass.
+    PERIOD-CLOSE ACT DESIGNED + BUILT 2026-08-09 s12 -- item 12
+    is OBJECTS-COMPLETE. Rulings PC1 hard close, PC2 two-step
+    same-person-shown (the inherited maker-checker question,
+    answered), PC3 tie + carried exceptions. Sheet
+    billing-ui/period-close.md RATIFIED as drafted; program
+    amendment 2026-08-09 in atlas/CLAUDE.md. Deferred rankings
+    (way-behind / keeps-us-in-cash) landed on the close page.
+    Built: period_closes schema, casework/app/period.py, lock
+    guard at both ledger choke points, /billing/close + record
+    page, fiduciary F9, walk step 20 (July coda). Recon claims
+    leg fixed as-of-period_end (standing F7 amendment). ALL
+    suites green; sha ...c59b8e9d -> 30301f88. Record:
+    billing-ui worklog s12. STILL OPEN in item 12: only the
+    attempt-5 finish pass.
 
 ## Unlocked build queue (billing-ui's own surface, no gate needed)
 

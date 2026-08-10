@@ -66,7 +66,13 @@ def _book_postings(conn, bank_account_id, period_end):
              "payment_id": r[9]} for r in rows]
 
 
-def _sub_ledger_sum(conn, bank_account_id):
+def _sub_ledger_sum(conn, bank_account_id, period_end):
+    """Client claims AS OF period_end -- all three legs of the
+    identity must be stated at the same date. (Fixed 2026-08-09 with
+    the period-close build: the unfiltered sum was latent-correct
+    only because suites reconciled at period ends covering all
+    activity; a retrospective recompute -- closing July from August,
+    F9's drift check -- needs the claims leg dated like the others.)"""
     total = 0
     stack = [bank_account_id]
     while stack:
@@ -79,8 +85,10 @@ def _sub_ledger_sum(conn, bank_account_id):
                 "SELECT COALESCE(SUM(CASE WHEN side='debit' THEN"
                 " amount_cents ELSE 0 END),0),"
                 " COALESCE(SUM(CASE WHEN side='credit' THEN amount_cents"
-                " ELSE 0 END),0) FROM journal_postings WHERE account_id=?",
-                (r[0],)).fetchone()
+                " ELSE 0 END),0) FROM journal_postings p"
+                " JOIN journal_entries e ON e.id=p.entry_id"
+                " WHERE p.account_id=? AND e.posted_at <= ?",
+                (r[0], period_end)).fetchone()
             total += c - d  # liability sub-accounts are credit-normal
     return total
 
@@ -240,7 +248,7 @@ def three_way(conn, bank_account_id, period_end):
         + corrections_net == book_balance
     kind = conn.execute("SELECT kind FROM ledger_accounts WHERE id=?",
                         (bank_account_id,)).fetchone()[0]
-    sub_sum = _sub_ledger_sum(conn, bank_account_id) \
+    sub_sum = _sub_ledger_sum(conn, bank_account_id, period_end) \
         if kind == "trust_bank" else None
     sub_ok = (sub_sum == book_balance) if sub_sum is not None else True
     return {"bank_account_id": bank_account_id, "period_end": period_end,

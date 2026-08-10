@@ -13,11 +13,12 @@ show plain accounting numbers (negatives parenthesized, no currency
 sign per cell); headline tiles carry the $ once.
 """
 
+import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from app import billing, ledger, processor, timekeeping
+from app import billing, ledger, period, processor, timekeeping
 
 from app_ui import html, reads
 
@@ -55,6 +56,8 @@ span.chipnote { color: #8a5b12; font-size: 0.8rem;
                 white-space: nowrap; }
 p.split { color: #6a7383; font-size: 0.95rem; margin: 0.5rem 0 0;
           font-variant-numeric: tabular-nums; }
+label.ackrow, p.ackrow { display: block; margin: 0.35rem 0;
+                         font-variant-numeric: tabular-nums; }
 .actions { overflow: auto; }
 input.copylink { font-family: Consolas, monospace; font-size: 0.9rem;
                  background: #f0f2f5; border: 1px dashed #b9c0cb;
@@ -132,7 +135,12 @@ def cents_of(text):
 
 
 def _today():
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    """FIRM-LOCAL business date (James's ruling 2026-08-09, s12: a
+    signed month-end dated tomorrow is wrong on its face; UTC rolled
+    every evening default to the next day). The server runs at the
+    firm; system clock = firm clock. Wall-clock TIMESTAMPS (audit,
+    sessions) stay UTC -- this is dates only."""
+    return datetime.now().strftime("%Y-%m-%d")
 
 
 def fmt_date(iso):
@@ -334,6 +342,8 @@ def billing_landing(h, conn, user, query):
            + f"<a class='quiet' href='/billing/charges/saved'>Saved"
              f" charges</a>"
            + f"<a class='quiet' href='/billing/recon'>Reconciliation"
+             f"</a>"
+           + f"<a class='quiet' href='/billing/close'>Period close"
              f"</a></div>")
     body = (f"<h1>Billing</h1>{tiles}"
             f"<div class='card'>{nav}{tabs}{table}</div>")
@@ -1206,7 +1216,7 @@ def _days_old(iso, today_iso):
 def dashboard_screen(h, conn, user):
     today = _today()
     banks = ledger.list_bank_accounts(conn)
-    period = reads.max_event_date(conn) if banks else None
+    period_date = reads.max_event_date(conn) if banks else None
 
     # Money row: balances by kind, recon verdict per bank at the
     # default period (the recon screen's own default).
@@ -1222,15 +1232,15 @@ def dashboard_screen(h, conn, user):
         else:
             op_total += bal
             op_banks.append(b)
-        if period is not None:
-            r = reconcile.three_way(conn, b["id"], period)
+        if period_date is not None:
+            r = reconcile.three_way(conn, b["id"], period_date)
             verdicts[b["id"]] = (r["identity_holds"]
                                  and not r["unmatched_statement_lines"]
                                  and not r["unmatched_book_postings"])
             recon_items.extend((b, i) for i in r["items"])
 
     def _chip(bank_list):
-        if not bank_list or period is None:
+        if not bank_list or period_date is None:
             return ""
         holds = all(verdicts[b["id"]] for b in bank_list)
         return (_pill("holds", "HOLDS") if holds
@@ -1269,7 +1279,7 @@ def dashboard_screen(h, conn, user):
     # stale checks, aged unbilled time. Empty most days by design.
     attend = []
     for b in banks:
-        if period is not None and not verdicts[b["id"]]:
+        if period_date is not None and not verdicts[b["id"]]:
             attend.append(
                 "Reconciliation BREAK on "
                 + html.link("/billing/recon", b["name"]))
@@ -1394,16 +1404,19 @@ def dashboard_screen(h, conn, user):
         "<a class='quiet' href='/calendar'>Calendar</a></div>"
         f"<p class='hint'>{tallies}.</p></div>")
 
-    if period is not None:
-        month = datetime.strptime(period, "%Y-%m-%d").strftime("%B %Y")
+    if period_date is not None:
+        month = datetime.strptime(period_date,
+                                  "%Y-%m-%d").strftime("%B %Y")
         all_hold = all(verdicts.values())
         periodline = (f"<p class='periodline'>Period {month} -- "
-                      + (f"ties as of {fmt_date(period)}" if all_hold
+                      + (f"ties as of {fmt_date(period_date)}" if all_hold
                          else "reconciliation needs attention")
+                      + " -- <a href='/billing/close'>Period close</a>"
                       + "</p>")
     else:
         periodline = ("<p class='periodline'>No bank activity"
-                      " yet.</p>")
+                      " yet. <a href='/billing/close'>Period close"
+                      "</a></p>")
 
     body = ("<h1>Dashboard</h1>" + periodline + tiles
             + "<div class='card'><h2 class='formhead'"
@@ -2057,6 +2070,231 @@ def disburse_post(h, conn, uid, user):
     return h._redirect("/billing/trust")
 
 
+# --- period close (period-close.md, RATIFIED 2026-08-09) --------------
+# The monthly meeting as a feature. Rendering only: every figure and
+# every gate comes from app.period (which itself renders the recon
+# oracle's numbers); the two writes route through period.prepare and
+# period.approve.
+
+
+def _month_name(period_str):
+    return datetime.strptime(period_str + "-01",
+                             "%Y-%m-%d").strftime("%B %Y")
+
+
+def _close_ties(accounts):
+    rows = []
+    for a in accounts:
+        badge = (_pill("holds", "HOLDS") if a["identity_holds"]
+                 else _pill("broken", "BROKEN"))
+        cells = [html.esc(a["name"]),
+                 fmt_cents(a["bank_balance_cents"]),
+                 fmt_cents(a["deposits_in_transit_cents"]),
+                 fmt_cents(a["outstanding_disbursements_cents"]),
+                 fmt_cents(a["corrections_net_cents"]),
+                 fmt_cents(a["book_balance_cents"]),
+                 ("--" if a["sub_ledger_sum_cents"] is None
+                  else fmt_cents(a["sub_ledger_sum_cents"]))]
+        rows.append("<tr><td>" + cells[0] + "</td>"
+                    + "".join(f"<td><span class='money'>{c}</span></td>"
+                              for c in cells[1:])
+                    + f"<td>{badge}</td></tr>")
+    return ("<table class='list'><tr><th>Account</th><th>Bank</th>"
+            "<th>In transit</th><th>Outstanding</th><th>Corrections"
+            "</th><th>Book</th><th>Client claims</th><th>Tie</th></tr>"
+            + "".join(rows) + "</table>")
+
+
+def _close_item_line(item):
+    return ("%s -- %s %s, %s, "
+            % (html.esc(item["cause"]),
+               fmt_cents(item["amount_cents"]),
+               "in" if item["direction"] == "in" else "out",
+               fmt_date(item["date"]))
+            + html.link(f"/billing/journal/{item['entry_id']}",
+                        f"e{item['entry_id']}"))
+
+
+def _close_items(snapshot, ack_boxes):
+    lines = []
+    for a in snapshot["accounts"]:
+        for i in a["items"]:
+            if ack_boxes:
+                key = period.item_key(a["bank_account_id"], i)
+                lines.append(
+                    "<label class='ackrow'><input type='checkbox'"
+                    f" name='ack' value='{html.esc(key)}' required> "
+                    + _close_item_line(i) + "</label>")
+            else:
+                lines.append("<p class='ackrow'>[x] "
+                             + _close_item_line(i) + "</p>")
+    if not lines:
+        return html.empty_state("Nothing carried. The month is clean.")
+    return "".join(lines)
+
+
+def _close_story(story):
+    return ("<p class='split'>Billed %s | Collected %s | Into trust %s"
+            " | Out of trust %s | Earned from trust %s</p>"
+            % (dollars(story["billed_cents"]),
+               dollars(story["collected_cents"]),
+               dollars(story["into_trust_cents"]),
+               dollars(story["out_of_trust_cents"]),
+               dollars(story["earned_from_trust_cents"])))
+
+
+def _close_rankings(snapshot):
+    wb = "".join(
+        "<tr><td>%s</td><td><span class='money'>%s</span></td>"
+        "<td>oldest %s (%d days)</td></tr>"
+        % (html.esc(r["name"]), fmt_cents(r["outstanding_cents"]),
+           fmt_date(r["oldest_issued"]), r["age_days"])
+        for r in snapshot["way_behind"])
+    kc = "".join(
+        "<tr><td>%s</td><td><span class='money'>%s</span></td>"
+        "<td>%d.%02d%% of collections</td></tr>"
+        % (html.esc(r["name"]), fmt_cents(r["collected_cents"]),
+           r["share_bp"] // 100, r["share_bp"] % 100)
+        for r in snapshot["keeps_in_cash"])
+    return (
+        "<h2 class='formhead'>Who is way behind</h2>"
+        + (f"<table class='list'>{wb}</table>" if wb
+           else html.empty_state("No one is behind."))
+        + "<h2 class='formhead'>Who keeps us in cash</h2>"
+        + (f"<table class='list'>{kc}</table>" if kc
+           else html.empty_state("Nothing collected in the trailing"
+                                 " three months.")))
+
+
+def _closed_months_card(conn):
+    rows = []
+    for r in period.list_closed(conn):
+        pby = reads.get_user(conn, r["prepared_by"])
+        aby = reads.get_user(conn, r["approved_by"])
+        rows.append(
+            "<tr><td>%s</td><td>closed %s</td><td>prepared %s,"
+            " approved %s</td><td>%s</td></tr>"
+            % (html.esc(_month_name(r["period"])),
+               fmt_date(r["approved_at"]),
+               html.esc(pby["name"]), html.esc(aby["name"]),
+               html.link(f"/billing/close/{r['period']}", "record")))
+    inner = (f"<table class='list'>{''.join(rows)}</table>" if rows
+             else html.empty_state("No months closed yet."))
+    return ("<div class='card'><h2 class='formhead'"
+            " style='border-top:none;margin-top:0'>Closed months</h2>"
+            + inner + "</div>")
+
+
+def close_screen(h, conn, user, error=None):
+    crumbs = _crumbs(("Billing", "/billing"), ("Period close", None))
+    closable = period.closable_month(conn, _today())
+    if closable is None:
+        body = (crumbs + "<h1>Period close</h1>"
+                + html.error_box(error)
+                + html.empty_state(
+                    "Nothing is closable right now. A month closes"
+                    " only after it ends, oldest first, once money"
+                    " facts exist in the books.")
+                + _closed_months_card(conn))
+        return _page(h, "Period close", body, user)
+    p, pe = closable
+    title = f"Close {_month_name(p)}"
+    prow = period.get_row(conn, p, statuses=("prepared",))
+    if prow is not None:
+        snap = json.loads(prow["snapshot"])
+        preparer = reads.get_user(conn, prow["prepared_by"])
+        step = ("<p class='hint'>Step 2 of 2 -- approve. Prepared by"
+                f" {html.esc(preparer['name'])} on"
+                f" {fmt_date(prow['prepared_at'])}. Approving locks"
+                f" {html.esc(_month_name(p))} permanently; if the"
+                " numbers moved since prepare, approval refuses and"
+                " voids the prepare instead.</p>")
+        act = ("<form method='post' action='/billing/close/approve'>"
+               "<button class='primary'>Approve close</button></form>")
+        items = _close_items(snap, ack_boxes=False)
+    else:
+        snap = period.compute(conn, p, pe)
+        step = ("<p class='hint'>Step 1 of 2 -- prepare. Every"
+                " account must tie; acknowledge each carried item."
+                " A second signature approves and locks the month"
+                " (one person may do both; the record shows it).</p>")
+        if snap["ties_hold"]:
+            act = ("<form method='post' action='/billing/close/prepare'>"
+                   + _close_items(snap, ack_boxes=True)
+                   + "<button class='primary'>Prepare close</button>"
+                     "</form>")
+            items = ""  # the checkboxes ARE the items list
+        else:
+            act = ("<div class='attend'>A reconciliation is broken --"
+                   " the month cannot close until it ties. "
+                   + html.link("/billing/recon", "Reconcile") + "</div>")
+            items = _close_items(snap, ack_boxes=False)
+    body = (crumbs + f"<h1>{html.esc(title)}</h1>"
+            + html.error_box(error) + step
+            + "<div class='card'><h2 class='formhead'"
+              " style='border-top:none;margin-top:0'>The tie</h2>"
+            + _close_ties(snap["accounts"])
+            + "<h2 class='formhead'>Carried items</h2>" + items + act
+            + "</div><div class='card'>"
+            + "<h2 class='formhead' style='border-top:none;"
+              "margin-top:0'>The month</h2>" + _close_story(snap["story"])
+            + _close_rankings(snap) + "</div>"
+            + _closed_months_card(conn))
+    return _page(h, title, body, user)
+
+
+def close_record_screen(h, conn, user, period_str):
+    row = period.get_row(conn, period_str, statuses=("closed",))
+    if row is None:
+        raise _nf()
+    snap = json.loads(row["snapshot"])
+    pby = reads.get_user(conn, row["prepared_by"])
+    aby = reads.get_user(conn, row["approved_by"])
+    same = (" Prepared and approved by the same person."
+            if row["prepared_by"] == row["approved_by"] else "")
+    title = f"Closed: {_month_name(period_str)}"
+    body = (_crumbs(("Billing", "/billing"),
+                    ("Period close", "/billing/close"),
+                    (_month_name(period_str), None))
+            + f"<h1>{html.esc(title)}</h1>"
+            + "<p class='hint'>The permanent close record: frozen at"
+            f" prepare, verified unchanged at approve. Prepared by"
+            f" {html.esc(pby['name'])} on {fmt_date(row['prepared_at'])};"
+            f" approved by {html.esc(aby['name'])} on"
+            f" {fmt_date(row['approved_at'])}.{same}</p>"
+            + "<div class='card'><h2 class='formhead'"
+              " style='border-top:none;margin-top:0'>The tie</h2>"
+            + _close_ties(snap["accounts"])
+            + "<h2 class='formhead'>Carried items</h2>"
+            + _close_items(snap, ack_boxes=False)
+            + "</div><div class='card'>"
+            + "<h2 class='formhead' style='border-top:none;"
+              "margin-top:0'>The month</h2>" + _close_story(snap["story"])
+            + _close_rankings(snap) + "</div>")
+    return _page(h, title, body, user)
+
+
+def close_prepare_post(h, conn, uid, user):
+    acks = set(h._form_body_multi().get("ack", []))
+    try:
+        period.prepare(conn, uid, _today(), acks)
+    except ValueError as e:
+        conn.rollback()
+        return close_screen(h, conn, user, error=str(e))
+    conn.commit()
+    return h._redirect("/billing/close")
+
+
+def close_approve_post(h, conn, uid, user):
+    try:
+        rec = period.approve(conn, uid, _today())
+    except ValueError as e:
+        conn.commit()  # a stale prepare's VOID must survive the error
+        return close_screen(h, conn, user, error=str(e))
+    conn.commit()
+    return h._redirect(f"/billing/close/{rec['period']}")
+
+
 # --- router -----------------------------------------------------------
 
 def _nf():
@@ -2106,6 +2344,14 @@ def route(h, conn, method, segs, query, now, uid, user):
             return client_payments(h, conn, user, _id(segs[2]))
         if segs == ["billing", "recon"]:
             return recon_screen(h, conn, user, query)
+        if segs == ["billing", "close"]:
+            return close_screen(h, conn, user)
+        if len(segs) == 3 and segs[:2] == ["billing", "close"]:
+            s = segs[2]
+            if not (len(s) == 7 and s[:4].isdigit() and s[4] == "-"
+                    and s[5:7].isdigit()):
+                raise _nf()
+            return close_record_screen(h, conn, user, s)
         if segs == ["billing", "time"]:
             return time_index(h, conn, user)
     if method == "POST":
@@ -2121,6 +2367,10 @@ def route(h, conn, method, segs, query, now, uid, user):
             return disburse_post(h, conn, uid, user)
         if segs == ["billing", "settle"]:
             return settle_post(h, conn, uid, user)
+        if segs == ["billing", "close", "prepare"]:
+            return close_prepare_post(h, conn, uid, user)
+        if segs == ["billing", "close", "approve"]:
+            return close_approve_post(h, conn, uid, user)
         if len(segs) == 4 and segs[:2] == ["billing", "invoices"]:
             invoice_id = _id(segs[2])
             if segs[3] == "charges":

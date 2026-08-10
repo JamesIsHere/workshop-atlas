@@ -627,6 +627,84 @@ def step_fiduciary_on_walked(w):
     return "fiduciary suite on the UI-walked db: " + lines[-1]
 
 
+def step_period_close(w):
+    """Period-close act (period-close.md, RATIFIED 2026-08-09): a
+    July CODA -- one consult billed and paid direct, dated
+    2026-07-01, created at walk END so the ratified August amount
+    story stays exactly as the anchor mirrors it -- gives the walk
+    an ended month. Then the full two-step act runs through the UI:
+    ties, clean carried-items state, prepare, approve, the record
+    page with both signatures (same person, shown -- PC2), and the
+    hard lock proven UI-level (PC1). Module access below is
+    assertion-only: the refused write changes nothing."""
+    need(w.op, "accounts")
+    _s, url, page = w.browser.post("/billing/invoices/new", {
+        "invoice_type": "bill", "contact_id": str(w.contact_id),
+        "issued_date": "2026-07-01"})
+    m = re.search(r"/billing/invoices/(\d+)$", url)
+    assert m is not None, f"coda invoice create landed on {url}"
+    coda = int(m.group(1))
+    w.browser.post(f"/billing/invoices/{coda}/charges", {
+        "charge_type": "service", "description": "SYNTH July consult",
+        "amount": "100.00", "charge_date": "2026-07-01"})
+    _s, _u, page = w.browser.post(f"/billing/invoices/{coda}/pay", {
+        "method": "direct", "amount": "100.00",
+        "payment_date": "2026-07-01",
+        "destination_account_id": str(w.op)})
+    assert "Paid" in page, "July coda bill not marked paid"
+    # the close page: July is the closable month, everything ties
+    page = probe(w, "/billing/close")
+    assert "Close July 2026" in page, "closable month wrong"
+    assert "Step 1 of 2" in page, "prepare step framing missing"
+    assert page.count("HOLDS") >= 2, "tie table verdicts missing"
+    assert "Nothing carried. The month is clean." in page, \
+        "carried items not clean on an all-cleared July"
+    assert "Prepare close" in page, "prepare action missing"
+    # prepare (no carried items -> no acknowledgments), then approve
+    _s, _u, page = w.browser.post("/billing/close/prepare", {})
+    assert "Step 2 of 2" in page and "Approve close" in page, \
+        "prepared state not rendered after prepare"
+    assert ADMIN["name"] in page, "preparer signature missing"
+    _s, url, page = w.browser.post("/billing/close/approve", {})
+    assert url.endswith("/billing/close/2026-07"), url
+    assert "Closed: July 2026" in page, "close record page missing"
+    assert "Prepared and approved by the same person." in page, \
+        "PC2 same-signer disclosure missing from the record"
+    assert "Billed $100.00" in page and "Collected $100.00" in page, \
+        "July story figures wrong on the record"
+    assert "of collections" in page, "cash ranking missing"
+    # closed-months listing back on the close page
+    page = probe(w, "/billing/close")
+    assert "July 2026" in page and "/billing/close/2026-07" in page, \
+        "closed month not listed with its record link"
+    # PC1 hard lock, UI-level: a July-dated disbursement must refuse
+    # and land an actionable error, moving no money
+    from app import ledger as cwl
+    _s, _u, page = w.browser.post("/billing/trust/disburse", {
+        "account_id": str(w.iolta), "amount": "1.00",
+        "disburse_date": "2026-07-05",
+        "contact_id": str(w.contact_id),
+        "counterparty": "SYNTH late vendor"})
+    assert "closed" in page and "2026-07" in page, \
+        "closed-month write did not refuse visibly via the UI"
+    assert cwl.account_balance(w.conn, w.iolta) == 80000, \
+        "refused disbursement moved money"
+    # PC1 at the bank-record choke point (module assertion)
+    try:
+        cwl.create_external_event(w.conn, "deposit", w.iolta,
+                                  "2026-07-10", 100, "in")
+        raise AssertionError("closed month accepted a bank event")
+    except ValueError:
+        w.conn.rollback()
+    # fiduciary again, now WITH a closed period on the walked db (F9)
+    ok, lines = fid.run_suite(w.conn)
+    assert ok, "fiduciary with F9 on the closed walked db: %s" \
+        % lines[-1]
+    return ("July coda closed by click: prepare + approve (same"
+            " signer, shown), record page frozen, lock refuses"
+            " backdated writes; " + lines[-1])
+
+
 STEPS = [
     ("setup + login", step_setup_login),
     ("client + matter (existing UI)", step_client_matter),
@@ -647,6 +725,7 @@ STEPS = [
     ("tier-3 fence", step_tier3_fence),
     ("billing audit chain", step_billing_audit_chain),
     ("fiduciary on walked db", step_fiduciary_on_walked),
+    ("period close: July coda", step_period_close),
 ]
 
 

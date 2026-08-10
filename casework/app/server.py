@@ -359,8 +359,13 @@ class Handler(BaseHTTPRequestHandler):
                     raise proc.ProcessorError(
                         "enter a synthetic payment token beginning with"
                         " SYNTHETIC-")
+                # firm-local business date (ruling 2026-08-09): the
+                # payment DATE is a books fact; UTC dated evening
+                # payments tomorrow. Audit timestamps stay UTC.
                 pid = billing.pay_online(conn, share["invoice_id"],
-                                         sim_token, kind, _now()[:10])
+                                         sim_token, kind,
+                                         datetime.now().strftime(
+                                             "%Y-%m-%d"))
             except (proc.ProcessorError, billing.BillingError) as ex:
                 body = (f"<div class='card'><div class='error'>Declined: "
                         f"{html.escape(str(ex))}</div>{back}</div>")

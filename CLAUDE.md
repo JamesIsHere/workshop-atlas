@@ -44,10 +44,10 @@ Method observations belong in child worklogs with a `METHOD:` prefix.
 | casework-billing| COMPLETE 2026-08-03 --    | casework-billing/goal.md    |
 |                 | all verifiers green,      | (ratified 2026-08-03);      |
 |                 | result.md on disk         | result.md is the authority  |
-| billing-ui      | ACTIVE -- P4 open; item-  | billing-ui/goal.md          |
-|                 | 12 objects 1-3 built (s11 | (ratified 2026-08-04)       |
-|                 | 2026-08-09); period-close |                             |
-|                 | design pass is next       |                             |
+| billing-ui      | ACTIVE -- P4 open; item   | billing-ui/goal.md          |
+|                 | 12 objects-complete (s12  | (ratified 2026-08-04)       |
+|                 | 2026-08-09, close act     |                             |
+|                 | built); finish pass next  |                             |
 
 ## Spikes
 
@@ -115,6 +115,21 @@ session. Delete = archive applies: nothing in spikes/ is destroyed.
   quoted, sha supersessions via report_sha.py only, recorded in
   billing-ui's worklog. The client portal (gated item 11) is
   explicitly OUT of this ruling's scope.
+  AMENDMENT (program ruling 2026-08-09, ratified by James via the
+  signed period-close sheet): the PERIOD-CLOSE ACT
+  (billing-ui/period-close.md, rulings PC1-PC3) is authorized as a
+  cross-project build from billing-ui sessions. Scope: new module
+  casework/app/period.py (compute/prepare/approve/closed-month
+  queries); a lock guard called from ledger._post and
+  ledger.create_external_event refusing journal entries and
+  external events dated into a closed month; schema addition
+  period_closes via casework/app/schema/gen_schema.py; new tests
+  in casework-billing; rendering in casework-ui/app_ui under the
+  existing no-logic discipline. Hard limits: spine tests
+  immutable; fiduciary checks may STRENGTHEN, never weaken;
+  existing ledger recipe signatures unchanged; after the work ALL
+  standing suites rerun green and quoted, sha supersessions via
+  report_sha.py only, recorded in billing-ui's worklog.
 - Each child's own CLAUDE.md + state.md is the authority on its state;
   this file's roster is a signpost, not a second snapshot.
 - The spec corpus records facts about Docketwise with citations -- it is
