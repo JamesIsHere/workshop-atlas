@@ -123,6 +123,8 @@ button.small:hover { background: #dfe6f0; }
    baseline), links always firm blue (kills visited purple) */
 .tasks-table table.data td { font-size: 0.85rem; }
 .tasks-table table.data a { color: #2456a6; }
+form.inline input[type='checkbox'] { width: auto;
+    vertical-align: middle; margin-right: 0.35rem; }
 """
 
 NAV_ITEMS = [("Dashboard", "/"),  # item-12 R2; kills gated item 4

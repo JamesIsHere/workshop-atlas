@@ -439,6 +439,12 @@ def step_tasks_my_open(w):
 
 
 def step_tasks_complete(w):
+    """P2 gate r2 (James) SUPERSEDES Appendix A's 'one-click
+    complete': a stray click dismissed a task at his live drive, so
+    completing is now two actions -- check the row's box, then Done
+    (native required checkbox, zero JS; the browser refuses the
+    bare submit). The rail's direct POST bypasses client-side
+    validation by nature, so the guard is pinned as markup."""
     need(w.task_id, "quick-added task")
     _s, _u, page = w.browser.post("/tasks/quick", {
         "title": "SYNTH check receipt notice"})
@@ -447,7 +453,9 @@ def step_tasks_complete(w):
     w.done_task_id = row["id"]
     _s, _u, page = w.browser.get("/tasks")
     expect_marker(page, f"action='/tasks/{w.done_task_id}/complete'",
-                  "one-click complete on rows")
+                  "complete on rows")
+    assert "<input type='checkbox' required" in page, \
+        "complete lacks its confirm checkbox (stray-click guard)"
     _s, _u, page = w.browser.post(
         f"/tasks/{w.done_task_id}/complete", {})
     assert "SYNTH check receipt notice" not in page, \
@@ -455,7 +463,7 @@ def step_tasks_complete(w):
     _s, _u, page = w.browser.get("/tasks?done=1")
     assert "SYNTH check receipt notice" in page, \
         "completed task missing under the completed filter"
-    return "one-click complete from the row; moves to completed"
+    return "check-then-Done from the row; moves to completed"
 
 
 def step_tasks_lists(w):
@@ -844,7 +852,7 @@ STEPS = [
     ("calendar: provenance links", step_cal_provenance),
     ("tasks: quick-add + due date", step_tasks_quick_add),
     ("tasks: my-open default + toggles", step_tasks_my_open),
-    ("tasks: one-click complete", step_tasks_complete),
+    ("tasks: confirm-complete", step_tasks_complete),
     ("tasks: lists builder + import", step_tasks_lists),
     ("notes: categories home", step_notes_categories),
     ("notes: minimal capture + expanded", step_notes_capture),

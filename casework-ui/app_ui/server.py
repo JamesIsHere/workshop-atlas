@@ -1295,11 +1295,16 @@ class Handler(BaseHTTPRequestHandler):
 
     @staticmethod
     def _complete_button(tid, back):
-        """One-click complete from a row; 'back' returns the driver
-        to the page they pressed it on."""
+        """Two-action complete (P2 gate r2, James: a stray click
+        must not dismiss a task): the browser refuses the submit
+        until the box is checked (native required, zero JS), so
+        Done takes check-then-click. 'back' returns the driver to
+        the page they pressed it on."""
         return (f"<form class='inline' method='post'"
                 f" action='/tasks/{tid}/complete'>"
                 f"<input type='hidden' name='back' value='{back}'>"
+                f"<input type='checkbox' required"
+                f" title='Check the box, then press Done'>"
                 f"<button class='small'>Done</button></form>")
 
     def _tasks_index(self, conn, user, query):

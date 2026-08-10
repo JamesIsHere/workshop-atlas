@@ -395,3 +395,24 @@ cards) via a .tasks-table wrapper -- same scoping pattern as
 .agenda; billing-ui's signed tables still untouched. Rail 11
 pass/0 fail sha eb4fc42e (unchanged -- no asserted strings moved),
 ui-walk GREEN, demo server restarted on 8500 with the change.
+
+P2 gate feedback r2 (James accidentally completed a task at the
+live drive): "we need an undo or something... also like a check
+box so clicking done is not so easily done." RULING SUPERSESSION:
+Appendix A's one-click complete is overridden by the ratifier --
+completing is now two actions (row checkbox, native required,
+zero JS + Done); rail step renamed tasks: confirm-complete and
+pins the checkbox markup. Sha 0193bb09 x2 (supersedes eb4fc42e:
+step rename + new assert). ui-walk GREEN. Undo half of the ask is
+BLOCKED rendering-only: the frozen core has no reopen function
+(completed_at set-only, same family as [Q9]); nothing is lost
+(completed tasks live under the Completed view) but un-completing
+needs a core amendment -- put to James as the gate question,
+[Q12].
+
+METHOD: my first sabotage of the checkbox was a blind
+str.replace one-liner whose pattern matched NOTHING -- silent
+no-op, rail stayed green, and only suspicion caught it. That is
+the evidence-discipline rule (fail loud, no error-tolerant
+probing) violated in miniature; sabotages via Edit-with-known-
+content only from here.
