@@ -22,6 +22,8 @@ import tempfile
 import threading
 import urllib.parse
 from datetime import datetime, timezone
+from email import policy
+from email.parser import BytesParser
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -103,6 +105,35 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(content)))
         self.end_headers()
         self.wfile.write(content)
+
+    def _send_inline(self, content, ctype):
+        """Displayable bytes (preview/print views): no attachment
+        disposition, the browser renders in the tab."""
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(content)))
+        self.end_headers()
+        self.wfile.write(content)
+
+    def _multipart_body(self):
+        """Multipart parse for the files-tab upload (casework-tabs
+        P4a). Mirrors the frozen client surface's parser --
+        duplicated by design: the core cannot import app_ui."""
+        length = int(self.headers.get("Content-Length", 0))
+        raw = self.rfile.read(length)
+        head = (f"Content-Type: {self.headers['Content-Type']}\r\n"
+                "MIME-Version: 1.0\r\n\r\n").encode()
+        msg = BytesParser(policy=policy.default).parsebytes(head + raw)
+        fields, uploads = {}, {}
+        for part in msg.iter_parts():
+            name = part.get_param("name", header="content-disposition")
+            filename = part.get_filename()
+            if filename:
+                uploads[name] = (filename,
+                                 part.get_payload(decode=True))
+            else:
+                fields[name] = part.get_content().strip()
+        return fields, uploads
 
     @staticmethod
     def _cookie(token):
@@ -186,10 +217,18 @@ class Handler(BaseHTTPRequestHandler):
             if len(segs) == 2 and segs[0] == "matters":
                 return self._matter_detail(conn, user, _id(segs[1]))
             if segs == ["files"]:
-                return self._files_index(conn, user)
+                return self._files_index(conn, user, query)
+            if segs == ["files", "bulk-download"]:
+                return self._files_bulk(conn, query)
             if len(segs) == 3 and segs[0] == "files" \
                     and segs[2] == "download":
                 return self._file_download(conn, _id(segs[1]))
+            if len(segs) == 3 and segs[0] == "files" \
+                    and segs[2] == "preview":
+                return self._file_preview(conn, _id(segs[1]))
+            if len(segs) == 3 and segs[0] == "files" \
+                    and segs[2] == "print":
+                return self._file_print(conn, _id(segs[1]))
             if len(segs) == 2 and segs[0] == "files":
                 return self._file_detail(conn, user, _id(segs[1]))
             if segs == ["tasks"]:
@@ -262,6 +301,11 @@ class Handler(BaseHTTPRequestHandler):
             if len(segs) == 3 and segs[0] == "calendar" \
                     and segs[2] == "attendees":
                 return self._event_attendee_add(conn, _id(segs[1]))
+            if segs == ["files", "upload"]:
+                return self._file_upload(conn, now, uid)
+            if len(segs) == 3 and segs[0] == "files" \
+                    and segs[2] == "rename":
+                return self._file_rename(conn, _id(segs[1]))
             if segs == ["tasks", "quick"]:
                 return self._task_quick_create(conn, now, uid)
             if len(segs) == 3 and segs[0] == "tasks" \
@@ -532,7 +576,9 @@ class Handler(BaseHTTPRequestHandler):
                 + self._tasks_card(conn, "contacts", cid,
                                    f"/contacts/{cid}")
                 + self._notes_card(conn, "contacts", cid,
-                                   f"/contacts/{cid}"))
+                                   f"/contacts/{cid}")
+                + self._files_card(conn, contact_id=cid,
+                                   back=f"/contacts/{cid}"))
         self._send_page(200, html.page(row["display_name"], body,
                                        user_name=user["name"]))
 
@@ -632,6 +678,8 @@ class Handler(BaseHTTPRequestHandler):
                                    f"/matters/{mid}")
                 + self._notes_card(conn, "matters", mid,
                                    f"/matters/{mid}")
+                + self._files_card(conn, matter_id=mid,
+                                   back=f"/matters/{mid}")
                 + f"<div class='card'><h1>Form packages</h1>{ftable}"
                   f"</div>"
                   f"<div class='card'><h1>Deadlines</h1>{etable}</div>")
@@ -1265,22 +1313,156 @@ class Handler(BaseHTTPRequestHandler):
                   for c in reads.list_contacts(conn)}
         return mnames, cnames
 
-    def _files_index(self, conn, user):
+    # --- files tab (rebuilt by casework-tabs P4a under the
+    # 2026-08-10 program amendment: upload + custody, matter-centric
+    # sections, firm index with filters, rename/preview/print/bulk.
+    # Writes go through app.files only; the source filter is applied
+    # over the core reader's rows in Python (files.list_files has no
+    # source arg -- rendering-only, no new SQL) ---
+
+    def _upload_form(self, mnames=None, cnames=None, matter_id=None,
+                     contact_id=None, back=None):
+        """The one upload control: selects on the firm index, hidden
+        scope fields on matter/contact sections."""
+        inner = ""
+        if mnames is not None:
+            mopts = "".join(
+                f"<option value='{i}'>{html.esc(n)}</option>"
+                for i, n in sorted(mnames.items(),
+                                   key=lambda kv: kv[1]))
+            copts = "".join(
+                f"<option value='{i}'>{html.esc(n)}</option>"
+                for i, n in sorted(cnames.items(),
+                                   key=lambda kv: kv[1]))
+            inner = (f"<div><label>Matter (optional)</label>"
+                     f"<select name='matter_id'>"
+                     f"<option value=''></option>{mopts}</select>"
+                     f"</div><div><label>Client (optional)</label>"
+                     f"<select name='contact_id'>"
+                     f"<option value=''></option>{copts}</select>"
+                     f"</div>")
+        if matter_id is not None:
+            inner += (f"<input type='hidden' name='matter_id'"
+                      f" value='{matter_id}'>")
+        if contact_id is not None:
+            inner += (f"<input type='hidden' name='contact_id'"
+                      f" value='{contact_id}'>")
+        if back:
+            inner += (f"<input type='hidden' name='back'"
+                      f" value='{back}'>")
+        return ("<form method='post' action='/files/upload'"
+                " enctype='multipart/form-data' class='upload-row'>"
+                "<div class='grow'><label>Upload a file</label>"
+                "<input type='file' name='file' required></div>"
+                + inner
+                + "<button class='primary'>Upload</button></form>")
+
+    def _files_index(self, conn, user, query):
         mnames, cnames = self._name_maps(conn)
-        rows = [[html.link(f"/files/{f['id']}", f["name"]),
-                 self._linked_cell(conn, f["matter_id"], f["contact_id"],
-                                   mnames, cnames),
-                 html.esc(_fmt_size(f["size_bytes"])),
-                 html.esc((f["uploaded_at"] or "")[:10])]
-                for f in files.list_files(conn)]
-        inner = (html.table(["File", "Linked to", "Size", "Uploaded"],
-                            rows)
-                 if rows else html.empty_state(
-                     "No files yet. Filled PDFs land here when a form"
-                     " package is produced; uploads join them."))
-        body = (f"<div class='card'><h1>Files</h1>{inner}</div>")
+        args = {}
+        for key in ("matter_id", "contact_id"):
+            v = query.get(key, [""])[0]
+            if v:
+                args[key] = _id(v)
+        esign_q = query.get("esign_status", [""])[0]
+        if esign_q:
+            args["esign_status"] = esign_q
+        source_q = query.get("source", [""])[0]
+        rows_db = files.list_files(conn, **args)
+        if source_q:
+            rows_db = [f for f in rows_db
+                       if f["source"] == source_q]
+        filtered = bool(args or source_q)
+        rows = []
+        for f in rows_db:
+            up = f["uploaded_at"] or ""
+            rows.append([
+                f"<input type='checkbox' name='file_id'"
+                f" value='{f['id']}' form='bulk-download'>",
+                html.link(f"/files/{f['id']}", f["name"]),
+                self._linked_cell(conn, f["matter_id"],
+                                  f["contact_id"], mnames, cnames),
+                html.esc(f["source"]),
+                html.esc(f["esign_status"] or "-"),
+                html.esc(_fmt_size(f["size_bytes"])),
+                html.esc(html.mdy(up)) if up else "-"])
+
+        def sel(name, label, options, current):
+            opts = "<option value=''>all</option>" + "".join(
+                f"<option value='{v}'"
+                f"{' selected' if str(v) == current else ''}>"
+                f"{html.esc(str(t))}</option>" for v, t in options)
+            return (f"<div><label>{html.esc(label)}</label>"
+                    f"<select name='{name}'>{opts}</select></div>")
+
+        filters = ""
+        if rows or filtered:
+            filters = (
+                "<form method='get' action='/files'"
+                " class='filter-row'>"
+                + sel("matter_id", "Matter",
+                      sorted(mnames.items(), key=lambda kv: kv[1]),
+                      query.get("matter_id", [""])[0])
+                + sel("contact_id", "Client",
+                      sorted(cnames.items(), key=lambda kv: kv[1]),
+                      query.get("contact_id", [""])[0])
+                + sel("source", "Source",
+                      [(s, s) for s in ("firm", "client",
+                                        "produced")], source_q)
+                + sel("esign_status", "e-sign",
+                      [(s, s) for s in ("draft", "requested",
+                                        "completed")], esign_q)
+                + "<button class='small'>Filter</button>"
+                  "</form>")
+        upload = self._upload_form(mnames=mnames, cnames=cnames)
+        if rows:
+            bulk = ("<form id='bulk-download' method='get'"
+                    " action='/files/bulk-download'>"
+                    "<button class='small'>Download selected (zip)"
+                    "</button></form>")
+            inner = ("<div class='files-table'>"
+                     + html.table(["", "File", "Linked to", "Source",
+                                   "e-sign", "Size", "Uploaded"],
+                                  rows)
+                     + bulk + "</div>")
+            body = (f"<div class='card'><h1>Files</h1>{upload}"
+                    f"{filters}{inner}</div>")
+        elif filtered:
+            inner = html.empty_state("No files match these filters.")
+            body = (f"<div class='card'><h1>Files</h1>{upload}"
+                    f"{filters}{inner}</div>")
+        else:
+            inner = html.designed_empty(
+                "No files yet. Uploads land here with their custody"
+                " record (source + SHA-256); filled PDFs join them"
+                " when a form package is produced.", upload)
+            body = f"<div class='card'><h1>Files</h1>{inner}</div>"
         self._send_page(200, html.page("Files", body,
-                                       user_name=user["name"]))
+                                       user_name=user["name"],
+                                       active_href="/files"))
+
+    def _files_card(self, conn, matter_id=None, contact_id=None,
+                    back="/"):
+        """Files section for matter/contact pages (matter-centric
+        ruling): the scope's files with in-place upload."""
+        rows = []
+        for f in files.list_files(conn, contact_id=contact_id,
+                                  matter_id=matter_id):
+            up = f["uploaded_at"] or ""
+            rows.append([html.link(f"/files/{f['id']}", f["name"]),
+                         html.esc(f["source"]),
+                         html.esc(_fmt_size(f["size_bytes"])),
+                         html.esc(html.mdy(up)) if up else "-"])
+        form = self._upload_form(matter_id=matter_id,
+                                 contact_id=contact_id, back=back)
+        inner = ("<div class='files-table'>"
+                 + html.table(["File", "Source", "Size", "Uploaded"],
+                              rows) + "</div>"
+                 if rows else
+                 "<p class='hint'>No files here yet. Uploads keep"
+                 " their custody record (source + SHA-256).</p>")
+        return (f"<div class='card files-section'><h1>Files</h1>"
+                f"{form}{inner}</div>")
 
     def _file_detail(self, conn, user, fid):
         try:
@@ -1290,20 +1472,94 @@ class Handler(BaseHTTPRequestHandler):
         mnames, cnames = self._name_maps(conn)
         linked = self._linked_cell(conn, f["matter_id"], f["contact_id"],
                                    mnames, cnames)
-        body = (f"<div class='card'><h1>{html.esc(f['name'])}</h1>"
+        up = f["uploaded_at"] or ""
+        when = f"{html.mdy(up)} {up[11:16]}" if up else "-"
+        ext = ("." + f["name"].rsplit(".", 1)[-1].lower()
+               if "." in f["name"] else "")
+        view_links = ""
+        if ext in files.PREVIEW_TYPES:
+            view_links = (f"<a href='/files/{fid}/preview'>Preview"
+                          f"</a><a href='/files/{fid}/print'>Print"
+                          f" view</a>")
+        rename = (f"<form method='post' action='/files/{fid}/rename'"
+                  f" class='upload-row'><div class='grow'>"
+                  + html.field("Rename", "name", value=f["name"])
+                  + "</div><button class='small'>Rename</button>"
+                    "</form>")
+        body = (f"<div class='card tab-detail'>"
+                f"<h1>{html.esc(f['name'])}</h1>"
                 f"<dl class='kv'>"
                 f"<dt>Size</dt><dd>{html.esc(_fmt_size(f['size_bytes']))}"
                 f"</dd><dt>Type</dt><dd>{html.esc(f['content_type'] or '-')}"
                 f"</dd><dt>Source</dt><dd>{html.esc(f['source'] or '-')}"
+                f"</dd><dt>SHA-256</dt><dd><code class='copy'>"
+                f"{html.esc(f['sha256'])}</code>"
                 f"</dd><dt>Linked</dt><dd>{linked}</dd>"
-                f"<dt>Uploaded</dt><dd>"
-                f"{html.esc((f['uploaded_at'] or '-')[:16].replace('T', ' '))}"
-                f"</dd></dl><div class='actions'>"
+                f"<dt>Uploaded</dt><dd>{html.esc(when)}</dd></dl>"
+                f"<div class='actions'>"
                 f"<a href='/files/{fid}/download'>Download</a>"
+                f"{view_links}"
                 f"<a class='quiet' href='/files'>Back to files</a>"
-                f"</div></div>")
+                f"</div>{rename}</div>")
         self._send_page(200, html.page(f["name"], body,
-                                       user_name=user["name"]))
+                                       user_name=user["name"],
+                                       active_href="/files"))
+
+    def _file_upload(self, conn, now, uid):
+        fields, uploads = self._multipart_body()
+        up = uploads.get("file")
+        if up is None or not up[0]:
+            return self._redirect("/files")
+        filename, content = up
+
+        def opt(key):
+            v = fields.get(key) or ""
+            return int(v) if v else None
+
+        fid = files.upload_file(
+            conn, filename, content or b"", now,
+            self.server.storage_dir,
+            contact_id=opt("contact_id"), matter_id=opt("matter_id"),
+            user_id=uid)
+        conn.commit()
+        back = fields.get("back") or ""
+        return self._redirect(back if back.startswith("/")
+                              else f"/files/{fid}")
+
+    def _file_rename(self, conn, fid):
+        try:
+            files.get_file(conn, fid)
+        except ValueError:
+            raise _NotFound() from None
+        name = self._form_body().get("name", "").strip()
+        if name:
+            files.rename(conn, "file", fid, name)
+            conn.commit()
+        return self._redirect(f"/files/{fid}")
+
+    def _file_preview(self, conn, fid):
+        try:
+            ctype, content = files.preview(conn, fid)
+        except (ValueError, OSError):
+            raise _NotFound() from None
+        self._send_inline(content, ctype)
+
+    def _file_print(self, conn, fid):
+        try:
+            ctype, content = files.print_view(conn, fid)
+        except (ValueError, OSError):
+            raise _NotFound() from None
+        self._send_inline(content, ctype)
+
+    def _files_bulk(self, conn, query):
+        ids = [_id(v) for v in query.get("file_id", [])]
+        if not ids:
+            return self._redirect("/files")
+        try:
+            blob = files.bulk_download(conn, file_ids=ids)
+        except (ValueError, OSError):
+            raise _NotFound() from None
+        self._send_file(blob, "files.zip", ctype="application/zip")
 
     def _file_download(self, conn, fid):
         try:
@@ -2089,6 +2345,7 @@ def make_server(db_path, port=0, client_port=0):
     httpd.app_lock = threading.Lock()
     storage = db_path.parent / "storage"
     storage.mkdir(parents=True, exist_ok=True)
+    httpd.storage_dir = storage  # files-tab uploads (P4a)
     client = cw_server.make_server(conn, storage, client_port)
     client.app_lock = httpd.app_lock  # ONE lock across both surfaces
     httpd.client_httpd = client

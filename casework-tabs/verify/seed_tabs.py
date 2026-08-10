@@ -271,6 +271,13 @@ def main():
             conn, "SYNTH-retainer-boris.pdf",
             tiny_pdf("SYNTH Retainer Boris"), NOW, storage,
             matter_id=m["boris"], user_id=admin)
+        # a produced-custody artifact so the index's source filter
+        # has all live arms at the gate (client source needs the
+        # intake flow; out of a seed's reach by design)
+        files.save_produced(
+            conn, "SYNTH-g28-anya-filled.pdf",
+            tiny_pdf("SYNTH filled G-28"), NOW, storage,
+            contact_id=c["Anya"], matter_id=m["anya"])
         es_draft = esign.prepare(conn, g28, NOW, admin)
         s1 = esign.add_signer(conn, es_draft, contact_id=c["Anya"])
         esign.add_field(conn, es_draft, s1, "signature", 1, 100, 600)

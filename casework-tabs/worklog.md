@@ -559,3 +559,89 @@ caught TWO defects the rail structurally cannot see (visited
 purple, missing affordance on a page the rail asserts by marker
 not by completeness). Snaps are now a first-class gate oracle
 alongside the hands-on drive.
+
+## 2026-08-10 -- s6: P4a FILES MECHANICS built to the rail
+
+Rail refined FIRST (per-phase rhythm step 1), four steps -> five
+(e-sign split prepare/sign to match the staged P4a/P4b gates;
+plan.md updated). Refinements, all from ground-truth reads of the
+frozen core (files.py, esign.py, the client surface in
+casework/app/server.py):
+- upload custody assert was a page-wide "firm" -- vacuous once P6
+  adds href='/settings/firm'; pinned as the rendered kv pair
+  <dt>Source</dt><dd>firm</dd> plus db source='firm'.
+- matter-section assert now searches inside the files-section
+  slice (the P3 timeline pattern).
+- manage step probed nothing before acting -- an unbuilt surface
+  read FAIL, not PENDING; the controls' home is pinned first
+  (rename form + preview/print links on the detail page). Bulk
+  zip now OPENED, entries + content asserted -- the bare PK magic
+  passed any zip.
+- e-sign step scraped the outbox for an absolute URL: the frozen
+  core mails the RELATIVE /esign/<token> (request_signatures), so
+  the old assert could NEVER pass against a correct build.
+  Refined to schema truth (relative path in the outbox row) plus
+  the intake precedent: the STAFF page renders the live absolute
+  link (client_base). The sign step now extends THROUGH the
+  frozen client surface's real flow (field_<id> inputs,
+  typed-mode JSON) to completed status, produced custody of the
+  stamped copy, and source-filter narrowing -- observable only
+  once a produced file exists, so the narrowing assert lives
+  there, not in the presence-only filter step.
+- esign.prepare WRITES -- the editor is entered by POST from the
+  PDF detail; the txt detail must NOT offer the control (the
+  core's PDF-only rule surfaces as absence, not as a 400 at the
+  drive).
+
+Refined rail on the unbuilt surface: 16 pass / 15 pending / 0
+fail -- clean PENDING, no false arms.
+
+P4a BUILD (casework-ui/app_ui under the 2026-08-10 amendment;
+rendering only, writes through app.files):
+- /files index rebuilt: multipart upload (matter/client selects),
+  filter row (matter, client, source, e-sign status -- source
+  filtered in Python over the core reader's rows; list_files has
+  no source arg, no new SQL), bulk zip via checkbox form-attr
+  (zero JS), e-sign status column, designed empty state carrying
+  the upload form, files-table typography (0.85rem + firm blue,
+  rulings adopted with the rebuild), mdy dates (the old index
+  rendered raw ISO; sweep now covers these pages -- 65 clean).
+- file detail rebuilt: SHA-256 kv (custody), rename-in-place,
+  Preview/Print links for the core's preview types only (an
+  unsupported type never offers a link that would error),
+  tab-detail blue links, active nav.
+- matter AND contact pages gain a files-section card (the
+  scope's files + in-place upload posting back). The contact
+  card is a disclose-and-extend: the rail pins matter only --
+  flagged for the gate.
+- make_server exposes storage_dir; the multipart parser mirrors
+  the frozen client surface's (duplicated by design).
+
+RED drives (Edit-with-known-content, one per new-green step):
+sha truncated on detail -> FAIL "sha256 not visible"; matter
+filter no-op -> FAIL "did not narrow"; bulk zip first-id-only ->
+FAIL "zip entries: ['SYNTH-civil-documents-v2.txt']" -- caught by
+the refined entries assert; the old PK check passed this exact
+sabotage. Each reverted, rail green after.
+
+Rail: "tabs-walk: 20 pass, 11 pending, 0 fail; sweeps pass;
+verdict ON TRACK (pending screens)", sha 81168b79 x2 (supersedes
+d2c65ac8). Standing suites all green, quoted: "ui-walk: 13 pass,
+0 pending, 0 fail; sweeps pass; verdict GREEN" / "spine: 107
+green, 0 red, 0 pending; checks pass" / "billing: 25 green, 0
+red, 0 pending, 0 parked; checks pass; verdict: GREEN" /
+"fiduciary: 9 pass, 0 red, 0 stub; verdict: GREEN". Empty-state
+FAIL arm not re-owed (/files is the P2-proven pattern). Seed
+gains one produced-custody file (the source filter's produced
+arm is live at the gate; the client arm needs the intake flow,
+out of a seed's reach by design). Demo reseeded (5 files); s5's
+demo server SURVIVED its session and held the db lock (PID
+36600, killed); 8500 up over data/demo-tabs.db.
+
+METHOD: the refine pass earned its keep BEFORE the build, twice
+-- the outbox-absolute-URL assert was structurally unpassable (a
+step that could only ever FAIL against a correct build), and the
+zip PK-magic assert provably passed a broken zip. Both defects
+were found by READING the frozen code, not by running it:
+discovery-against-ground-truth is a rail DESIGN step, not just a
+build rule.

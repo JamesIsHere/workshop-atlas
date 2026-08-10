@@ -40,6 +40,8 @@ python verify/report_sha.py.
 
 import hashlib
 import http.cookiejar
+import io
+import json
 import re
 import sys
 import tempfile
@@ -48,6 +50,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -218,6 +221,8 @@ class Walk:
         self.file_id = None
         self.file2_id = None
         self.esign_file_id = None
+        self.signer_id = None
+        self.signer_token = None
         self.invited_uid = None
 
 
@@ -652,6 +657,12 @@ def step_notes_export(w):
 # --- P4 files (Appendix A: matter-centric, custody, e-sign) ---
 
 def step_files_upload(w):
+    """Refined 2026-08-10 s6 (verify-the-verifier): the custody
+    assert was a page-wide 'firm' -- vacuous the moment any page
+    carries href='/settings/firm' (P6 adds it). Pinned as the
+    rendered kv pair instead (the detail page renders it today);
+    the db custody assert pins source='firm' (schema CHECK:
+    firm|client|produced)."""
     _s, _u, page = w.browser.get("/files")
     expect_marker(page, "action='/files/upload'", "upload from the"
                   " files tab")
@@ -660,24 +671,31 @@ def step_files_upload(w):
         "/files/upload", {"matter_id": str(w.matter_id)},
         "file", "SYNTH-civil-documents.txt", content)
     assert "SYNTH-civil-documents.txt" in page
-    row = w.conn.execute("SELECT id, sha256 FROM files WHERE name=?",
-                         ("SYNTH-civil-documents.txt",)).fetchone()
+    row = w.conn.execute(
+        "SELECT id, sha256, source FROM files WHERE name=?",
+        ("SYNTH-civil-documents.txt",)).fetchone()
     assert row is not None
     w.file_id = row["id"]
     sha = hashlib.sha256(content).hexdigest()
     assert row["sha256"] == sha, "stored sha mismatch"
+    assert row["source"] == "firm", f"source: {row['source']!r}"
     _s, _u, page = w.browser.get(f"/files/{w.file_id}")
     assert sha in page, "custody: sha256 not visible on the file"
-    assert "firm" in page, "custody: source not visible"
+    assert "<dt>Source</dt><dd>firm</dd>" in page, \
+        "custody: source not rendered in the detail kv"
     return "upload by click; custody (source + sha256) visible"
 
 
 def step_files_matter_index(w):
+    """Refined s6: the matter-page assert searches INSIDE the
+    files-section slice (the P3 timeline pattern) -- a page-wide
+    find could pass from any other widget naming the file."""
     need(w.file_id, "uploaded file")
     _s, _u, page = w.browser.get(f"/matters/{w.matter_id}")
     expect_marker(page, "files-section", "matter Files section")
-    assert "SYNTH-civil-documents.txt" in page, \
-        "matter page missing its file"
+    sect = page[page.find("files-section"):]
+    assert "SYNTH-civil-documents.txt" in sect, \
+        "matter Files section missing its file"
     pdf = tiny_pdf("SYNTH G-28 candidate")
     _s, _u, page = w.browser.post_multipart(
         "/files/upload", {"contact_id": str(w.contact_id)},
@@ -699,40 +717,86 @@ def step_files_matter_index(w):
 
 
 def step_files_manage(w):
+    """Refined s6 (pending-vs-fail): the old step POSTed rename and
+    fetched preview bytes BEFORE any marker probe, so an unbuilt
+    manage surface read FAIL, not PENDING (get_bytes raises through).
+    The controls' home is pinned first: rename form + preview/print
+    links live on the file detail page. The bulk zip is now OPENED
+    and its entries asserted -- the bare PK magic passed any zip."""
     need(w.file_id, "uploaded file")
+    need(w.file2_id, "PDF candidate")
+    _s, _u, page = w.browser.get(f"/files/{w.file_id}")
+    expect_marker(page, f"action='/files/{w.file_id}/rename'",
+                  "rename on the file detail")
+    assert f"/files/{w.file_id}/preview" in page, \
+        "preview control missing from the detail page"
+    assert f"/files/{w.file_id}/print" in page, \
+        "print control missing from the detail page"
     _s, _u, page = w.browser.post(f"/files/{w.file_id}/rename", {
         "name": "SYNTH-civil-documents-v2.txt"})
     assert "SYNTH-civil-documents-v2.txt" in page, "rename not shown"
+    _s, _u, page = w.browser.get("/files")
+    assert "SYNTH-civil-documents-v2.txt" in page
+    assert "SYNTH-civil-documents.txt" not in page, \
+        "old name still listed after rename"
     content = w.browser.get_bytes(f"/files/{w.file_id}/preview")
     assert b"SYNTH civil document scan" in content, "preview empty"
     page = probe(w, f"/files/{w.file_id}/print")
     assert "SYNTH civil document scan" in page, "print view empty"
     _s, _u, page = w.browser.get("/files")
     expect_marker(page, "bulk-download", "bulk download control")
-    blob = None
-    try:
-        blob = w.browser.get_bytes(
-            f"/files/bulk-download?file_id={w.file_id}"
-            f"&file_id={w.file2_id}")
-    except urllib.error.HTTPError:
-        pass
-    assert blob is not None and blob[:2] == b"PK", \
-        "bulk download did not return a zip"
+    blob = w.browser.get_bytes(
+        f"/files/bulk-download?file_id={w.file_id}"
+        f"&file_id={w.file2_id}")
+    z = zipfile.ZipFile(io.BytesIO(blob))
+    names = set(z.namelist())
+    assert names == {"SYNTH-civil-documents-v2.txt",
+                     "SYNTH-g28-candidate.pdf"}, \
+        f"zip entries: {sorted(names)}"
+    assert b"SYNTH civil document scan" in z.read(
+        "SYNTH-civil-documents-v2.txt"), "zip content wrong"
     return "rename, preview, print, bulk zip -- all by click"
 
 
-def step_files_esign(w):
+def step_files_esign_prepare(w):
+    """Refined 2026-08-10 s6 against the frozen core (discovery,
+    never invention). esign.prepare WRITES a draft row, so the prep
+    editor is entered by POST from the PDF's detail page -- a
+    writing GET is not a route this surface may grow. Only PDFs can
+    be prepared (core rule), so the txt file's detail must NOT offer
+    the control -- offering it would 400 at James's live drive. And
+    the request email is schema truth: the frozen core mails the
+    RELATIVE path /esign/<token> (esign.request_signatures), so the
+    old step's scrape of the outbox for an absolute URL could NEVER
+    pass -- the live absolute link is the staff page's job
+    (client_base, the intake-invite precedent), asserted in the
+    sign step."""
     need(w.file2_id, "PDF candidate")
-    page = probe(w, f"/files/{w.file2_id}/esign/prepare")
+    need(w.file_id, "txt file (the non-PDF arm)")
+    _s, _u, page = w.browser.get(f"/files/{w.file2_id}")
+    expect_marker(page,
+                  f"action='/files/{w.file2_id}/esign/prepare'",
+                  "Prepare-for-e-sign on the PDF detail")
+    _s, _u, other = w.browser.get(f"/files/{w.file_id}")
+    assert f"action='/files/{w.file_id}/esign/prepare'" not in other, \
+        "non-PDF detail offers e-sign prepare (core will refuse)"
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/prepare", {})
+    for act in ("esign/signers", "esign/fields", "esign/request"):
+        assert f"action='/files/{w.file2_id}/{act}'" in page, \
+            f"prep editor missing its {act} form"
     _s, _u, page = w.browser.post(
         f"/files/{w.file2_id}/esign/signers", {
             "contact_id": str(w.contact_id)})
     signer = w.conn.execute(
-        "SELECT id FROM esign_signers ORDER BY id DESC").fetchone()
+        "SELECT * FROM esign_signers ORDER BY id DESC").fetchone()
     assert signer is not None, "signer row missing"
+    assert signer["access_token"], "contact signer has no link token"
+    w.signer_id = signer["id"]
+    w.signer_token = signer["access_token"]
     _s, _u, page = w.browser.post(
         f"/files/{w.file2_id}/esign/fields", {
-            "signer_id": str(signer["id"]),
+            "signer_id": str(w.signer_id),
             "field_type": "signature", "page": "1",
             "x": "100", "y": "600"})
     _s, _u, page = w.browser.post(
@@ -740,23 +804,69 @@ def step_files_esign(w):
     _s, _u, page = w.browser.get(f"/files/{w.file2_id}")
     assert "equested" in page, "e-sign status not visible on file"
     mail = w.conn.execute(
-        "SELECT body FROM email_outbox ORDER BY id DESC LIMIT 5"
-    ).fetchall()
-    link = None
-    for m_ in mail:
-        found = re.search(r"http://127\.0\.0\.1:\d+/\S+", m_["body"])
-        if found:
-            link = found.group(0)
-            break
-    assert link is not None, "signer link not mailed"
-    status, _u, page = Browser("")._open(
-        urllib.request.Request(link))
-    assert status == 200, f"signer link returned {status}"
-    # The sign POST itself mirrors casework's frozen client surface;
-    # it is extended here at P4 from that surface's real flow
-    # (discovery against the frozen code, never invention).
+        "SELECT body FROM email_outbox WHERE template=?"
+        " AND recipient=?",
+        ("esign_request", "talia.client@synthetic.test")).fetchall()
+    assert any(f"/esign/{w.signer_token}" in m_["body"]
+               for m_ in mail), \
+        "request email does not carry the signer link path"
     w.esign_file_id = w.file2_id
-    return "prep editor -> signer -> field -> request; link is live"
+    return ("PDF-only prepare by POST; signer + field + request;"
+            " email out")
+
+
+def step_files_esign_sign(w):
+    """The signer flow rides the FROZEN client surface (casework
+    server: GET /esign/<token> renders field_<id> inputs; POST
+    /esign/<token>/sign; typed mode = JSON {mode:'type',text:...})
+    -- all field names discovered from that code, not invented. The
+    staff page must hand the firm the LIVE absolute link
+    (client_base + /esign/<token>, the intake-invite precedent).
+    Completion takes produced custody, which makes the index's
+    source filter observable (firm vs produced) for the first
+    time -- so its narrowing assert lives here, not in the
+    presence-only filter step."""
+    need(w.esign_file_id, "requested e-sign file")
+    need(w.signer_token, "signer token")
+    _s, _u, page = w.browser.get(f"/files/{w.esign_file_id}")
+    m = re.search(r"http://127\.0\.0\.1:\d+/esign/[0-9a-f]+", page)
+    if m is None:
+        raise Pending("live signer link not on the staff page")
+    link = m.group(0)
+    assert link.endswith(f"/esign/{w.signer_token}"), \
+        "staff link is not this signer's"
+    outside = Browser("")  # the signer is not logged in
+    status, _u2, spage = outside.get(link)
+    assert status == 200, f"signer link returned {status}"
+    assert "Sign document" in spage, "signer page not the sign form"
+    fid_m = re.search(r"name='field_(\d+)'", spage)
+    assert fid_m is not None, "signer page shows no field input"
+    value = json.dumps({"mode": "type", "text": "Talia Synthetic"})
+    status, _u2, spage = outside.post(
+        link + "/sign", {f"field_{fid_m.group(1)}": value})
+    assert status == 200 and "recorded" in spage, "sign POST failed"
+    es = w.conn.execute(
+        "SELECT * FROM esign_files WHERE file_id=?"
+        " AND deleted_at IS NULL ORDER BY id DESC",
+        (w.esign_file_id,)).fetchone()
+    assert es["status"] == "completed", \
+        f"esign status: {es['status']!r}"
+    signed = w.conn.execute("SELECT * FROM files WHERE id=?",
+                            (es["signed_file_id"],)).fetchone()
+    assert signed is not None and signed["source"] == "produced", \
+        "stamped copy not in produced custody"
+    assert signed["name"] == "SYNTH-g28-candidate-signed.pdf", \
+        f"stamped name: {signed['name']!r}"
+    pdf = w.browser.get_bytes(f"/files/{signed['id']}/download")
+    assert pdf[:5] == b"%PDF-", "signed artifact is not a PDF"
+    _s, _u, page = w.browser.get(f"/files/{w.esign_file_id}")
+    assert "ompleted" in page, "completed status not on the file page"
+    _s, _u, page = w.browser.get("/files?source=produced")
+    assert "SYNTH-g28-candidate-signed.pdf" in page
+    assert "SYNTH-civil-documents-v2.txt" not in page, \
+        "source filter did not narrow to produced"
+    return ("typed signature via the live link; stamped copy filed"
+            " as produced; source filter narrows")
 
 
 # --- P5 search (Appendix A: chrome bar, coverage, recents) ---
@@ -904,7 +1014,8 @@ STEPS = [
     ("files: upload + custody", step_files_upload),
     ("files: matter section + index filters", step_files_matter_index),
     ("files: rename/preview/print/bulk", step_files_manage),
-    ("files: e-sign flow", step_files_esign),
+    ("files: e-sign prepare + request", step_files_esign_prepare),
+    ("files: e-sign signer + custody", step_files_esign_sign),
     ("search: chrome bar everywhere", step_search_chrome),
     ("search: coverage + grouped results", step_search_coverage),
     ("search: recents", step_search_recents),

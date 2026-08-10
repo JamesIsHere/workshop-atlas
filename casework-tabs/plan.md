@@ -70,5 +70,16 @@ Settings layout at P6 -- avoids P6 blocking P1-P3.
   purpose + capability exchange answered from corpus/schema;
   sha d2c65ac8 x2; receipt p3-notes.md; attachments + single-note
   PDF parked w/ triggers; [Q1]-[Q11]+[Q13] carry.
-- U4.x Files phase queues next (four rail steps; staged gates
-  P4a mechanics / P4b e-sign).
+- U4.1 DONE 2026-08-10 (s6): files rail refined four->five steps
+  (e-sign split prepare/sign; unpassable outbox-URL assert +
+  vacuous PK-magic zip assert fixed from ground-truth reads) +
+  P4a mechanics built green (upload/custody, matter+contact
+  sections, index filters, rename/preview/print/bulk), 3 RED
+  drives, sha 81168b79 x2, suites green, demo reseeded, 8500 up.
+- U4.2 P4a gate: James hands-on drives files mechanics;
+  disclosures queued (contact files card, preview-types-only
+  links, upload landing); verdict + receipt.
+- U4.3 P4b build: e-sign prep editor + signer flow to the two
+  refined rail steps; 2 RED drives owed.
+- U4.4 P4b gate: hands-on e-sign drive (staff prep + live signer
+  link + stamped custody); verdict + receipt.

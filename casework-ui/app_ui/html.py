@@ -137,6 +137,19 @@ textarea { width: 100%; padding: 0.45rem 0.6rem; font-size: 1rem;
 .tab-detail .kv a { color: #2456a6; }
 .note-body { margin: 0; white-space: pre-line; }
 .actions-row { margin: 0.8rem 0 0; }
+/* casework-tabs P4a: files tab -- typography rulings adopted with
+   the rebuild (0.85rem td, links firm blue); upload + filter rows */
+.files-table table.data td { font-size: 0.85rem; }
+.files-table table.data a { color: #2456a6; }
+.upload-row { display: flex; gap: 0.8rem; align-items: flex-end;
+              flex-wrap: wrap; margin: 0.4rem 0 0.8rem; }
+.upload-row .grow { flex: 1; }
+.upload-row button.primary { margin-top: 0; padding: 0.5rem 1.1rem; }
+input[type='file'] { padding: 0.3rem; background: #ffffff; }
+.filter-row { display: flex; gap: 0.6rem; align-items: flex-end;
+              flex-wrap: wrap; margin: 0.4rem 0 0.2rem; }
+.filter-row label { margin: 0 0 0.25rem; }
+.filter-row select { width: auto; max-width: 14rem; }
 """
 
 NAV_ITEMS = [("Dashboard", "/"),  # item-12 R2; kills gated item 4

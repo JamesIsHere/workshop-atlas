@@ -2,58 +2,69 @@
 
 ## Status
 
-P3 NOTES PASSED 2026-08-10 (s5), signed "pass" after a live
-drive with two fix rounds (note-detail blue links r1, note-page
-export + detail-blue extension r2) and a purpose/capability
-exchange answered from corpus + schema. Receipt:
-verify/gate-receipts/p3-notes.md. Rail 16 pass / 14 pending / 0
-fail, sha d2c65ac8 x2; all four standing suites green, quoted in
-the receipt. Demo server UP on port 8500.
+P4a FILES MECHANICS BUILT 2026-08-10 (s6), GATE PENDING. Rail
+refined four->five files steps (e-sign split prepare/sign; one
+structurally unpassable assert and two vacuous ones fixed from
+ground-truth reads of the frozen core), then the mechanics built:
+upload + custody, matter/contact files sections, firm index with
+filters, rename/preview/print/bulk zip. 3 RED drives all caught.
+Rail 20 pass / 11 pending / 0 fail, sha 81168b79 x2 (supersedes
+d2c65ac8); all four standing suites green, quoted in worklog s6.
+Demo reseeded (5 files incl a produced one), server UP on 8500.
 
 ## Next actions
 
-1. P4 FILES per plan.md, STAGED (P4a files mechanics gate, P4b
-   e-sign flow gate): refine/extend the four files rail steps,
-   drive RED, build -- upload + custody (source + sha256),
-   matter-centric sections + firm index with filters, rename/
-   preview/print/bulk zip, then the e-sign flow (prep editor,
-   signer, fields, request, live signer link).
-2. [Q1]-[Q11] + [Q13] carry to the P4 gate. PARKED at P3:
-   note attachments (trigger: walk/use shows notes narrating
-   unreachable documents); single-note PDF (core-amendment
-   family).
+1. P4a GATE: James hands-on drives the files mechanics on 8500.
+   Disclosures queued for the verdict: contact-page files card
+   (disclose-and-extend; the rail pins matter only); Preview/
+   Print offered for the core's preview types only (pdf, png,
+   jpeg, txt, csv -- others download-only); upload lands on the
+   file's custody page unless launched from a matter/client page
+   (then it returns there).
+2. After the P4a verdict: P4b E-SIGN build to the two refined
+   rail steps -- prep editor entered by POST from the PDF detail
+   (txt must not offer it), signers/fields/request, staff page
+   renders the LIVE absolute signer link via client_base (intake
+   precedent), sign-through on the frozen client surface, then
+   completed status + produced custody + source-filter narrowing.
+   2 RED drives owed.
+3. [Q1]-[Q11] + [Q13] carry to the P4 gates.
 
 ## Watch items and caveats
 
-- Demo server UP on port 8500 over data/demo-tabs.db (background
-  task b8wv88mv3 this session). Fresh regen + restart at the P3
-  gate; same port always.
-- Typography (0.85rem td, links firm blue) + matter-first
-  single-link rulings now cover calendar AND tasks surfaces;
-  notes/files tables ADOPT THEM when P3/P4 rebuild those screens;
-  billing-ui's signed tables stay untouched.
-- Complete is check-then-Done everywhere (native required
-  checkbox, zero JS); Reopen is deliberately one-click. Rail pins
-  both; the direct-POST path bypasses client validation by
-  nature, so the guard is pinned as markup.
+- Demo server UP on 8500 over data/demo-tabs.db (background task
+  bus99mdap this session). NOTE: s5's server survived its session
+  and held the db lock (PID 36600, killed this session) -- check
+  the port before reseeding.
+- E-sign ground truth (discovered s6, do not re-derive): the
+  frozen core mails the RELATIVE /esign/<token>; the absolute
+  live link is the staff page's job (client_base, the intake
+  precedent). Client sign form inputs are field_<id>; signature
+  values are JSON, typed mode {"mode":"type","text":...}.
+- Typography (0.85rem td, firm-blue links) + tab-detail kv +
+  matter-first rulings now cover calendar, tasks, notes AND files
+  surfaces; search/settings adopt at P5/P6; billing-ui's signed
+  tables stay untouched.
+- Complete is check-then-Done everywhere; Reopen is deliberately
+  one-click.
 - Gate receipts quote the FULL step table (METHOD s3): marker
   regressions demote to PENDING, so the verdict line alone can
   hide a regressed screen.
-- Sabotages via Edit-with-known-content ONLY (METHOD s4: a blind
-  str.replace sabotage was a silent no-op and nearly passed as a
-  verified RED).
+- Sabotages via Edit-with-known-content ONLY (METHOD s4).
 - Typed deferral owed: final-walk TIME BUDGET at P7 walk-sheet
   ratification.
 - casework-ui remains ON HOLD (cold runner); its data/ carries
   real-ish PII -- never seed or demo from it.
-- Owed per phase: deliberate RED per new step. The empty-state
-  FAIL arm was PROVEN at P2; owed again only if a later phase
-  adds a new designed-empty surface pattern.
-- Parked with triggers (unchanged): "+N more" month-cell
-  overflow; matter/client in month cell or hover; interleaved
-  notes timeline (rendered-artifact gate); calendar sync; role
+- Owed per phase: deliberate RED per new step. Empty-state FAIL
+  arm owed only for a NEW designed-empty pattern (/files was the
+  P2-proven pattern; not re-owed).
+- Parked with triggers (unchanged): note attachments; single-note
+  PDF (core-amendment family); "+N more" month-cell overflow;
+  matter/client in month cell or hover; interleaved notes
+  timeline (rendered-artifact gate); calendar sync; role
   ENFORCEMENT.
 
 ## Open decisions
 
-- [Q1]-[Q11] queued for the P3 gate. None block the P3 build.
+- [Q1]-[Q11] + [Q13] queued for the P4 gates. None block the P4b
+  build.
