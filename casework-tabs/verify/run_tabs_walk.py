@@ -831,9 +831,57 @@ def step_files_esign_prepare(w):
     assert any(f"/esign/{w.signer_token}" in m_["body"]
                for m_ in mail), \
         "request email does not carry the signer link path"
+    # VOID a sent request and redo (P4b gate r4: James needed to
+    # undo his locked attempt). Confirm checkbox pinned as markup
+    # (P2 stray-click ruling; the direct POST bypasses client
+    # validation by nature). The old link must die AT THE CLIENT
+    # SURFACE, and the PDF must offer Prepare afresh.
+    old_token = w.signer_token
+    old_es = w.conn.execute(
+        "SELECT id FROM esign_files WHERE file_id=?"
+        " AND deleted_at IS NULL", (w.file2_id,)).fetchone()
+    _s, _u, page = w.browser.get(f"/files/{w.file2_id}")
+    assert f"action='/files/{w.file2_id}/esign/void'" in page, \
+        "requested file has no Void control"
+    assert "<input type='checkbox' required" in page, \
+        "Void lacks its confirm checkbox (stray-click guard)"
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/void", {})
+    assert f"action='/files/{w.file2_id}/esign/prepare'" in page, \
+        "voided PDF does not offer Prepare afresh"
+    row = w.conn.execute(
+        "SELECT deleted_at FROM esign_files WHERE id=?",
+        (old_es["id"],)).fetchone()
+    assert row["deleted_at"] is not None, \
+        "void did not tombstone the e-sign row"
+    cbase = (f"http://127.0.0.1:"
+             f"{w.httpd.client_httpd.server_address[1]}")
+    status, _u2, _p = Browser("").get(f"{cbase}/esign/{old_token}")
+    assert status == 404, \
+        f"voided signer link still alive (HTTP {status})"
+    # redo from scratch: the full prep flow again on the same PDF
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/prepare", {})
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/signers", {
+            "contact_id": str(w.contact_id)})
+    signer = w.conn.execute(
+        "SELECT * FROM esign_signers ORDER BY id DESC").fetchone()
+    w.signer_id = signer["id"]
+    w.signer_token = signer["access_token"]
+    assert w.signer_token != old_token, "redo reused the old token"
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/fields", {
+            "signer_id": str(w.signer_id),
+            "field_type": "signature", "page": "1",
+            "x": "100", "y": "600"})
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/request", {})
+    _s, _u, page = w.browser.get(f"/files/{w.file2_id}")
+    assert "equested" in page, "redo did not reach requested"
     w.esign_file_id = w.file2_id
-    return ("PDF-only prepare by POST; signer + field + stray"
-            " removed + request; email out")
+    return ("PDF-only prepare; stray field removed; request sent,"
+            " VOIDED (old link dead), redone to requested")
 
 
 def step_files_esign_sign(w):

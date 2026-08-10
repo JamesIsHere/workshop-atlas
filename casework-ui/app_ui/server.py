@@ -32,7 +32,8 @@ import app_ui  # noqa: F401  (wires casework onto sys.path)
 from app import auth, billing, bootstrap, contacts, events, facts
 from app import esign, files, forms
 from app import db as appdb
-from app import invitations, matters, notes, render, search, tasks, users
+from app import invitations, matters, notes, render, search, tasks
+from app import trash, users
 from app import server as cw_server
 from app_ui import html, reads
 
@@ -319,6 +320,10 @@ class Handler(BaseHTTPRequestHandler):
                     return self._file_esign_field_add(conn, fid)
                 if segs[3] == "request":
                     return self._file_esign_request(conn, now, fid)
+            if len(segs) == 4 and segs[0] == "files" \
+                    and segs[2] == "esign" and segs[3] == "void":
+                return self._file_esign_void(conn, now, uid,
+                                             _id(segs[1]))
             if len(segs) == 6 and segs[0] == "files" \
                     and segs[2] == "esign" and segs[3] == "fields" \
                     and segs[5] == "remove":
@@ -1629,6 +1634,18 @@ class Handler(BaseHTTPRequestHandler):
             inner += (f"<div class='actions'><a href='/files/"
                       f"{es['signed_file_id']}'>Signed copy (filed"
                       f" automatically)</a></div>")
+        if es["status"] != "completed":
+            # undo path (gate r4, James: a sent request must be
+            # redoable) -- confirm checkbox per the P2 stray-click
+            # ruling; voiding kills the signer links
+            inner += (
+                f"<form method='post' class='inline'"
+                f" action='/files/{fid}/esign/void'>"
+                f"<label><input type='checkbox' required>"
+                f" Void this e-signature file -- signing links stop"
+                f" working and you prepare again from scratch"
+                f"</label> <button class='small'>Void</button>"
+                f"</form>")
         return inner
 
     def _file_esign_editor(self, conn, user, fid):
@@ -1788,6 +1805,19 @@ class Handler(BaseHTTPRequestHandler):
         except ValueError:
             pass  # locked or unknown field; editor renders truth
         return self._redirect(f"/files/{fid}/esign")
+
+    def _file_esign_void(self, conn, now, uid, fid):
+        """Undo a draft or sent request: soft-delete the e-sign row
+        (the core declared esign_files trashable from day one) --
+        signer links die at the core (esign.sign filters deleted)
+        and the PDF offers Prepare afresh. Completed files are
+        custody, never voided."""
+        es = self._es_live(conn, fid)
+        if es["status"] != "completed":
+            trash.soft_delete(conn, "esign_files", es["id"], uid,
+                              now)
+            conn.commit()
+        return self._redirect(f"/files/{fid}")
 
     def _file_esign_request(self, conn, now, fid):
         es = self._es_live(conn, fid)

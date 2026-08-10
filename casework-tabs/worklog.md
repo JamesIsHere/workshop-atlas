@@ -762,3 +762,29 @@ checks pass; verdict: GREEN" / "fiduciary: 9 pass, 0 red, 0
 stub; verdict: GREEN" / "ui-walk: 13 pass, 0 pending, 0 fail;
 sweeps pass; verdict GREEN". 8500 restarted (client surface
 rides the same process).
+
+P4b gate feedback r4 (James, live drive): a SENT request was a
+dead end -- he needed to undo and redo his locked attempt. No
+core amendment needed: esign_files was declared soft-deletable
+in the schema generator from day one and the generic trash
+module covers every tombstoned table -- the undo is RENDERING
+over existing machinery. Built: Void control on the file
+detail's e-sign section (draft + requested; completed is
+custody, never voidable), confirm checkbox per the P2
+stray-click ruling, handler = trash.soft_delete("esign_files").
+DISCLOSED EXTENSION under the r3 ruling (_esign_page in-scope):
+the client page's esign_files read gains the deleted filter, so
+a VOIDED link 404s ("This link is no longer available") instead
+of rendering a form that errors on submit -- esign.sign already
+refused deleted rows at the core; the page now matches. Rail's
+prepare step gains the full arm: request -> void (markup-pinned
+confirm) -> tombstone asserted -> OLD LINK 404s at the client
+surface -> full redo to requested on a fresh token (old-token
+reuse asserted against). RED-driven: no-op void -> FAIL "voided
+PDF does not offer Prepare afresh". Rail 22 pass/0 fail sha
+4f3a5880 x2 (supersedes fd5ea835). Suites all green, quoted:
+"entries: 111  green: 107  red: 0  pending: 0  parked: 4" /
+"billing: 25 green, 0 red, 0 pending, 0 parked; checks pass;
+verdict: GREEN" / "fiduciary: 9 pass, 0 red, 0 stub; verdict:
+GREEN" / "ui-walk: 13 pass, 0 pending, 0 fail; sweeps pass;
+verdict GREEN". 8500 restarted.

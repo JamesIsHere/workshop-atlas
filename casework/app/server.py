@@ -455,8 +455,15 @@ class Handler(BaseHTTPRequestHandler):
         signer = esign.signer_by_token(conn, token)
         if signer is None:
             return self._deny(404, "This link is no longer available.")
-        es = conn.execute("SELECT * FROM esign_files WHERE id=?",
-                          (signer["esign_file_id"],)).fetchone()
+        # deleted filter added with the void flow (casework-tabs P4b
+        # r4, disclosed extension under the 2026-08-10 ruling): a
+        # VOIDED file's link must die here, not on submit
+        es = conn.execute(
+            "SELECT * FROM esign_files WHERE id=?"
+            " AND deleted_at IS NULL",
+            (signer["esign_file_id"],)).fetchone()
+        if es is None:
+            return self._deny(404, "This link is no longer available.")
         if es["status"] != "requested":
             return self._deny(404, "This document is not open for signing.")
         # Human field prompts (program ruling 2026-08-10,
