@@ -48,6 +48,10 @@ Method observations belong in child worklogs with a `METHOD:` prefix.
 |                 | verdict PASS/PASS/PASS,   | (ratified 2026-08-04);      |
 |                 | all suites green,         | result.md is the authority  |
 |                 | result.md on disk         |                             |
+| casework-tabs   | RATIFIED 2026-08-10,      | casework-tabs/goal.md       |
+|                 | pre-P0 -- six designed    | (ratified 2026-08-10)       |
+|                 | tab surfaces; phase-gated |                             |
+|                 | hybrid                    |                             |
 
 ## Spikes
 
@@ -130,6 +134,24 @@ session. Delete = archive applies: nothing in spikes/ is destroyed.
   existing ledger recipe signatures unchanged; after the work ALL
   standing suites rerun green and quoted, sha supersessions via
   report_sha.py only, recorded in billing-ui's worklog.
+  AMENDMENT (program ruling 2026-08-10, ratified by James at the
+  casework-tabs goal ratification): casework-tabs extends the
+  casework-ui surface IN PLACE. A casework-tabs session may write
+  casework-ui/app_ui (new screens, routes, SELECT-only readers,
+  additive shared chrome) and add new walk/verifier coverage under
+  casework-tabs/, with hard limits: run_ui_walk.py stays green at
+  casework-tabs phase gates; casework-ui/goal.md is never edited
+  and its cold-run oracle, hold status, and ratified protocol are
+  untouched; a change to an existing casework-ui screen or its
+  walk steps is a gate decision, not a code change; casework/
+  stays frozen for this child (all six tabs' logic already lives
+  in casework/app; casework-tabs owns rendering only); Settings
+  write screens call existing casework/app modules exclusively.
+  Oracle: per-tab hands-on gates + a final James-driven cross-tab
+  walk, NOT a cold run. After any session's work, all standing
+  suites rerun green and quoted; sha supersessions via canonical
+  scripts only, recorded in the casework-tabs worklog. Live
+  contract: casework-tabs/goal.md.
 - Each child's own CLAUDE.md + state.md is the authority on its state;
   this file's roster is a signpost, not a second snapshot.
 - The spec corpus records facts about Docketwise with citations -- it is
