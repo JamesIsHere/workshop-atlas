@@ -30,7 +30,7 @@ from pathlib import Path
 
 import app_ui  # noqa: F401  (wires casework onto sys.path)
 from app import auth, billing, bootstrap, contacts, events, facts
-from app import files, forms
+from app import esign, files, forms
 from app import db as appdb
 from app import invitations, matters, notes, render, search, tasks, users
 from app import server as cw_server
@@ -229,6 +229,10 @@ class Handler(BaseHTTPRequestHandler):
             if len(segs) == 3 and segs[0] == "files" \
                     and segs[2] == "print":
                 return self._file_print(conn, _id(segs[1]))
+            if len(segs) == 3 and segs[0] == "files" \
+                    and segs[2] == "esign":
+                return self._file_esign_editor(conn, user,
+                                               _id(segs[1]))
             if len(segs) == 2 and segs[0] == "files":
                 return self._file_detail(conn, user, _id(segs[1]))
             if segs == ["tasks"]:
@@ -306,6 +310,18 @@ class Handler(BaseHTTPRequestHandler):
             if len(segs) == 3 and segs[0] == "files" \
                     and segs[2] == "rename":
                 return self._file_rename(conn, _id(segs[1]))
+            if len(segs) == 4 and segs[0] == "files" \
+                    and segs[2] == "esign":
+                fid = _id(segs[1])
+                if segs[3] == "prepare":
+                    return self._file_esign_prepare(conn, now, uid,
+                                                    fid)
+                if segs[3] == "signers":
+                    return self._file_esign_signer_add(conn, fid)
+                if segs[3] == "fields":
+                    return self._file_esign_field_add(conn, fid)
+                if segs[3] == "request":
+                    return self._file_esign_request(conn, now, fid)
             if segs == ["tasks", "quick"]:
                 return self._task_quick_create(conn, now, uid)
             if len(segs) == 3 and segs[0] == "tasks" \
@@ -1486,6 +1502,22 @@ class Handler(BaseHTTPRequestHandler):
                   + html.field("Rename", "name", value=f["name"])
                   + "</div><button class='small'>Rename</button>"
                     "</form>")
+        # e-sign section (P4b): PDFs only -- the core refuses other
+        # types, so no other type ever offers the control
+        es_html = ""
+        if ext == ".pdf":
+            es = reads.esign_row(conn, fid)
+            if es is None:
+                es_html = (
+                    f"<form method='post' class='inline'"
+                    f" action='/files/{fid}/esign/prepare'>"
+                    f"<button class='primary'>Prepare for"
+                    f" e-signing</button></form>")
+            else:
+                es_html = self._esign_status_block(conn, fid, es,
+                                                   cnames)
+            es_html = (f"<h1 style='margin-top:1.2rem'>e-Signature"
+                       f"</h1>{es_html}")
         body = (f"<div class='card tab-detail'>"
                 f"<h1>{html.esc(f['name'])}</h1>"
                 f"<dl class='kv'>"
@@ -1500,7 +1532,7 @@ class Handler(BaseHTTPRequestHandler):
                 f"<a href='/files/{fid}/download'>Download</a>"
                 f"{view_links}"
                 f"<a class='quiet' href='/files'>Back to files</a>"
-                f"</div>{rename}</div>")
+                f"</div>{rename}{es_html}</div>")
         self._send_page(200, html.page(f["name"], body,
                                        user_name=user["name"],
                                        active_href="/files"))
@@ -1560,6 +1592,186 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, OSError):
             raise _NotFound() from None
         self._send_file(blob, "files.zip", ctype="application/zip")
+
+    # --- e-sign staff surface (casework-tabs P4b): rendering only,
+    # writes through app.esign; the signer side is casework's
+    # FROZEN client surface (GET/POST /esign/<token>), reached by
+    # the live client_base link rendered below (the intake-invite
+    # precedent) ---
+
+    def _signer_label(self, conn, s, cnames):
+        if s["contact_id"] is not None:
+            return cnames.get(s["contact_id"], f"contact"
+                              f" {s['contact_id']}")
+        u = reads.get_user(conn, s["user_id"])
+        return u["name"] if u is not None else f"user {s['user_id']}"
+
+    def _esign_status_block(self, conn, fid, es, cnames):
+        """Status + per-state affordances on the file detail."""
+        inner = (f"<p>Status: <span class='pill'>"
+                 f"{html.esc(es['status'])}</span></p>")
+        if es["status"] == "draft":
+            inner += (f"<div class='actions'><a class='quiet'"
+                      f" href='/files/{fid}/esign'>Continue"
+                      f" preparing</a></div>")
+        elif es["status"] == "requested":
+            base = self.server.client_base
+            for s in esign.signers_of(conn, es["id"]):
+                if s["access_token"] and s["signed_at"] is None:
+                    nm = self._signer_label(conn, s, cnames)
+                    inner += (
+                        f"<p class='hint'>Live signing link for"
+                        f" {html.esc(nm)} (also emailed):</p>"
+                        f"<code class='copy'>{base}/esign/"
+                        f"{s['access_token']}</code>")
+            inner += (f"<div class='actions'><a class='quiet'"
+                      f" href='/files/{fid}/esign'>Signing status"
+                      f"</a></div>")
+        elif es["status"] == "completed" and es["signed_file_id"]:
+            inner += (f"<div class='actions'><a href='/files/"
+                      f"{es['signed_file_id']}'>Signed copy (filed"
+                      f" automatically)</a></div>")
+        return inner
+
+    def _file_esign_editor(self, conn, user, fid):
+        """The prep editor (draft) doubling as the signing-status
+        page after the send. Entered by POST prepare -> redirect;
+        a file with no live e-sign row has no editor."""
+        try:
+            f = files.get_file(conn, fid)
+        except ValueError:
+            raise _NotFound() from None
+        es = reads.esign_row(conn, fid)
+        if es is None:
+            raise _NotFound()
+        mnames, cnames = self._name_maps(conn)
+        signers = esign.signers_of(conn, es["id"])
+        fields = esign.fields_of(conn, es["id"])
+        labels = {s["id"]: self._signer_label(conn, s, cnames)
+                  for s in signers}
+        srows = [[html.esc(labels[s["id"]]),
+                  "link by email" if s["access_token"]
+                  else "signs in-app",
+                  "<span class='pill returned'>signed</span>"
+                  if s["signed_at"] else "<span class='pill'>"
+                  "pending</span>"] for s in signers]
+        stable = (html.table(["Signer", "Channel", "Status"], srows)
+                  if srows else "<p class='hint'>No signers yet."
+                  " Add the signing party below.</p>")
+        frows = [[html.esc(fl["field_type"]),
+                  str(fl["page"]), str(fl["x"]), str(fl["y"]),
+                  html.esc(labels.get(fl["signer_id"], "-"))]
+                 for fl in fields]
+        ftable = (html.table(["Field", "Page", "X", "Y", "Signer"],
+                             frows)
+                  if frows else "<p class='hint'>No fields placed"
+                  " yet. Place at least a signature field.</p>")
+        forms_html = ""
+        if es["status"] == "draft":
+            copts = "".join(
+                f"<option value='{i}'>{html.esc(n)}</option>"
+                for i, n in sorted(cnames.items(),
+                                   key=lambda kv: kv[1]))
+            sopts = "".join(
+                f"<option value='{s['id']}'>"
+                f"{html.esc(labels[s['id']])}</option>"
+                for s in signers)
+            topts = "".join(
+                f"<option value='{t}'>{t}</option>"
+                for t in esign.FIELD_TYPES)
+            forms_html = (
+                f"<form method='post' class='upload-row'"
+                f" action='/files/{fid}/esign/signers'>"
+                f"<div><label>Add signer (client)</label>"
+                f"<select name='contact_id' required>{copts}"
+                f"</select></div>"
+                f"<button class='small'>Add signer</button></form>"
+                f"<form method='post' class='upload-row'"
+                f" action='/files/{fid}/esign/fields'>"
+                f"<div><label>Field</label><select name='field_type'>"
+                f"{topts}</select></div>"
+                f"<div><label>For signer</label>"
+                f"<select name='signer_id' required>{sopts}</select>"
+                f"</div>"
+                f"<div><label>Page</label><input type='number'"
+                f" name='page' value='1' style='width:4.5rem'></div>"
+                f"<div><label>X</label><input type='number' name='x'"
+                f" value='100' style='width:5.5rem'></div>"
+                f"<div><label>Y</label><input type='number' name='y'"
+                f" value='600' style='width:5.5rem'></div>"
+                f"<button class='small'>Place field</button></form>"
+                f"<form method='post' class='inline'"
+                f" action='/files/{fid}/esign/request'>"
+                f"<button class='primary'>Send signature requests"
+                f"</button></form>"
+                f"<p class='hint'>Sending locks the document;"
+                f" each signer gets a secure link by email.</p>")
+        else:
+            forms_html = self._esign_status_block(conn, fid, es,
+                                                  cnames)
+        body = (f"<div class='card tab-detail'>"
+                f"<h1>Prepare e-signature: {html.esc(f['name'])}"
+                f"</h1><h1>Signers</h1>{stable}"
+                f"<h1>Fields</h1>{ftable}{forms_html}"
+                f"<div class='actions'><a class='quiet'"
+                f" href='/files/{fid}'>Back to the file</a></div>"
+                f"</div>")
+        self._send_page(200, html.page("Prepare e-signature", body,
+                                       user_name=user["name"],
+                                       active_href="/files"))
+
+    def _file_esign_prepare(self, conn, now, uid, fid):
+        try:
+            files.get_file(conn, fid)
+        except ValueError:
+            raise _NotFound() from None
+        if reads.esign_row(conn, fid) is None:
+            try:
+                esign.prepare(conn, fid, now, uid)
+                conn.commit()
+            except ValueError:
+                return self._redirect(f"/files/{fid}")
+        return self._redirect(f"/files/{fid}/esign")
+
+    def _es_live(self, conn, fid):
+        es = reads.esign_row(conn, fid)
+        if es is None:
+            raise _NotFound()
+        return es
+
+    def _file_esign_signer_add(self, conn, fid):
+        es = self._es_live(conn, fid)
+        v = self._form_body().get("contact_id", "")
+        if v:
+            try:
+                esign.add_signer(conn, es["id"], contact_id=int(v))
+                conn.commit()
+            except ValueError:
+                pass  # locked file; the editor renders the truth
+        return self._redirect(f"/files/{fid}/esign")
+
+    def _file_esign_field_add(self, conn, fid):
+        es = self._es_live(conn, fid)
+        f = self._form_body()
+        try:
+            esign.add_field(conn, es["id"], int(f["signer_id"]),
+                            f.get("field_type", "signature"),
+                            int(f.get("page", "1")),
+                            int(f.get("x", "100")),
+                            int(f.get("y", "600")))
+            conn.commit()
+        except (ValueError, KeyError):
+            pass  # locked file or no signer; editor renders truth
+        return self._redirect(f"/files/{fid}/esign")
+
+    def _file_esign_request(self, conn, now, fid):
+        es = self._es_live(conn, fid)
+        try:
+            esign.request_signatures(conn, es["id"], now)
+            conn.commit()
+        except ValueError:
+            return self._redirect(f"/files/{fid}/esign")
+        return self._redirect(f"/files/{fid}")
 
     def _file_download(self, conn, fid):
         try:

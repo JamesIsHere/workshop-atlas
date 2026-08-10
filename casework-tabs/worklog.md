@@ -645,3 +645,61 @@ zip PK-magic assert provably passed a broken zip. Both defects
 were found by READING the frozen code, not by running it:
 discovery-against-ground-truth is a rail DESIGN step, not just a
 build rule.
+
+## 2026-08-10 -- s6 (cont): P4a GATE PASSED + P4b E-SIGN built
+
+P4a VERDICT: PASS, signed "yes pass" -- FIRST gate with zero fix
+rounds. Receipt with the full step table:
+verify/gate-receipts/p4a-files.md. The gate carried one
+product-purpose exchange (is Files a catch-all / does uploading
+feed the data model), answered CLOSED from ground truth: custody
+surface over three sources, data flows facts -> produced PDFs
+(never the reverse), no extraction machinery in the core, and
+docketwise-iq has zero footprint in the ratified spine --
+ingestion is a new-child-if-ever-wanted, attaching at intake
+document requests, not the Files tab. Disclosures (contact files
+card, preview-types-only links, upload landing) accepted with
+"as is".
+
+P4b BUILD (same session, straight after the verdict):
+- reads.py gains ONE reader (esign_row: latest live e-sign row
+  per file -- no core home); signers/fields read via the core's
+  own signers_of/fields_of.
+- file detail (PDF only): Prepare-for-e-signing POST (the core's
+  PDF-only rule surfaces as absence on other types), then an
+  e-Signature section per state -- draft: Continue preparing;
+  requested: LIVE signer links (client_base + /esign/<token>,
+  the intake precedent) + signing status; completed: link to the
+  auto-filed signed copy.
+- prep editor at GET /files/<id>/esign (entered by POST prepare
+  -> redirect; no live row = 404): signers table + add-signer
+  (contact select), fields table + place-field (type/page/x/y,
+  signer select), Send signature requests. Non-draft states
+  render read-only truth (core refuses edits; no control that
+  would error).
+- POST routes prepare/signers/fields/request all call app.esign
+  and redirect; the signer side is the FROZEN client surface,
+  untouched.
+
+RED drives (2 owed, both caught): PDF-only gate broken (txt
+offers prepare) -> FAIL "non-PDF detail offers e-sign prepare";
+staff live link token truncated -> FAIL "staff link is not this
+signer's". Reverted, green after.
+
+Rail: "tabs-walk: 22 pass, 9 pending, 0 fail; sweeps pass;
+verdict ON TRACK (pending screens)", sha c44c5e31 x2 (supersedes
+81168b79). Suites all green, quoted: "ui-walk: 13 pass, 0
+pending, 0 fail; sweeps pass; verdict GREEN" / "spine: 107
+green, 0 red, 0 pending; checks pass" / "billing: 25 green, 0
+red, 0 pending, 0 parked; checks pass; verdict: GREEN" /
+"fiduciary: 9 pass, 0 red, 0 stub; verdict: GREEN". Demo
+reseeded (unchanged content: g28 draft + retainer requested give
+the gate both prep states; James produces the completed state
+himself by signing via the live link). 8500 restarted on the new
+code.
+
+METHOD: the walk's sign step drives BOTH servers in one assert
+chain -- staff surface renders the link, an un-authed Browser
+follows it to the frozen client surface, signs, and the staff
+surface then shows the produced custody. Cross-surface
+round-trips are rail-able; nothing about them requires a human.

@@ -577,3 +577,14 @@ def trust_sub_accounts_of_contact(conn, contact_id):
         " WHERE a.deleted_at IS NULL"
         " AND (a.contact_id = ? OR m.primary_contact_id = ?)"
         " ORDER BY a.id", (contact_id, contact_id))]
+
+
+def esign_row(conn, file_id):
+    """Latest live e-sign row for a file, or None (casework-tabs
+    P4b). Signers/fields are read via the core's own readers
+    (esign.signers_of / fields_of); only this latest-per-file
+    lookup has no core home."""
+    return conn.execute(
+        "SELECT * FROM esign_files WHERE file_id=?"
+        " AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
+        (file_id,)).fetchone()

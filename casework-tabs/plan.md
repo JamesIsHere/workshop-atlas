@@ -81,7 +81,10 @@ Settings layout at P6 -- avoids P6 blocking P1-P3.
   closed from corpus+schema (Files is custody, not ingestion; IQ
   has no spine footprint); disclosures accepted with "as is";
   receipt p4a-files.md.
-- U4.3 P4b build: e-sign prep editor + signer flow to the two
-  refined rail steps; 2 RED drives owed.
-- U4.4 P4b gate: hands-on e-sign drive (staff prep + live signer
-  link + stamped custody); verdict + receipt.
+- U4.3 DONE 2026-08-10 (s6): P4b e-sign built to the two refined
+  rail steps (prepare POST + editor, live client_base links,
+  sign-through on the frozen client surface, produced custody);
+  2 RED drives caught; sha c44c5e31 x2; suites green; 8500 up.
+- U4.4 P4b gate: hands-on e-sign drive (prepare the g28 draft,
+  send, open the live link, sign, see the auto-filed copy);
+  verdict + receipt closes P4.
