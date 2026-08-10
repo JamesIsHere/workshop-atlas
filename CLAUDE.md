@@ -165,6 +165,21 @@ session. Delete = archive applies: nothing in spikes/ is destroyed.
   asserts the machinery state; after the change ALL standing
   suites rerun green and quoted, sha supersessions via canonical
   scripts only, recorded in the casework-tabs worklog.
+  AMENDMENT (program ruling 2026-08-10, ratified by James at the
+  casework-tabs P4b gate: "yes proceed"): the frozen casework
+  client e-sign surface (casework/app/server.py, _esign_page +
+  _esign_sign ONLY) opens for ONE human-usability change after
+  his live drive proved a human typing a name into the signing
+  box hits the core's JSON contract raw ("Expecting value...").
+  Scope: the sign handler wraps a plain typed value for
+  signature/initials fields into the typed-mode JSON itself; the
+  signing page gains human field labels. Hard limits: esign.py
+  and the JSON contract untouched; no other casework/app change
+  rides this ruling; existing spine tests immutable; coverage
+  lands in casework-tabs' rail (the sign step drives the PLAIN
+  typed-name path); after the change ALL standing suites rerun
+  green and quoted, sha supersessions via canonical scripts only,
+  recorded in the casework-tabs worklog.
 - Each child's own CLAUDE.md + state.md is the authority on its state;
   this file's roster is a signpost, not a second snapshot.
 - The spec corpus records facts about Docketwise with citations -- it is

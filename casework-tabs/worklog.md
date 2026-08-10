@@ -733,3 +733,32 @@ r2 exchange (disclosed, his verdict rules): the coordinate hint
 one element that failed his "everything justifies itself" bar.
 X/Y now render :g (100, not 100.0). Sha fd5ea835 x2 (supersedes
 35553738); ui-walk GREEN; 8500 restarted.
+
+P4b gate feedback r3 (James, live drive): he SIGNED and got the
+raw core contract back -- "Expecting value: line 1 column 1" --
+a human typing a name into the signature box hits json.loads in
+esign._validate_value. The client sign surface was built under a
+machine oracle (spine tests post the JSON payload; so did this
+rail's sign step) -- no oracle ever typed into the box until his
+drive. Same shape as Reopen: the hands-on gate exposing a path
+automation structurally could not see. RULING ratified ("yes
+proceed"), recorded in atlas/CLAUDE.md: the frozen client e-sign
+surface (_esign_page + _esign_sign ONLY) opens for one
+human-usability change. Fix: the sign handler wraps a plain
+typed value for signature/initials into the typed-mode JSON
+(structured JSON passes through; esign.py untouched); the sign
+page gains human prompts. Reciprocal guard EARNED ITS KEEP: the
+first label version replaced the pinned format and spine went
+106/1 red (test_esign pins "signature (page 1)" verbatim,
+immutable) -- prompts now APPEND to the pinned label instead.
+Rail's sign step switched to the PLAIN typed-name path + prompt
+assert (RED-driven: wrap disabled -> FAIL "sign POST failed",
+reproducing his exact defect). Rail 22 pass/0 fail sha fd5ea835
+x2 (report byte-identical to r2 by construction -- the new
+asserts live in the rail, not the report; sha unchanged). Suites
+all green, quoted: "entries: 111  green: 107  red: 0  pending:
+0  parked: 4" / "billing: 25 green, 0 red, 0 pending, 0 parked;
+checks pass; verdict: GREEN" / "fiduciary: 9 pass, 0 red, 0
+stub; verdict: GREEN" / "ui-walk: 13 pass, 0 pending, 0 fail;
+sweeps pass; verdict GREEN". 8500 restarted (client surface
+rides the same process).

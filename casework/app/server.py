@@ -15,6 +15,7 @@ Requests serialize on one lock over the app's single connection.
 """
 
 import html
+import json
 import threading
 import urllib.parse
 from datetime import datetime, timezone
@@ -458,11 +459,25 @@ class Handler(BaseHTTPRequestHandler):
                           (signer["esign_file_id"],)).fetchone()
         if es["status"] != "requested":
             return self._deny(404, "This document is not open for signing.")
+        # Human field prompts (program ruling 2026-08-10,
+        # casework-tabs P4b gate: a bare field-type label left the
+        # signer typing into an unexplained box). APPENDED to the
+        # original "type (page N)" label, which a spine test pins
+        # verbatim -- spine tests are immutable.
+        prompts = {
+            "signature": "sign by typing your full name",
+            "initials": "type your initials",
+            "text": "type the requested text",
+            "date": "leave blank to date it today",
+        }
         rows = []
         for f in esign.fields_of(conn, signer["esign_file_id"],
                                  signer["id"]):
+            prompt = prompts.get(f["field_type"])
+            suffix = f" -- {prompt}" if prompt else ""
             rows.append(
                 f"<label>{html.escape(f['field_type'])} (page {f['page']})"
+                f"{html.escape(suffix)}"
                 f"<input name='field_{f['id']}'></label><br>")
         body = (f"<h1>Sign document</h1>"
                 f"<form method='post' action='/esign/{token}/sign'>"
@@ -480,6 +495,21 @@ class Handler(BaseHTTPRequestHandler):
             for key, vals in form.items():
                 if key.startswith("field_"):
                     values[int(key.split("_", 1)[1])] = vals[0]
+            # A plain typed value in a signature/initials box is a
+            # TYPED signature (program ruling 2026-08-10): wrap it
+            # into the core's JSON contract here; structured JSON
+            # (e.g. drawn strokes) passes through untouched.
+            ftypes = {f["id"]: f["field_type"]
+                      for f in esign.fields_of(
+                          conn, signer["esign_file_id"],
+                          signer["id"])}
+            for fid, value in list(values.items()):
+                if ftypes.get(fid) in ("signature", "initials"):
+                    try:
+                        json.loads(value)
+                    except ValueError:
+                        values[fid] = json.dumps(
+                            {"mode": "type", "text": value})
             esign.sign(conn, signer["esign_file_id"], signer["id"], values,
                        _now(), self.server.storage_dir)
             conn.commit()

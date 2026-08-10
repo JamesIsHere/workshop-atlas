@@ -862,9 +862,13 @@ def step_files_esign_sign(w):
     assert "Sign document" in spage, "signer page not the sign form"
     fid_m = re.search(r"name='field_(\d+)'", spage)
     assert fid_m is not None, "signer page shows no field input"
-    value = json.dumps({"mode": "type", "text": "Talia Synthetic"})
+    assert "typing your full name" in spage, \
+        "signature box lacks its human prompt"
+    # the HUMAN path (program ruling 2026-08-10, gate r3): a plain
+    # typed name -- the surface wraps it into the core's typed-mode
+    # JSON contract; James's live drive hit the raw contract
     status, _u2, spage = outside.post(
-        link + "/sign", {f"field_{fid_m.group(1)}": value})
+        link + "/sign", {f"field_{fid_m.group(1)}": "Talia Synthetic"})
     assert status == 200 and "recorded" in spage, "sign POST failed"
     es = w.conn.execute(
         "SELECT * FROM esign_files WHERE file_id=?"
