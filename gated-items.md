@@ -73,6 +73,19 @@ once, worked. To fix a locked file NOW instead of dragging it:
    CLAUDE.md) -- rendering-only scope over server.py's client
    surface; work proceeds in billing-ui. The client PORTAL
    remains locked as item 11.
+   BUILT 2026-08-07 s8 (ledger entry added 2026-08-10, closing
+   a recording gap found in the s16 freeze-recovery sweep):
+   CLIENT_STYLE chrome + firm brand, footed MM/DD/YYYY integer-
+   cents charge table (both /100 float divisions gone), styled
+   pay form, receipt page, payments on the invoice page, both
+   languages; verifier strengthened; all suites green quoted in
+   billing-ui worklog s8. FOUR JUDGMENT CALLS from that build
+   remain flagged, unruled: (i) conn.commit() added after
+   pay_online -- persistence fix, arguably past rendering-only;
+   (ii) pay-form labels stay English-only on es invoices;
+   (iii) trust-held line added to the client page; (iv) receipt
+   reference renders the processor txn id. Item otherwise
+   CLOSED.
 3. EMPTY INVOICE derives status paid and appears on NEITHER
    default list tab (invisible until charged; drive finding 6).
    Lives: status logic casework core (frozen); a rendering-side

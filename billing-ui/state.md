@@ -131,9 +131,23 @@ any), open gated items.
   story lands, (b) nothing embarrassing, (c) bookable -- James
   signs when his review is done. Everything else queues behind
   this.
-- Sixth sweep cluster: unverified from the s16 log whether it
-  was deferred or never reached -- re-offer the judgment-call
-  map when James next engages.
+- Sixth sweep cluster: RESOLVED by elimination (s16 cont
+  ground sweep): the pre-s16 open-decisions list held exactly
+  six clusters and the verdict is the only one not taken --
+  the sixth cluster IS the verdict, deliberately left for
+  James's own timing.
+- LEFTOVER SMALL FLAGS rediscovered by the s16 cont full-log
+  sweep (they had fallen out of the session cache; all agent
+  calls standing until struck): (1) the four s8 pay-page
+  judgment calls (conn.commit persistence fix / English-only
+  pay-form labels on es invoices / trust-held line on the
+  client page / receipt reference = processor txn id) -- now
+  also recorded on gated-items.md item 2; (2) trust-tile
+  wording: firm-wide "Client funds in trust" vs per-client
+  "Remaining in trust", one word across both if he wants;
+  (3) invoice page keeps the stored number as a "Number #n
+  (scope)" attribute row; (4) imported saved charges inherit
+  the bill's issue date (item C, s7).
 - Budget figure re-rule: 25:00 was agent-derived then ratified
   ("25 is good!") -- closed unless James reopens.
 - Client portal: gated item 11, deliberately out of scope.

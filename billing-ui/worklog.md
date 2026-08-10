@@ -3132,3 +3132,38 @@ log -- unverified whether it was presented and deferred or
 never reached; re-offer the map next touchpoint. The attempt-5
 three-part verdict remains the open gate regardless, untouched
 by the freeze.
+
+## 2026-08-10 -- s16 cont: decision map re-laid from ground truth;
+## sixth cluster identified; leftover flags rediscovered
+
+James asked for the full map re-laid. Instead of trusting the
+session cache, the sweep went to ground: gated-items.md read
+end to end, worklog grepped for every flagged judgment call,
+each hit's context read and its later resolution traced.
+
+FINDINGS:
+1. The sixth cluster is the VERDICT, by elimination: the
+   pre-s16 state.md open-decisions list held exactly six live
+   clusters (verdict, budget, close calls, sibling wording,
+   E-item lines, flow markers); the five non-verdict clusters
+   are the five the log records as taken.
+2. LEDGER GAP closed: gated-items.md item 2 (client pay page)
+   was unlocked 2026-08-07 and BUILT the same day (worklog s8)
+   but the ledger never recorded the build. Dated entry added.
+3. LEFTOVER FLAGS rediscovered -- flagged in s7/s8, never
+   ruled, and absent from the s15/s16 session cache: the four
+   s8 pay-page calls (conn.commit / en-only pay labels on es /
+   trust-held line / receipt reference txn id); trust-tile
+   wording (firm-wide vs per-client, one word across both);
+   the "Number #n (scope)" attribute row; item C's imported-
+   charge date inheritance. All standing agent calls until
+   struck; now in state.md so they cannot fall out again.
+4. Chip styling/wording/thresholds flags (s11 build auth) are
+   considered RULED by s16 calls 5a/5b.
+
+METHOD: session-cache open-decision lists decay -- two of the
+four rediscovered flags predate the cache's oldest surviving
+pointer. A map re-lay must sweep the ledgers, not the cache.
+
+No code touched; no suites owed (bookkeeping only). Server
+stays up on the walked -09b db, untouched this entry.
