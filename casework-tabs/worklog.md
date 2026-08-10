@@ -384,3 +384,14 @@ answering.
   workflows surface some phase?
 - [Q11] matter-page date format extension (existing screen) --
   ratify or revert.
+
+## 2026-08-10 -- s4 cont: P2 gate live-drive, feedback r1
+
+James: "can we get the fonts to line up with what we did on
+calendar." The P1 typography ruling (one td text size at 0.85rem,
+links always firm blue) extended to the four tasks tables (/tasks
+index, builder index, list-detail items, matter/contact Tasks
+cards) via a .tasks-table wrapper -- same scoping pattern as
+.agenda; billing-ui's signed tables still untouched. Rail 11
+pass/0 fail sha eb4fc42e (unchanged -- no asserted strings moved),
+ui-walk GREEN, demo server restarted on 8500 with the change.

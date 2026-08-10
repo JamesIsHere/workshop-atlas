@@ -1352,7 +1352,8 @@ class Handler(BaseHTTPRequestHandler):
         if rows:
             head = ["Task", "Due", "Linked to", "Assigned to",
                     "Completed" if done else ""]
-            inner = html.table(head, rows)
+            inner = ("<div class='tasks-table'>"
+                     + html.table(head, rows) + "</div>")
         elif done:
             inner = html.designed_empty(
                 "Nothing completed here yet. A task's Done button"
@@ -1433,8 +1434,9 @@ class Handler(BaseHTTPRequestHandler):
                  f"{html.esc('; '.join(autos.get(tl['id'], [])) or '-')}"
                  f"</span>"]
                 for tl in reads.task_lists_rows(conn)]
-        inner = (html.table(["Task list", "Items", "Automations"],
-                            rows)
+        inner = ("<div class='tasks-table'>"
+                 + html.table(["Task list", "Items", "Automations"],
+                              rows) + "</div>"
                  if rows else html.designed_empty(
                      "No task lists yet. A task list is a reusable"
                      " checklist -- build it once, then import it"
@@ -1482,8 +1484,9 @@ class Handler(BaseHTTPRequestHandler):
             rows.append([str(i["position"]), html.esc(i["title"]),
                          html.esc(rule),
                          html.esc(i["assignee_name"] or "importer")])
-        table = (html.table(["#", "Item", "Due rule", "Assigned to"],
-                            rows)
+        table = ("<div class='tasks-table'>"
+                 + html.table(["#", "Item", "Due rule",
+                               "Assigned to"], rows) + "</div>"
                  if rows else html.designed_empty(
                      "No items yet. Each item becomes one real task"
                      " when this list is imported onto a matter or"
@@ -1598,7 +1601,9 @@ class Handler(BaseHTTPRequestHandler):
                  html.esc(anames.get(t["id"], "-")),
                  self._complete_button(t["id"], back)]
                 for t in open_tasks]
-        table = (html.table(["Task", "Due", "Assigned to", ""], rows)
+        table = ("<div class='tasks-table'>"
+                 + html.table(["Task", "Due", "Assigned to", ""],
+                              rows) + "</div>"
                  if rows else "<p class='hint'>No open tasks here"
                  " yet.</p>")
         lists = reads.task_lists_rows(conn)

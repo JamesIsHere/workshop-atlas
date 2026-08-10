@@ -118,6 +118,11 @@ button.small { background: #eef1f5; color: #2456a6;
                cursor: pointer; }
 button.small:hover { background: #dfe6f0; }
 .automations { font-size: 0.85rem; color: #6a7383; }
+/* tasks tables: the calendar typography ruling extended to tasks
+   surfaces at the P2 gate (James) -- one text size (0.85rem td
+   baseline), links always firm blue (kills visited purple) */
+.tasks-table table.data td { font-size: 0.85rem; }
+.tasks-table table.data a { color: #2456a6; }
 """
 
 NAV_ITEMS = [("Dashboard", "/"),  # item-12 R2; kills gated item 4
