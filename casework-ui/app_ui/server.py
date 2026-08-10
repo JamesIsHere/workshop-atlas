@@ -1619,14 +1619,23 @@ class Handler(BaseHTTPRequestHandler):
                       f" preparing</a></div>")
         elif es["status"] == "requested":
             base = self.server.client_base
-            for s in esign.signers_of(conn, es["id"]):
-                if s["access_token"] and s["signed_at"] is None:
+            signers = esign.signers_of(conn, es["id"])
+            pending = [s for s in signers
+                       if s["signed_at"] is None]
+            for s in pending:
+                if s["access_token"]:
                     nm = self._signer_label(conn, s, cnames)
                     inner += (
                         f"<p class='hint'>Live signing link for"
                         f" {html.esc(nm)} (also emailed):</p>"
                         f"<code class='copy'>{base}/esign/"
                         f"{s['access_token']}</code>")
+            if not pending:
+                # a request that went out with nobody to sign
+                # (pre-r5 dbs only; the guard now blocks it)
+                inner += ("<p class='hint'>No one is on this"
+                          " request -- void it and prepare again"
+                          " with a signer.</p>")
             inner += (f"<div class='actions'><a class='quiet'"
                       f" href='/files/{fid}/esign'>Signing status"
                       f"</a></div>")
@@ -1732,13 +1741,24 @@ class Handler(BaseHTTPRequestHandler):
                 f" bottom sits around Y 120). Check the document"
                 f" while placing: <a href='/files/{fid}/preview'>"
                 f"Preview</a>. Misplaced? Remove the field and"
-                f" place it again.</p>"
-                f"<form method='post' class='inline'"
-                f" action='/files/{fid}/esign/request'>"
-                f"<button class='primary'>Send signature requests"
-                f"</button></form>"
-                f"<p class='hint'>Sending locks the document;"
-                f" each signer gets a secure link by email.</p>")
+                f" place it again.</p>")
+            # Send exists only once someone is on the request
+            # (gate r5: a zero-signer Send locked the file with
+            # nobody to sign and no link to show)
+            if signers:
+                forms_html += (
+                    f"<form method='post' class='inline'"
+                    f" action='/files/{fid}/esign/request'>"
+                    f"<button class='primary'>Send signature"
+                    f" requests</button></form>"
+                    f"<p class='hint'>Sending locks the document;"
+                    f" each signer gets a secure link by email."
+                    f"</p>")
+            else:
+                forms_html += (
+                    "<p class='hint'>Add a signer before sending"
+                    " -- a request with nobody to sign cannot go"
+                    " out.</p>")
         else:
             forms_html = self._esign_status_block(conn, fid, es,
                                                   cnames)
@@ -1821,6 +1841,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def _file_esign_request(self, conn, now, fid):
         es = self._es_live(conn, fid)
+        # gate r5: the core locks the file even with zero signers
+        # (request_signatures loops over nobody); refusing the
+        # empty send is the surface's job
+        if not esign.signers_of(conn, es["id"]):
+            return self._redirect(f"/files/{fid}/esign")
         try:
             esign.request_signatures(conn, es["id"], now)
             conn.commit()

@@ -783,12 +783,30 @@ def step_files_esign_prepare(w):
         "non-PDF detail offers e-sign prepare (core will refuse)"
     _s, _u, page = w.browser.post(
         f"/files/{w.file2_id}/esign/prepare", {})
-    for act in ("esign/signers", "esign/fields", "esign/request"):
+    for act in ("esign/signers", "esign/fields"):
         assert f"action='/files/{w.file2_id}/{act}'" in page, \
             f"prep editor missing its {act} form"
+    # gate r5 (James's drive): Send with ZERO signers locked the
+    # file with nobody to sign and no link to show -- the frozen
+    # core allows it (request_signatures loops over nobody), so
+    # the surface must not offer Send yet AND must refuse the
+    # direct POST
+    assert f"action='/files/{w.file2_id}/esign/request'" \
+        not in page, "editor offers Send with no signers"
+    assert "Add a signer before sending" in page, \
+        "no-signer editor lacks its hint"
+    _s, _u, page = w.browser.post(
+        f"/files/{w.file2_id}/esign/request", {})
+    st = w.conn.execute(
+        "SELECT status FROM esign_files WHERE file_id=?"
+        " AND deleted_at IS NULL", (w.file2_id,)).fetchone()
+    assert st["status"] == "draft", \
+        f"no-signer request went out (status {st['status']!r})"
     _s, _u, page = w.browser.post(
         f"/files/{w.file2_id}/esign/signers", {
             "contact_id": str(w.contact_id)})
+    assert f"action='/files/{w.file2_id}/esign/request'" in page, \
+        "Send absent after the first signer"
     signer = w.conn.execute(
         "SELECT * FROM esign_signers ORDER BY id DESC").fetchone()
     assert signer is not None, "signer row missing"

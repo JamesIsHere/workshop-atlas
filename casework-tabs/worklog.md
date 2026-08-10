@@ -788,3 +788,24 @@ PDF does not offer Prepare afresh". Rail 22 pass/0 fail sha
 verdict: GREEN" / "fiduciary: 9 pass, 0 red, 0 stub; verdict:
 GREEN" / "ui-walk: 13 pass, 0 pending, 0 fail; sweeps pass;
 verdict GREEN". 8500 restarted.
+
+P4b gate feedback r5 (James, live drive): after voiding, his
+REDO went prepare -> Send with ZERO signers -- the frozen core's
+request_signatures loops over nobody, emails no one, and still
+locks draft->requested, leaving a request with no link to show.
+His question ("wouldn't the link be here?") was answered from
+the db, not memory: demo-tabs row 4 = requested, 0 signers, 0
+fields. Two rendering fixes: (a) the editor offers Send ONLY
+once a signer exists ("Add a signer before sending" hint
+otherwise) and the request handler refuses an empty direct POST
+(upload-requires-file pattern; core untouched); (b) the file
+page's requested state with zero pending signers states the
+vacuum ("No one is on this request -- void it and prepare again
+with a signer") instead of silence -- reachable only on pre-r5
+dbs now. Rail's prepare step restructured: post-prepare editor
+asserts Send ABSENT + hint present, direct no-signer POST
+asserted refused (status stays draft), Send appears after the
+first signer. RED-driven: guard disabled -> FAIL "no-signer
+request went out (status 'requested')" -- his exact state
+reproduced. Rail 22 pass/0 fail sha 05ffb243 x2 (supersedes
+4f3a5880); ui-walk GREEN (app_ui-only round). 8500 restarted.
