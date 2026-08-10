@@ -3261,3 +3261,30 @@ lost work. Sequential one-call-per-turn whittling (James's
 own cadence) emptied the entire judgment-call ledger before
 the verdict, so the signature bound a fully-ruled artifact,
 not a pile of standing agent judgment.
+
+## 2026-08-10 -- s16 close cont: METHOD RETRO run and ratified
+## (consolidated Trial 4, whole atlas program)
+
+METHOD: the retro ran immediately after the verdict at James's
+call ("might as well do the retro now, otherwise I may
+forget" -- itself the evidence for the new checklist item).
+Scope grew deliberately on his ruling: billing-ui's harvest
+alone missed two of the program charter's three test axes, so
+all three completed siblings were harvested too (docketwise-
+spec, casework, casework-billing; casework-ui excluded,
+pre-verdict). ~85 METHOD: entries total, consolidated into ONE
+Trial 4 (atlas program) amendment rather than four trial
+sections. James ratified it as drafted, one round, no kills.
+
+Folded into C:/Users/james/.claude/skills/goal-method/SKILL.md:
+the Trial 4 section (per-child findings, program synthesis,
+updated nulls, new priority list), wind-down checklist item 6
+(retro rides the final wind-down; ledger-reconcile before a
+final gate), and op rule 7 additions (verify the verifier;
+ratifier-facing prose gets claim-extraction oracles). The
+model confound (Trials 1-3 Sonnet, atlas Fable) is disclosed
+inside the amendment per the bootstrap's own note.
+
+The un-retroed-siblings flag from earlier this session is
+CLOSED by this entry -- their harvests are in the amendment;
+their worklogs remain the raw record.
