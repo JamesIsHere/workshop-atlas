@@ -17,12 +17,13 @@ is the contract; this file is a signpost.
 
 | Field        | Value                                              |
 | ------------ | -------------------------------------------------- |
-| Status       | P0 COMPLETE 2026-08-10 -- harness on disk, rail    |
-|              | RED as contracted (sha e084bd4b x2), seed green    |
-| Last session | 2026-08-10 s2 -- U0.1: rail + seed + sha script    |
-|              | built, 4 sabotages proven, all suites green quoted |
-| Next action  | P1 Calendar: build to the rail's pinned contract;  |
-|              | [Q1] derived-kinds ruling rides to the P1 gate.    |
+| Status       | P1 BUILT 2026-08-10, gate pending -- calendar tab  |
+|              | live, rail 7 pass/0 fail (sha d1a45962 x2)         |
+| Last session | 2026-08-10 s3 -- P1 build: unified calendar, two   |
+|              | create forms, detail + attendees; 3 rail defects   |
+|              | found+fixed driving RED; all suites green quoted   |
+| Next action  | P1 gate: James drives Calendar on port 8500 over   |
+|              | the seeded db; [Q1]-[Q8] clear serialized there.   |
 |              | See state.md                                       |
 
 Keep this table honest at every wind-down. A stale State section is

@@ -16,6 +16,7 @@ synthetic marker): the first visit then enters the /setup flow.
 """
 
 import argparse
+import calendar as pycal
 import re
 import tempfile
 import threading
@@ -26,7 +27,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import app_ui  # noqa: F401  (wires casework onto sys.path)
-from app import auth, bootstrap, contacts, events, facts, files, forms
+from app import auth, billing, bootstrap, contacts, events, facts
+from app import files, forms
 from app import db as appdb
 from app import invitations, matters, notes, render, search, tasks, users
 from app import server as cw_server
@@ -215,9 +217,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._form_download(conn, _id(segs[1]),
                                            _id(segs[3]))
             if segs == ["calendar"]:
-                return self._calendar(conn, user)
+                return self._calendar(conn, user, query)
             if segs == ["calendar", "new"]:
                 return self._event_new(conn, user, query)
+            if segs == ["calendar", "new-appointment"]:
+                return self._cal_new_appointment(conn, user)
+            if segs == ["calendar", "new-deadline"]:
+                return self._cal_new_deadline(conn, user)
             if len(segs) == 2 and segs[0] == "calendar":
                 return self._event_detail(conn, user, _id(segs[1]))
         if method == "POST":
@@ -233,6 +239,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._form_invite(conn, now, _id(segs[1]), user)
             if segs == ["calendar", "new"]:
                 return self._event_create(conn, now, uid)
+            if segs == ["calendar", "new-appointment"]:
+                return self._cal_new_appointment_create(conn, now, uid)
+            if segs == ["calendar", "new-deadline"]:
+                return self._cal_new_deadline_create(conn, now, uid)
+            if len(segs) == 3 and segs[0] == "calendar" \
+                    and segs[2] == "attendees":
+                return self._event_attendee_add(conn, _id(segs[1]))
         raise _NotFound()
 
     # --- first-run setup ---
@@ -699,21 +712,200 @@ class Handler(BaseHTTPRequestHandler):
             content = out.read_bytes()
         self._send_file(content, f"{sff['form_code']}.pdf")
 
-    # --- calendar + deadlines (U1.6) ---
+    # --- calendar + deadlines (U1.6; unified view rebuilt by
+    # casework-tabs P1 under the 2026-08-10 program amendment:
+    # kind is DERIVED presentation, never stored; SQL in reads.py;
+    # writes ride casework modules) ---
 
-    def _calendar(self, conn, user):
-        rows = [[html.link(f"/calendar/{e['id']}", e["title"]),
-                 html.esc(e["starts_at"][:16].replace("T", " "))]
-                for e in events.list_events(conn)]
-        table = (html.table(["Event", "When (UTC)"], rows) if rows
-                 else html.empty_state("Nothing scheduled. Deadlines"
-                                       " land here from their matter"
-                                       " or from New deadline above."))
-        body = (f"<div class='card'><h1>Calendar</h1>"
-                f"<div class='actions'><a href='/calendar/new'>New"
-                f" deadline</a></div>{table}</div>")
+    CAL_KINDS = ("appointment", "deadline", "expiry", "task", "vmax",
+                 "invoice")
+
+    @staticmethod
+    def _event_kind(e):
+        """expiry = the auto events facts generate; deadline = the
+        all-day shape New deadline writes (T00:00:00Z, no end);
+        everything else is a timed appointment."""
+        if e["source"] == "expiry_auto":
+            return "expiry"
+        if e["starts_at"].endswith("T00:00:00Z") and not e["ends_at"]:
+            return "deadline"
+        return "appointment"
+
+    def _cal_rows(self, conn):
+        """The unified date view (Appendix A): six kinds assembled
+        from their own readers into one dated list."""
+        def linked(cid, cname, mid, mname, prefix=""):
+            parts = []
+            if mid:
+                parts.append(html.link(f"/matters/{mid}",
+                                       mname or "matter"))
+            if cid:
+                parts.append(html.link(f"/contacts/{cid}",
+                                       cname or "client"))
+            if not parts:
+                return "-"
+            return (f"<span class='provenance'>{prefix}"
+                    + " -- ".join(parts) + "</span>")
+
+        items = []
+        for e in reads.calendar_events(conn):
+            kind = self._event_kind(e)
+            date = e["starts_at"][:10]
+            when = html.mdy(date)
+            if kind == "appointment":
+                when += " " + e["starts_at"][11:16]
+                if e["ends_at"]:
+                    when += "-" + e["ends_at"][11:16]
+            prefix = "from " if kind == "expiry" else ""
+            items.append({
+                "kind": kind, "date": date, "when": when,
+                "title": e["title"], "href": f"/calendar/{e['id']}",
+                "linked": linked(e["contact_id"], e["contact_name"],
+                                 e["matter_id"], e["matter_name"],
+                                 prefix)})
+        for v in reads.calendar_vmax(conn):
+            items.append({
+                "kind": "vmax", "date": v["due_on"],
+                "when": html.mdy(v["due_on"]),
+                "title": f"VMAX date -- {v['contact_name']}",
+                "href": f"/contacts/{v['contact_id']}",
+                "linked": linked(v["contact_id"], v["contact_name"],
+                                 None, None, "from ")})
+        for t in reads.calendar_task_dues(conn):
+            items.append({
+                "kind": "task", "date": t["due_date"],
+                "when": html.mdy(t["due_date"]), "title": t["title"],
+                "href": f"/tasks/{t['id']}",
+                "linked": linked(t["contact_id"], t["contact_name"],
+                                 t["matter_id"], t["matter_name"])})
+        for i in reads.calendar_invoice_dues(conn):
+            if billing.invoice_status(conn, i["id"]) == "paid":
+                continue  # a paid bill's due date is history, not
+                # a calendar obligation ([Q] gate ruling pending)
+            items.append({
+                "kind": "invoice", "date": i["due_date"],
+                "when": html.mdy(i["due_date"]),
+                "title": f"{i['display_code']} due",
+                "href": f"/billing/invoices/{i['id']}",
+                "linked": linked(i["contact_id"], i["contact_name"],
+                                 None, None)})
+        items.sort(key=lambda r: (r["date"], r["when"], r["title"]))
+        return items
+
+    def _calendar(self, conn, user, query):
+        cookie = SimpleCookie(self.headers.get("Cookie", ""))
+        stored = cookie.get("cal_view")
+        view = query.get("view", [None])[0]
+        cookies = None
+        if view in ("agenda", "month"):
+            cookies = [f"cal_view={view}; Path=/"]
+        else:
+            view = ("month" if stored is not None
+                    and stored.value == "month" else "agenda")
+        kind = query.get("kind", [None])[0]
+        if kind not in self.CAL_KINDS:
+            kind = None
+        items = self._cal_rows(conn)
+        shown = ([r for r in items if r["kind"] == kind]
+                 if kind else items)
+        kindq = f"&kind={kind}" if kind else ""
+        actions = ("<div class='actions'>"
+                   "<a href='/calendar/new-appointment'>New"
+                   " appointment</a>"
+                   "<a class='quiet' href='/calendar/new-deadline'>"
+                   "New deadline</a></div>")
+        toggle = (f"<div class='chips'>"
+                  f"<a class='chip{' on' if view == 'agenda' else ''}'"
+                  f" href='/calendar?view=agenda{kindq}'>Agenda</a>"
+                  f"<a class='chip{' on' if view == 'month' else ''}'"
+                  f" href='/calendar?view=month{kindq}'>Month</a>"
+                  f"</div>")
+        chips = ("<div class='chips'>"
+                 + f"<a class='chip{' on' if kind is None else ''}'"
+                   f" href='/calendar'>all</a>"
+                 + "".join(
+                     f"<a class='chip{' on' if kind == k else ''}'"
+                     f" href='/calendar?kind={k}'>{k}</a>"
+                     for k in self.CAL_KINDS)
+                 + "</div>")
+        if view == "month":
+            inner = self._cal_month(query, shown)
+        elif shown:
+            rows = [[r["when"],
+                     f"<span class='kind kind-{r['kind']}'>"
+                     f"{r['kind']}</span>",
+                     html.link(r["href"], r["title"]), r["linked"]]
+                    for r in shown]
+            inner = html.table(["When", "Kind", "Item", "Linked"],
+                               rows)
+        else:
+            inner = html.designed_empty(
+                "Nothing scheduled yet. Appointments, deadlines,"
+                " expirations, task due dates, VMAX clocks, and"
+                " invoice due dates all land on this one calendar.",
+                "<a href='/calendar/new-appointment'>New"
+                " appointment</a>"
+                "<a class='quiet' href='/calendar/new-deadline'>New"
+                " deadline</a>")
+        body = (f"<div class='card'><h1>Calendar</h1>{actions}"
+                f"{toggle}{chips}{inner}</div>")
         self._send_page(200, html.page("Calendar", body,
-                                       user_name=user["name"]))
+                                       user_name=user["name"],
+                                       active_href="/calendar"),
+                        cookies=cookies)
+
+    def _cal_month(self, query, shown):
+        """Month grid over the same unified rows. Earlier/Later jump
+        to the nearest month that HAS items -- no empty scrolling,
+        and the link chain stays finite for the walk's BFS."""
+        month = query.get("month", [None])[0] or ""
+        if not re.fullmatch(r"\d{4}-\d{2}", month or "") \
+                or not 1 <= int(month[5:7]) <= 12:
+            month = datetime.now(timezone.utc).strftime("%Y-%m")
+        year, mon = int(month[:4]), int(month[5:7])
+        by_date = {}
+        for r in shown:
+            by_date.setdefault(r["date"], []).append(r)
+        months_with = sorted({r["date"][:7] for r in shown})
+        earlier = [m for m in months_with if m < month]
+        later = [m for m in months_with if m > month]
+
+        def label(m):
+            return f"{pycal.month_name[int(m[5:7])]} {m[:4]}"
+
+        nav = ""
+        if earlier:
+            nav += (f"<a class='chip' href='/calendar?view=month"
+                    f"&month={earlier[-1]}'>Earlier:"
+                    f" {label(earlier[-1])}</a>")
+        if later:
+            nav += (f"<a class='chip' href='/calendar?view=month"
+                    f"&month={later[0]}'>Later: {label(later[0])}</a>")
+        nav = f"<div class='chips'>{nav}</div>" if nav else ""
+        head = "".join(f"<th>{d}</th>" for d in
+                       ("Sun", "Mon", "Tue", "Wed", "Thu", "Fri",
+                        "Sat"))
+        weeks = pycal.Calendar(firstweekday=6).monthdayscalendar(
+            year, mon)
+        rows = ""
+        for week in weeks:
+            cells = ""
+            for day in week:
+                if day == 0:
+                    cells += "<td></td>"
+                    continue
+                date = f"{year:04d}-{mon:02d}-{day:02d}"
+                entries = "".join(
+                    f"<a href='{r['href']}'><span class='kind"
+                    f" kind-{r['kind']}'>{r['kind']}</span>"
+                    f" {html.esc(r['title'][:24])}</a>"
+                    for r in by_date.get(date, []))
+                cells += (f"<td><span class='day'>{day}</span>"
+                          f"{entries}</td>")
+            rows += f"<tr>{cells}</tr>"
+        return (f"<h1>{pycal.month_name[mon]} {year}</h1>{nav}"
+                f"<table class='data month-grid'><thead><tr>{head}"
+                f"</tr></thead><tbody>{rows}</tbody></table>")
 
     def _event_new(self, conn, user, query):
         mid = query.get("matter", [""])[0]
@@ -773,24 +965,180 @@ class Handler(BaseHTTPRequestHandler):
         e = reads.event_row(conn, eid)
         if e is None:
             raise _NotFound()
+        kind = self._event_kind(e)
+        when = html.mdy(e["starts_at"])
+        if kind == "appointment":
+            when += " " + e["starts_at"][11:16]
+            if e["ends_at"]:
+                when += "-" + e["ends_at"][11:16]
+            when += " UTC"
+        desc = (f"<p>{html.esc(e['description'])}</p>"
+                if e["description"] else "")
         rem = reads.event_reminders(conn, eid)
         rrows = [[f"{r['offset_value']} {r['offset_unit']} before",
                   html.esc(r["channel"])] for r in rem]
         rtable = (html.table(["Reminder", "Channel"], rrows) if rrows
                   else "<p class='hint'>No reminders.</p>")
+        att = reads.event_attendees(conn, eid)
+        arows = [[html.esc(a["user_name"] or a["contact_name"]
+                           or "-"),
+                  "staff" if a["user_id"] else "client"]
+                 for a in att]
+        atable = (html.table(["Attendee", "Who"], arows) if arows
+                  else "<p class='hint'>No attendees yet.</p>")
+        have_u = {a["user_id"] for a in att if a["user_id"]}
+        have_c = {a["contact_id"] for a in att if a["contact_id"]}
+        opts = "".join(
+            f"<option value='user-{u['id']}'>{html.esc(u['name'])}"
+            f" (staff)</option>"
+            for u in reads.list_users(conn)
+            if not u["deactivated_at"] and u["id"] not in have_u)
+        if e["contact_id"] and e["contact_id"] not in have_c:
+            c = reads.contact_row(conn, e["contact_id"])
+            if c is not None:
+                opts += (f"<option value='contact-{c['id']}'>"
+                         f"{html.esc(c['display_name'])} (client)"
+                         f"</option>")
+        aform = ""
+        if opts:
+            aform = (f"<form method='post' action='/calendar/{eid}"
+                     f"/attendees'><label>Add attendee</label>"
+                     f"<select name='attendee'>{opts}</select>"
+                     f"<button class='primary'>Add attendee</button>"
+                     f"</form>")
         links = ""
         if e["matter_id"]:
             links += html.link(f"/matters/{e['matter_id']}",
                                "Matter") + " "
+        if e["contact_id"]:
+            links += html.link(f"/contacts/{e['contact_id']}",
+                               "Client")
         body = (f"<div class='card'><h1>{html.esc(e['title'])}</h1>"
-                f"<dl class='kv'><dt>When (UTC)</dt><dd>"
-                f"{html.esc(e['starts_at'][:16].replace('T', ' '))}"
-                f"</dd><dt>Linked</dt><dd>{links or '-'}</dd></dl>"
-                f"{rtable}"
+                f"<p><span class='kind kind-{kind}'>{kind}</span></p>"
+                f"{desc}"
+                f"<dl class='kv'><dt>When</dt><dd>{when}</dd>"
+                f"<dt>Linked</dt><dd>{links or '-'}</dd></dl>"
+                f"<h2>Attendees</h2>{atable}{aform}"
+                f"<h2>Reminders</h2>{rtable}"
                 f"<div class='actions'><a class='quiet' href='/calendar'>"
                 f"Back to calendar</a></div></div>")
         self._send_page(200, html.page(e["title"], body,
-                                       user_name=user["name"]))
+                                       user_name=user["name"],
+                                       active_href="/calendar"))
+
+    def _cal_new_appointment(self, conn, user):
+        mopts = "".join(
+            f"<option value='{m['id']}'>{html.esc(m['name'])} --"
+            f" {html.esc(m['display_name'])}</option>"
+            for m in reads.list_matters(conn))
+        copts = "".join(
+            f"<option value='{c['id']}'>"
+            f"{html.esc(c['display_name'])}</option>"
+            for c in reads.list_contacts(conn))
+        body = (f"<div class='card narrow'><h1>New appointment</h1>"
+                f"<form method='post' action='/calendar/"
+                f"new-appointment'>"
+                + html.field("Title", "title", autofocus=True)
+                + html.field("Date", "date", ftype="date")
+                + html.field("Start time (UTC)", "start_time",
+                             ftype="time", value="09:00")
+                + html.field("End time (UTC)", "end_time",
+                             ftype="time", value="10:00",
+                             required=False)
+                + html.field("Description", "description",
+                             required=False)
+                + f"<label>Matter</label><select name='matter_id'>"
+                  f"<option value=''>-- no matter --</option>{mopts}"
+                  f"</select>"
+                + f"<label>Client</label><select name='contact_id'>"
+                  f"<option value=''>-- no client --</option>{copts}"
+                  f"</select>"
+                + "<p class='hint'>Attendees are added on the"
+                  " appointment after it is created; firm default"
+                  " reminders apply.</p>"
+                + "<button class='primary'>Create appointment"
+                  "</button></form></div>")
+        self._send_page(200, html.page("New appointment", body,
+                                       user_name=user["name"],
+                                       active_href="/calendar"))
+
+    def _cal_new_appointment_create(self, conn, now, uid):
+        f = self._form_body()
+        starts = f"{f['date']}T{f.get('start_time') or '09:00'}:00Z"
+        ends = (f"{f['date']}T{f['end_time']}:00Z"
+                if f.get("end_time") else None)
+        matter_id = int(f["matter_id"]) if f.get("matter_id") else None
+        contact_id = (int(f["contact_id"]) if f.get("contact_id")
+                      else None)
+        if matter_id is not None and contact_id is None:
+            matter = reads.matter_row(conn, matter_id)
+            contact_id = (matter["primary_contact_id"] if matter
+                          else None)
+        eid = events.create_event(
+            conn, f["title"], starts, now, uid,
+            description=f.get("description") or None, ends_at=ends,
+            contact_id=contact_id, matter_id=matter_id)
+        events.add_attendee(conn, eid, user_id=uid)
+        conn.commit()
+        return self._redirect(f"/calendar/{eid}")
+
+    def _cal_new_deadline(self, conn, user):
+        mopts = "".join(
+            f"<option value='{m['id']}'>{html.esc(m['name'])} --"
+            f" {html.esc(m['display_name'])}</option>"
+            for m in reads.list_matters(conn))
+        copts = "".join(
+            f"<option value='{c['id']}'>"
+            f"{html.esc(c['display_name'])}</option>"
+            for c in reads.list_contacts(conn))
+        body = (f"<div class='card narrow'><h1>New deadline</h1>"
+                f"<form method='post' action='/calendar/new-deadline'>"
+                + html.field("Title", "title", autofocus=True)
+                + html.field("Date", "date", ftype="date")
+                + f"<label>Matter</label><select name='matter_id'>"
+                  f"<option value=''>-- no matter --</option>{mopts}"
+                  f"</select>"
+                + f"<label>Client</label><select name='contact_id'>"
+                  f"<option value=''>-- no client --</option>{copts}"
+                  f"</select>"
+                + "<p class='hint'>A deadline is all-day: it lands"
+                  " on the calendar and its matter, and firm default"
+                  " reminders apply.</p>"
+                + "<button class='primary'>Create deadline</button>"
+                  "</form></div>")
+        self._send_page(200, html.page("New deadline", body,
+                                       user_name=user["name"],
+                                       active_href="/calendar"))
+
+    def _cal_new_deadline_create(self, conn, now, uid):
+        f = self._form_body()
+        matter_id = int(f["matter_id"]) if f.get("matter_id") else None
+        contact_id = (int(f["contact_id"]) if f.get("contact_id")
+                      else None)
+        if matter_id is not None and contact_id is None:
+            matter = reads.matter_row(conn, matter_id)
+            contact_id = (matter["primary_contact_id"] if matter
+                          else None)
+        # the deadline shape: T00:00:00Z, no end -- scheduler-safe
+        # all-day semantics (kind derives from this, see _event_kind)
+        events.create_event(
+            conn, f["title"], f"{f['date']}T00:00:00Z", now, uid,
+            contact_id=contact_id, matter_id=matter_id)
+        conn.commit()
+        return self._redirect("/calendar")
+
+    def _event_attendee_add(self, conn, eid):
+        e = reads.event_row(conn, eid)
+        if e is None:
+            raise _NotFound()
+        who = self._form_body().get("attendee", "")
+        prefix, _, ident = who.partition("-")
+        if prefix == "user" and ident.isdigit():
+            events.add_attendee(conn, eid, user_id=int(ident))
+        elif prefix == "contact" and ident.isdigit():
+            events.add_attendee(conn, eid, contact_id=int(ident))
+        conn.commit()
+        return self._redirect(f"/calendar/{eid}")
 
     # --- browse surfaces (U2.1 indexes / U2.2 details) ---
 

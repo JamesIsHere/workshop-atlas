@@ -139,3 +139,88 @@ METHOD: oracle-first rail is now a three-peat pattern (billing-ui
 this child REDESIGNS live screens rather than adding a fresh area
 -- 404-probing alone cannot express "route exists, design pending."
 Worth folding into the skill at the next retro if it survives P1.
+
+## 2026-08-10 -- s3: P1 CALENDAR built to the rail; gate pending
+
+Build (all inside the amendment's write surface): reads.py grew
+five SELECT-only calendar readers (calendar_events with the fact
+join for expiry provenance, calendar_vmax, calendar_task_dues,
+calendar_invoice_dues, event_attendees); html.py grew the additive
+chrome (chips, kind badges, month grid, designed_empty + mdy
+helpers); server.py grew the unified /calendar (agenda + month
+views, six kind chips, designed empty state), the two pre-shaped
+create forms (/calendar/new-appointment, /calendar/new-deadline),
+an extended event detail (kind badge, description, MM/DD/YYYY,
+attendees section + add form, reminders intact), and POST
+/calendar/<id>/attendees. Writes ride events.create_event /
+add_attendee only; invoice status on the calendar derives via
+billing.invoice_status (module call, fx-0070 discipline).
+
+Design decisions (queued [Q] where interpretive):
+- Deadline shape: starts_at = T00:00:00Z with no end -- kind is
+  DERIVED (expiry_auto -> expiry; midnight-no-end -> deadline;
+  else appointment). Chosen over a bare date string because the
+  scheduler parses full timestamps; a date-only starts_at would be
+  a data shape the frozen core chokes on.
+- Month nav: Earlier/Later jump to the NEAREST MONTH WITH ITEMS --
+  no empty scrolling, and the frozen walk's reachability BFS
+  (which crawls every href) stays on a finite chain that reaches
+  every event from any month.
+- Sticky view rides a cal_view cookie (presentation state, no db
+  write). [Q4]
+- Frozen-walk fences held: /calendar/new untouched (its "New
+  deadline" h1, reminder picker, and redirect intact); "2 days
+  before" wording preserved on the detail; fresh-db /calendar
+  still renders "hint empty" (inside the new designed empty
+  state) with zero <td>.
+
+Verify-the-verifier EARNED ITS NAME this session -- three rail
+defects found and fixed while driving steps RED:
+1. False PASS: the derived-kinds step passed with zero derived
+   content because "kind-expiry" matched the global STYLESHEET,
+   not a row. All kind markers tightened to the rendered form
+   ("class='kind kind-X'"); provenance marker to
+   "class='provenance'" (was also substring-weak: "provenanceX"
+   and the CSS rule both contained it).
+2. ISO-stray false hits: the <style> block's text survives
+   tag-stripping; the sweep now strips style blocks first (they
+   are never user-visible), and the shipped CSS comment lost its
+   date.
+3. METHOD: a marker-probe step whose marker REGRESSES away demotes
+   to PENDING, not FAIL (same property as billing-ui's 404
+   probes). Consequence for gates: the floor is read from the
+   per-step table, never the verdict line alone -- a P1 step
+   showing PENDING at a later gate is a regression wearing
+   pending's clothes. Gate receipts must quote the full table.
+
+Sabotage lineage this session (all reverted): title-field,
+date-field, filter-ignored, cookie-ignored, matter-link-corrupted
+-- five hard FAILs proven; the two marker-removal sabotages
+correctly demoted to PENDING (finding 3).
+
+Rail after build: "tabs-walk: 7 pass, 23 pending, 0 fail; sweeps
+pass; verdict ON TRACK (pending screens)", sha d1a45962 x2
+(supersedes e084bd4b, this rail's P0 baseline). Standing suites
+all green, quoted: "ui-walk: 13 pass, 0 pending, 0 fail; sweeps
+pass; verdict GREEN" / "spine: 107 green, 0 red, 0 pending" /
+"billing: 25 green ... GREEN" / "fiduciary: 9 pass ... GREEN".
+
+[Q] ruling queue for the P1 gate (serialized one per turn there):
+- [Q1] derived-kinds content path (s2; agent lean: deadline-form
+  fact variant for expiry/vmax + seeding exemption for invoices).
+- [Q2] calendar shows OPEN tasks only; completed drop off.
+- [Q3] calendar shows UNPAID invoice due dates only.
+- [Q4] sticky view is per browser (cookie), not per user account.
+- [Q5] agenda default = full range, no date window; month view is
+  the windowed read.
+- [Q6] kind badge vocabulary (one rendered proposal: blue
+  appointment / red deadline / orange expiry / green task / purple
+  vmax / teal invoice).
+- [Q7] calendar index leads with the two new create paths; the old
+  /calendar/new stays for the matter-page flow (frozen walk).
+- [Q8] appointment form carries no per-form reminder picker; firm
+  default reminders apply (Settings home lands P6).
+
+Gate logistics: port 8500 is currently held by billing-ui's demo
+server (James's asset, PID noted in session); the swap to
+data/demo-tabs.db behind the same port is his call at the gate.

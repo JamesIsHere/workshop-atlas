@@ -363,6 +363,75 @@ def recent_money_entries(conn, limit=8):
         (limit,)).fetchall()
 
 
+# --- casework-tabs P1 display reads (calendar; program amendment
+# 2026-08-10: SQL stays here, rendering in server.py, writes ride
+# casework modules) ---
+
+def calendar_events(conn):
+    """Every live event with its linkage names. Expiry auto events
+    (source='expiry_auto') carry their source fact for provenance;
+    the view derives kind (appointment / deadline / expiry) -- kind
+    is presentation, never stored."""
+    return conn.execute(
+        "SELECT e.id, e.title, e.starts_at, e.ends_at, e.source,"
+        " e.contact_id, e.matter_id, f.key AS fact_key,"
+        " c.display_name AS contact_name, m.name AS matter_name"
+        " FROM events e"
+        " LEFT JOIN facts f ON f.id = e.source_fact_id"
+        " LEFT JOIN contacts c ON c.id = e.contact_id"
+        " LEFT JOIN matters m ON m.id = e.matter_id"
+        " WHERE e.deleted_at IS NULL"
+        " ORDER BY e.starts_at, e.id").fetchall()
+
+
+def calendar_vmax(conn):
+    """VMAX clocks: the imm.vmax_date fact per contact (the vmax
+    report's source, reports.py) rendered as a calendar kind."""
+    return conn.execute(
+        "SELECT f.subject_id AS contact_id, f.value AS due_on,"
+        " c.display_name AS contact_name FROM facts f"
+        " JOIN contacts c ON c.id = f.subject_id"
+        " AND c.deleted_at IS NULL"
+        " WHERE f.subject_type='contact' AND f.key='imm.vmax_date'"
+        " AND f.idx=0 AND f.value IS NOT NULL AND f.value != ''"
+        " ORDER BY f.value, f.subject_id").fetchall()
+
+
+def calendar_task_dues(conn):
+    """Open tasks with due dates -- completed tasks leave the
+    calendar ([Q] gate ruling pending)."""
+    return conn.execute(
+        "SELECT t.id, t.title, t.due_date, t.contact_id, t.matter_id,"
+        " c.display_name AS contact_name, m.name AS matter_name"
+        " FROM tasks t"
+        " LEFT JOIN contacts c ON c.id = t.contact_id"
+        " LEFT JOIN matters m ON m.id = t.matter_id"
+        " WHERE t.deleted_at IS NULL AND t.completed_at IS NULL"
+        " AND t.due_date IS NOT NULL"
+        " ORDER BY t.due_date, t.id").fetchall()
+
+
+def calendar_invoice_dues(conn):
+    """Invoices carrying a due date; the view keeps outstanding ones
+    only (status derived via billing.invoice_status, fx-0070 -- the
+    module call stays in the view, money math never here)."""
+    return conn.execute(
+        "SELECT i.id, i.display_code, i.due_date, i.contact_id,"
+        " c.display_name AS contact_name FROM invoices i"
+        " JOIN contacts c ON c.id = i.contact_id"
+        " WHERE i.deleted_at IS NULL AND i.due_date IS NOT NULL"
+        " ORDER BY i.due_date, i.id").fetchall()
+
+
+def event_attendees(conn, event_id):
+    return conn.execute(
+        "SELECT a.id, a.user_id, a.contact_id, u.name AS user_name,"
+        " c.display_name AS contact_name FROM event_attendees a"
+        " LEFT JOIN users u ON u.id = a.user_id"
+        " LEFT JOIN contacts c ON c.id = a.contact_id"
+        " WHERE a.event_id=? ORDER BY a.id", (event_id,)).fetchall()
+
+
 def trust_sub_accounts_of_contact(conn, contact_id):
     """Trust sub-ledger account ids belonging to a contact: their
     client-level funds plus funds held for their matters (gated

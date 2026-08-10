@@ -70,6 +70,29 @@ select { padding: 0.45rem 0.5rem; border: 1px solid #c3c9d2;
 .code-display { font-size: 2.2rem; font-weight: 600;
                 letter-spacing: 0.35em; text-align: center;
                 margin: 0.4rem 0 0.6rem; color: #1f2a3d; }
+/* casework-tabs chrome: kind colors are one proposal, gate rules */
+.chips { margin: 0.6rem 0 0.2rem; }
+.chip { display: inline-block; background: #eef1f5; color: #2456a6;
+        border-radius: 10px; padding: 0.15rem 0.7rem; font-size:
+        0.85rem; text-decoration: none; margin: 0 0.35rem 0.35rem 0; }
+.chip.on { background: #2456a6; color: #ffffff; }
+.kind { display: inline-block; border-radius: 3px; color: #ffffff;
+        font-size: 0.72rem; padding: 0.08rem 0.45rem;
+        letter-spacing: 0.03em; }
+.kind-appointment { background: #2456a6; }
+.kind-deadline { background: #a63030; }
+.kind-expiry { background: #b26a00; }
+.kind-task { background: #2f7d3a; }
+.kind-vmax { background: #6a3fa0; }
+.kind-invoice { background: #0e7c86; }
+.provenance { font-size: 0.85rem; color: #6a7383; }
+.empty-state { text-align: center; padding: 1.2rem 0 0.6rem; }
+table.month-grid td { vertical-align: top; height: 5.5rem;
+                      width: 14.28%; border: 1px solid #e7eaee;
+                      padding: 0.3rem; font-size: 0.8rem; }
+table.month-grid .day { color: #6a7383; font-weight: 600; }
+table.month-grid a { text-decoration: none; display: block;
+                     margin-top: 0.15rem; }
 """
 
 NAV_ITEMS = [("Dashboard", "/"),  # item-12 R2; kills gated item 4
@@ -139,3 +162,19 @@ def empty_state(text):
     """Designed empty state; the browse sweep asserts this class on
     every empty surface (screen review 2, finding 1)."""
     return f"<p class='hint empty'>{esc(text)}</p>"
+
+
+def mdy(iso_date):
+    """MM/DD/YYYY from an ISO date or timestamp prefix (goal.md:
+    user-facing dates MM/DD/YYYY, data stays ISO)."""
+    d = iso_date[:10]
+    return f"{d[5:7]}/{d[8:10]}/{d[0:4]}"
+
+
+def designed_empty(text, actions_html):
+    """casework-tabs empty-state contract: states what will appear
+    AND carries the action that creates it. Keeps the frozen browse
+    sweep's 'hint empty' marker inside."""
+    return (f"<div class='empty-state'><p class='hint empty'>"
+            f"{esc(text)}</p><div class='actions'>{actions_html}"
+            f"</div></div>")

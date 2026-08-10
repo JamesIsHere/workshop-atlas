@@ -67,6 +67,7 @@ ADMIN = {"name": "Tabs Walk Admin",
 
 CODE_RE = re.compile(r"verification code is (\d{6})")
 ISO_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+STYLE_RE = re.compile(r"<style>.*?</style>", re.S)
 TAG_RE = re.compile(r"<[^>]*>")
 
 # The six calendar kinds (Appendix A: unified date view). Rows carry
@@ -316,11 +317,16 @@ def step_cal_new_deadline(w):
 
 
 def step_cal_unified(w):
+    # rendered-badge markers ("class='kind kind-X'"), never the bare
+    # kind-X word -- that also lives in the global stylesheet (P1
+    # false-PASS finding, worklog s3)
     need(w.appt_id, "appointment")
     need(w.deadline_made, "deadline")
     _s, _u, page = w.browser.get("/calendar")
-    expect_marker(page, "kind-appointment", "unified calendar rows")
-    assert "kind-deadline" in page, "deadline row missing its kind"
+    expect_marker(page, "class='kind kind-appointment'",
+                  "unified calendar rows")
+    assert "class='kind kind-deadline'" in page, \
+        "deadline row missing its kind"
     assert "SYNTH USCIS interview prep" in page
     assert "SYNTH I-130 filing deadline" in page
     for kind in KINDS:
@@ -333,17 +339,20 @@ def step_cal_unified(w):
 
 
 def step_cal_toggle(w):
+    # the marker is the RENDERED grid table's class attribute -- the
+    # bare word month-grid also lives in the global stylesheet
+    grid = "class='data month-grid'"
     need(w.appt_id, "appointment")
     _s, _u, page = w.browser.get("/calendar")
     expect_marker(page, "view=month", "agenda/month toggle")
     assert "view=agenda" in page, "toggle missing agenda button"
     _s, _u, page = w.browser.get("/calendar?view=month")
-    assert "month-grid" in page, "month grid not rendered"
+    assert grid in page, "month grid not rendered"
     _s, _u, page = w.browser.get("/calendar")
-    assert "month-grid" in page, \
+    assert grid in page, \
         "view choice not sticky per user (agenda came back)"
     _s, _u, page = w.browser.get("/calendar?view=agenda")
-    assert "month-grid" not in page, "agenda did not return"
+    assert grid not in page, "agenda did not return"
     return "two-button toggle; month grid; sticky per user"
 
 
@@ -356,16 +365,20 @@ def step_cal_derived_kinds(w):
     a gate-ruled seeding exemption)."""
     need(w.appt_id, "appointment")
     _s, _u, page = w.browser.get("/calendar")
-    expect_marker(page, "kind-expiry", "derived calendar kinds")
-    assert "kind-vmax" in page or "kind=vmax" in page
-    assert "kind-invoice" in page or "kind=invoice" in page
+    expect_marker(page, "class='kind kind-expiry'",
+                  "derived calendar kinds")
+    assert "class='kind kind-vmax'" in page \
+        or "kind=vmax" in page
+    assert "class='kind kind-invoice'" in page \
+        or "kind=invoice" in page
     return "derived kinds present ([Q] content path rules at gate)"
 
 
 def step_cal_provenance(w):
     need(w.deadline_made, "deadline")
     _s, _u, page = w.browser.get("/calendar")
-    expect_marker(page, "provenance", "provenance on derived rows")
+    expect_marker(page, "class='provenance'",
+                  "provenance on derived rows")
     row = re.search(r"<[^>]*kind-deadline.*?SYNTH I-130 filing"
                     r" deadline.*?</tr>", page, re.S)
     if row is None:  # agenda rows may not be table rows; fall back
@@ -396,7 +409,8 @@ def step_tasks_quick_add(w):
         "due_date": "2026-08-25"})
     assert "08/25/2026" in page, "due date not set or not MM/DD/YYYY"
     _s, _u, page = w.browser.get("/calendar")
-    assert "kind-task" in page and "SYNTH draft I-130" in page, \
+    assert "class='kind kind-task'" in page \
+        and "SYNTH draft I-130" in page, \
         "task due date missing from the unified calendar"
     return "quick-add by Enter; due date set; rides the calendar"
 
@@ -847,7 +861,7 @@ def iso_sweep(page_log):
              if i >= FOUNDATION_STEPS]
     hits = []
     for url, page in pages:
-        text = TAG_RE.sub(" ", page)
+        text = TAG_RE.sub(" ", STYLE_RE.sub(" ", page))
         for m in sorted(set(ISO_RE.findall(text))):
             hits.append(f"{urllib.parse.urlparse(url).path}: {m}")
     detail = (f"no visible ISO dates on {len(pages)} tab pages"

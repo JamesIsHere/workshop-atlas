@@ -49,11 +49,8 @@ Settings layout at P6 -- avoids P6 blocking P1-P3.
 
 - U0.1 DONE 2026-08-10 (s2): rail RED (sha e084bd4b x2), seed
   green, sha script canonical, four sabotages proven, suites green.
-- U1.1 Calendar readers + unified index (kinds, filter, empty
-  state) to the rail's pinned contract.
-- U1.2 Two create forms (new-appointment, new-deadline) + detail
-  parity rides (attendees, end times, MM/DD/YYYY).
-- U1.3 Agenda/month toggle (sticky) + provenance links; [Q1]
-  ruling shapes the derived-kinds step at the gate.
-- U1.4 P1 gate: seeded db up on the ruled port, ruling queue
-  serialized, hands-on verdict, receipt in verify/gate-receipts/.
+- U1.1-U1.3 DONE 2026-08-10 (s3): calendar built to the rail, five
+  steps green + driven RED, sha d1a45962 x2, suites green.
+- U1.4 P1 gate: port-8500 swap (James's call), hands-on verdict,
+  [Q1]-[Q8] serialized, receipt in verify/gate-receipts/.
+- U2.x Tasks phase queues after the gate.

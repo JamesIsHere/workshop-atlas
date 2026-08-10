@@ -1,17 +1,17 @@
 # tabs-walk-report -- verifier 1
 
-run started: 2026-08-10T10:31:10Z
+run started: 2026-08-10T11:07:08Z
 
-PASS    setup + login                            0.334s  fresh db; admin created; MFA enrolled; dashboard reached
-PENDING empty states designed (fresh db)         0.028s  designed empty states absent: ['/calendar', '/files', '/tasks', '/notes']
-PASS    client + matter (existing UI)            0.032s  contact 1 + matter 1 via existing screens
-PENDING calendar: new appointment                0.001s  /calendar/new-appointment not built
-PENDING calendar: new deadline                   0.001s  /calendar/new-deadline not built
-PENDING calendar: unified view + kind filter     0.000s  upstream not walked yet (appointment)
-PENDING calendar: agenda/month toggle            0.000s  upstream not walked yet (appointment)
-PENDING calendar: derived kinds [Q]              0.000s  upstream not walked yet (appointment)
-PENDING calendar: provenance links               0.000s  upstream not walked yet (deadline)
-PENDING tasks: quick-add + due date              0.026s  type-and-Enter quick-add not built (marker "action='/tasks/quick'" absent)
+PASS    setup + login                            0.094s  fresh db; admin created; MFA enrolled; dashboard reached
+PENDING empty states designed (fresh db)         0.004s  designed empty states absent: ['/files', '/tasks', '/notes']
+PASS    client + matter (existing UI)            0.008s  contact 1 + matter 1 via existing screens
+PASS    calendar: new appointment                0.005s  appointment 1 by click; MM/DD/YYYY; end time
+PASS    calendar: new deadline                   0.005s  deadline created via its lean pre-shaped form
+PASS    calendar: unified view + kind filter     0.002s  unified view: both kinds rendered; single-kind filter
+PASS    calendar: agenda/month toggle            0.004s  two-button toggle; month grid; sticky per user
+PENDING calendar: derived kinds [Q]              0.001s  derived calendar kinds not built (marker "class='kind kind-expiry'" absent)
+PASS    calendar: provenance links               0.001s  derived rows carry provenance links to their source
+PENDING tasks: quick-add + due date              0.001s  type-and-Enter quick-add not built (marker "action='/tasks/quick'" absent)
 PENDING tasks: my-open default + toggles         0.000s  upstream not walked yet (quick-added task)
 PENDING tasks: one-click complete                0.000s  upstream not walked yet (quick-added task)
 PENDING tasks: lists builder + import            0.001s  /settings/task-lists not built
@@ -26,16 +26,16 @@ PENDING files: rename/preview/print/bulk         0.000s  upstream not walked yet
 PENDING files: e-sign flow                       0.000s  upstream not walked yet (PDF candidate)
 PENDING search: chrome bar everywhere            0.001s  chrome-level search bar not built (marker 'chrome-search' absent)
 PENDING search: coverage + grouped results       0.000s  upstream not walked yet (uploaded file)
-PENDING search: recents                          0.017s  recents on the search page not built (marker 'Recent' absent)
+PENDING search: recents                          0.002s  recents on the search page not built (marker 'Recent' absent)
 PENDING settings: users admin                    0.001s  /settings/users not built
-PENDING settings: permissions groups             0.014s  /settings/permissions not built
+PENDING settings: permissions groups             0.001s  /settings/permissions not built
 PENDING settings: trash + restore                0.000s  upstream not walked yet (quick note)
 PENDING settings: notifications + firm basics    0.001s  /settings/notifications not built
-PENDING settings: machinery homes collected      0.014s  machinery homes in the Settings layout not built (marker '/settings/task-lists' absent)
+PENDING settings: machinery homes collected      0.001s  machinery homes in the Settings layout not built (marker '/settings/task-lists' absent)
 
 # supporting sweeps (empty-state sweep = step 2)
 PASS float-sweep: no float() and no true /100 in app_ui
-PASS iso-stray-sweep: no visible ISO dates on 14 tab pages
+PASS iso-stray-sweep: no visible ISO dates on 24 tab pages
 
-steps: 2 pass, 28 pending, 0 fail; total 0.473s
+steps: 7 pass, 23 pending, 0 fail; total 0.135s
 verdict: ON TRACK (pending screens)
